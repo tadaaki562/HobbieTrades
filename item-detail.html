@@ -141,53 +141,86 @@
 
       <!-- ACTIONS -->
       <div class="action-buttons">
-        <a href="#" class="btn btn-primary btn-lg" onclick="goToPropose()">🔄 Propose a trade</a>
-<a href="#" class="btn btn-outline btn-lg" onclick="goToMessages()">💬 Send message</a>      </div>
+       <a href="#" class="btn btn-primary btn-lg" id="propose-btn">🔄 Propose a trade</a>
+<a href="#" class="btn btn-outline btn-lg" id="message-btn">💬 Send message</a>      </div>
     </div>
   </div>
 
 
 
   <script>
-    // Sample items data (same as browse.html)
-    const items = [
-  { id: 1, title: "Canon DSLR 200D + kit lens", category: "Cameras", condition: "Good", value: 8500, emoji: "📷", bg: "#F0F4FF", location: "Davao City", seller: "Marco R.", sellerInitials: "MR", sellerColor: "#9FE1CB", sellerRating: 4.2, sellerTrades: 8, desc: "Used for one year, sensor is clean. Shutter count ~4,000. Well maintained and comes with original box.", lookingFor: "Music instruments, audio gear, gaming consoles" },
-  { id: 2, title: "Acoustic Guitar (Yamaha)", category: "Instruments", condition: "Like New", value: 4200, emoji: "🎸", bg: "#EAF3DE", location: "Cebu City", seller: "Jan K.", sellerInitials: "JK", sellerColor: "#AFA9EC", sellerRating: 4.8, sellerTrades: 15, desc: "Barely used Yamaha acoustic guitar. Perfect for beginners. Comes with case and extra strings.", lookingFor: "Cameras, art supplies, gaming gear" },
-  { id: 3, title: "Oil paint set (24 colors)", category: "Art", condition: "Fair", value: 1800, emoji: "🎨", bg: "#FAECE7", location: "Makati", seller: "Ana L.", sellerInitials: "AL", sellerColor: "#F5C4B3", sellerRating: 3.9, sellerTrades: 5, desc: "24-color oil paint set, lightly used. Some tubes still sealed. Great for beginners.", lookingFor: "Craft supplies, instruments, books" },
-  { id: 4, title: "Skateboard complete deck", category: "Sports", condition: "Good", value: 2300, emoji: "🛹", bg: "#E6F1FB", location: "Quezon City", seller: "Renz M.", sellerInitials: "RM", sellerColor: "#85B7EB", sellerRating: 4.5, sellerTrades: 10, desc: "Complete skateboard setup with trucks, wheels, and bearings. Slightly worn grip tape but rides great.", lookingFor: "Gaming gear, music instruments, art supplies" },
-  { id: 5, title: "Nintendo Switch + 2 games", category: "Gaming", condition: "Good", value: 12000, emoji: "🎮", bg: "#FAEEDA", location: "Davao City", seller: "Chlyde E.", sellerInitials: "CE", sellerColor: "#F5C4B3", sellerRating: 5.0, sellerTrades: 3, desc: "Nintendo Switch in great condition, lightly used. Comes with 2 games and carrying case.", lookingFor: "DSLR camera, music equipment" },
-  { id: 6, title: "Embroidery starter kit", category: "Craft", condition: "Like New", value: 800, emoji: "🧵", bg: "#FBEAF0", location: "Manila", seller: "Sara P.", sellerInitials: "SP", sellerColor: "#D4537E", sellerRating: 4.1, sellerTrades: 6, desc: "Complete embroidery kit, barely used. Includes hoops, needles, threads, and pattern guide.", lookingFor: "Art supplies, books, ukulele" },
-  { id: 7, title: "Ukulele (soprano)", category: "Instruments", condition: "Good", value: 2200, emoji: "🎵", bg: "#EAF3DE", location: "Cebu City", seller: "Liz T.", sellerInitials: "LT", sellerColor: "#9FE1CB", sellerRating: 4.3, sellerTrades: 7, desc: "Soprano ukulele in good condition. Comes with a gig bag and extra set of strings.", lookingFor: "Drawing tablet, art supplies, cameras" },
-  { id: 8, title: "GoPro Hero 9 Black", category: "Cameras", condition: "Good", value: 9500, emoji: "📹", bg: "#F0F4FF", location: "BGC", seller: "Paolo G.", sellerInitials: "PG", sellerColor: "#AFA9EC", sellerRating: 4.7, sellerTrades: 12, desc: "GoPro Hero 9 Black with 2 batteries, charging dock, and waterproof case. Perfect condition.", lookingFor: "Gaming console, instruments, sports gear" },
-  { id: 9, title: "Badminton racket set", category: "Sports", condition: "Like New", value: 1500, emoji: "🏸", bg: "#E6F1FB", location: "Pasig", seller: "Mia S.", sellerInitials: "MS", sellerColor: "#85B7EB", sellerRating: 4.0, sellerTrades: 4, desc: "Set of 2 badminton rackets with shuttlecocks and carrying bag. Only used twice.", lookingFor: "Craft supplies, art supplies, ukulele" },
-];
+    // Read item ID from URL
+const params = new URLSearchParams(window.location.search);
+const id = parseInt(params.get('id')) || 1;
 
-    function getParam(name) {
-      return new URLSearchParams(window.location.search).get(name);
+// Load item from real API
+fetch(`http://localhost:8080/api/items/${id}`)
+  .then(res => res.json())
+  .then(item => {
+    const emoji = getCategoryEmoji(item.category);
+    const bg = getCategoryBg(item.category);
+
+    document.getElementById('item-img').innerHTML = `<span style="font-size:80px">${emoji}</span><div class="detail-trade-badge">TRADE</div>`;
+    document.getElementById('item-img').style.background = bg;
+    document.getElementById('item-title').textContent = item.title;
+    document.getElementById('item-meta').innerHTML = `Posted by <strong>${item.user ? item.user.name : 'Unknown'}</strong> · ${item.location || 'Philippines'} · ${formatDate(item.createdAt)}`;
+    document.getElementById('item-value').textContent = `~₱${parseFloat(item.estimatedValue).toLocaleString()} estimated value`;
+    document.getElementById('item-category').textContent = item.category;
+    document.getElementById('item-condition').textContent = `● ${item.conditionLabel} condition`;
+    document.getElementById('item-desc').textContent = item.description;
+    document.getElementById('item-looking').textContent = `🎯 ${item.lookingFor || 'Open to offers'}`;
+
+    if (item.user) {
+      document.getElementById('seller-ava').textContent = getInitials(item.user.name);
+      document.getElementById('seller-name').textContent = item.user.name;
+      document.getElementById('seller-rating').textContent = ` ${item.user.rating || 0} · ${item.user.tradeCount || 0} trades completed`;
     }
 
-    const id = parseInt(getParam('id')) || 1;
-    const item = items.find(i => i.id === id) || items[0];
+    // Set propose trade button with correct data
+    document.getElementById('propose-btn').onclick = function() {
+  const sellerName = item.user ? item.user.name : 'Seller';
+  const sellerInitials = item.user ? getInitials(item.user.name) : 'S';
+  const sellerRating = item.user ? item.user.rating : 0;
+  const sellerTrades = item.user ? item.user.tradeCount : 0;
+  const sellerId = item.user ? item.user.id : null;
+  window.location.href = `propose-trade.html?itemId=${item.id}&itemTitle=${encodeURIComponent(item.title)}&itemValue=${item.estimatedValue}&itemEmoji=${encodeURIComponent(emoji)}&sellerName=${encodeURIComponent(sellerName)}&sellerInitials=${encodeURIComponent(sellerInitials)}&sellerRating=${sellerRating}&sellerTrades=${sellerTrades}&sellerId=${sellerId}`;
+};
 
-    document.getElementById('item-img').innerHTML = `<span style="font-size:80px">${item.emoji}</span><div class="detail-trade-badge">TRADE</div>`;
-    document.getElementById('item-img').style.background = item.bg;
-    document.getElementById('item-title').textContent = item.title;
-    document.getElementById('item-meta').innerHTML = `Posted by <strong>${item.seller}</strong> · ${item.location} · 2 days ago`;
-    document.getElementById('item-value').textContent = `~₱${item.value.toLocaleString()} estimated value`;
-    document.getElementById('item-category').textContent = item.category;
-    document.getElementById('item-condition').textContent = `● ${item.condition} condition`;
-    document.getElementById('item-desc').textContent = item.desc;
-    document.getElementById('item-looking').textContent = `🎯 ${item.lookingFor}`;
-    document.getElementById('seller-ava').textContent = item.sellerInitials;
-    document.getElementById('seller-ava').style.background = item.sellerColor;
-    document.getElementById('seller-name').textContent = item.seller;
-    document.getElementById('seller-rating').textContent = ` ${item.sellerRating} · ${item.sellerTrades} trades completed`;
-    function goToPropose() {
-  window.location.href = `propose-trade.html?itemId=${item.id}&itemTitle=${encodeURIComponent(item.title)}&itemValue=${item.value}&itemEmoji=${item.emoji}&sellerName=${encodeURIComponent(item.seller)}&sellerInitials=${item.sellerInitials}&sellerColor=${encodeURIComponent(item.sellerColor)}&sellerRating=${item.sellerRating}&sellerTrades=${item.sellerTrades}`;
+    // Set message button with correct data
+    document.getElementById('message-btn').onclick = function() {
+      const sellerName = item.user ? item.user.name : 'Seller';
+      const sellerInitials = item.user ? getInitials(item.user.name) : 'S';
+      const sellerRating = item.user ? item.user.rating : 0;
+      const sellerTrades = item.user ? item.user.tradeCount : 0;
+      window.location.href = `messages.html?itemId=${item.id}&itemTitle=${encodeURIComponent(item.title)}&itemValue=${item.estimatedValue}&itemEmoji=${encodeURIComponent(emoji)}&sellerName=${encodeURIComponent(sellerName)}&sellerInitials=${encodeURIComponent(sellerInitials)}&sellerRating=${sellerRating}&sellerTrades=${sellerTrades}`;
+    };
+  })
+  .catch(() => {
+    alert('Could not load item details. Make sure Spring Boot is running.');
+  });
+
+function getCategoryEmoji(category) {
+  const map = { 'Cameras':'📷','Instruments':'🎸','Sports':'🛹','Gaming':'🎮','Art':'🎨','Craft':'🧵','Other':'📦' };
+  return map[category] || '📦';
 }
 
-function goToMessages() {
-  window.location.href = `messages.html?itemId=${item.id}&itemTitle=${encodeURIComponent(item.title)}&itemValue=${item.value}&itemEmoji=${item.emoji}&sellerName=${encodeURIComponent(item.seller)}&sellerInitials=${item.sellerInitials}&sellerColor=${encodeURIComponent(item.sellerColor)}&sellerRating=${item.sellerRating}&sellerTrades=${item.sellerTrades}`;
+function getCategoryBg(category) {
+  const map = { 'Cameras':'#F0F4FF','Instruments':'#EAF3DE','Sports':'#E6F1FB','Gaming':'#FAEEDA','Art':'#FAECE7','Craft':'#FBEAF0','Other':'#F5F5F5' };
+  return map[category] || '#F5F5F5';
+}
+
+function getInitials(name) {
+  if (!name) return '??';
+  return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return 'recently';
+  const date = new Date(dateStr);
+  const diff = Math.floor((new Date() - date) / (1000 * 60 * 60 * 24));
+  if (diff === 0) return 'today';
+  if (diff === 1) return '1 day ago';
+  return `${diff} days ago`;
 }
   </script>
 </body>

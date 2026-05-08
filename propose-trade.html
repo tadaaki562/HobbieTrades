@@ -146,26 +146,9 @@
     </div>
 
     <!-- ITEM PICKER -->
-    <div class="items-picker" id="items-picker">
-      <div class="picker-title">Your listed items — select one to offer:</div>
-      <div class="picker-grid">
-        <div class="picker-item sel" onclick="selectItem(this, '🎮', 'Nintendo Switch', 12000)">
-          <span class="picker-item-emoji">🎮</span>
-          Nintendo Switch<br/>
-          <span style="color:var(--brand);font-weight:600">₱12,000</span>
-        </div>
-        <div class="picker-item" onclick="selectItem(this, '🎸', 'Acoustic Guitar', 4200)">
-          <span class="picker-item-emoji">🎸</span>
-          Acoustic Guitar<br/>
-          <span style="color:var(--brand);font-weight:600">₱4,200</span>
-        </div>
-        <div class="picker-item" onclick="selectItem(this, '🛹', 'Skateboard', 2300)">
-          <span class="picker-item-emoji">🛹</span>
-          Skateboard<br/>
-          <span style="color:var(--brand);font-weight:600">₱2,300</span>
-        </div>
-      </div>
-    </div>
+    <div class="picker-grid" id="picker-grid">
+  <div style="font-size:12px;color:var(--text-secondary)">Loading your items...</div>
+</div>
 
     <!-- FAIR VALUE BANNER -->
     <div class="fair-banner fair-warn" id="fair-banner">
@@ -179,74 +162,190 @@
 
     <div class="btn-row">
       <button class="btn btn-primary btn-lg" style="flex:2" onclick="submitProposal()">Send trade proposal</button>
-      <a href="item-detail.html" class="btn btn-outline btn-lg" style="flex:1">Cancel</a>
+      <a href="#" class="btn btn-outline btn-lg" style="flex:1" id="cancel-btn">Cancel</a>
     </div>
   </div>
 
   <script>
-  const params = new URLSearchParams(window.location.search);
+  // Read the item being requested from URL
+const params = new URLSearchParams(window.location.search);
 const requestedId = params.get('itemId') || '1';
-const requestedTitle = params.get('itemTitle') || 'Canon DSLR 200D';
-const requestedValue = parseInt(params.get('itemValue')) || 8500;
-const requestedEmoji = params.get('itemEmoji') || '📷';
+const requestedTitle = decodeURIComponent(params.get('itemTitle') || 'Item');
+const requestedValue = parseInt(params.get('itemValue')) || 0;
+const requestedEmoji = decodeURIComponent(params.get('itemEmoji') || '📦');
 
-// Update the "You receive" box with the correct item
+// Declare ALL variables at top before anything else
+let offerValue = 0;
+let selectedOfferId = null;
+const receiveValue = requestedValue;
+
+// Update "You receive" box
 document.querySelector('.trade-item-receive').innerHTML = `
   <span class="trade-item-emoji">${requestedEmoji}</span>
   ${requestedTitle}<br/>
   <span class="trade-item-val">~₱${requestedValue.toLocaleString()} est.</span>
 `;
 
-// Update back link to go back to correct item
+// Update back link and cancel button
 document.querySelector('.back-link').href = `item-detail.html?id=${requestedId}`;
-document.getElementById('note-label').textContent = `Add a note to ${params.get('sellerName') || 'the seller'}`;
+document.getElementById('cancel-btn').href = `item-detail.html?id=${requestedId}`;
 
-let offerValue = 12000;
-const receiveValue = requestedValue;
-
-function togglePicker() {
-  document.getElementById('items-picker').classList.toggle('open');
+// Update note label
+const noteLabel = document.getElementById('note-label');
+if (noteLabel) {
+  noteLabel.textContent = `Add a note to ${decodeURIComponent(params.get('sellerName') || 'the seller')}`;
 }
 
-function selectItem(el, emoji, name, value) {
+// Category emoji helper
+function getCategoryEmoji(category) {
+  const map = {'Cameras':'📷','Instruments':'🎸','Sports':'🛹','Gaming':'🎮','Art':'🎨','Craft':'🧵','Other':'📦'};
+  return map[category] || '📦';
+}
+
+// Render picker with real items
+function renderPicker(userItems, matches) {
+  const grid = document.getElementById('picker-grid');
+  if (!grid) return;
+  if (userItems.length === 0) {
+    grid.innerHTML = '<div style="font-size:12px;color:var(--text-secondary);grid-column:1/-1">You have no listed items. <a href="create-listing.html">List an item first.</a></div>';
+    return;
+  }
+  const matchMap = {};
+  matches.forEach(m => { if(m.item) matchMap[m.item.id] = m.matchScore; });
+
+  grid.innerHTML = userItems.map((item, idx) => {
+    const emoji = getCategoryEmoji(item.category);
+    const score = matchMap[item.id] ? `<div style="font-size:10px;color:var(--brand);margin-top:2px">Match: ${matchMap[item.id]}%</div>` : '';
+    return `
+      <div class="picker-item ${idx === 0 ? 'sel' : ''}"
+           onclick="selectItem(this, '${emoji}', '${item.title.replace(/'/g,"\\'")}', ${item.estimatedValue}, ${item.id})">
+        <span class="picker-item-emoji">${emoji}</span>
+        ${item.title}<br/>
+        <span style="color:var(--brand);font-weight:600">₱${parseFloat(item.estimatedValue).toLocaleString()}</span>
+        ${score}
+      </div>
+    `;
+  }).join('');
+
+  // Auto-select first item
+  if (userItems.length > 0) {
+    const first = userItems[0];
+    offerValue = parseFloat(first.estimatedValue);
+    selectedOfferId = first.id;
+    document.getElementById('offer-box').innerHTML = `
+      <span class="trade-item-emoji">${getCategoryEmoji(first.category)}</span>
+      ${first.title}<br/>
+      <span class="trade-item-val">~₱${offerValue.toLocaleString()} est.</span>
+    `;
+    updateFairBanner();
+  }
+}
+
+// Load user's items from API
+const userId = localStorage.getItem('userId');
+if (userId) {
+  fetch(`http://localhost:8080/api/items/user/${userId}`)
+    .then(res => res.json())
+    .then(userItems => {
+      fetch(`http://localhost:8080/api/trades/matches?itemId=${requestedId}&userId=${userId}`)
+        .then(res => res.json())
+        .then(matches => {
+          const matchedIds = matches.map(m => m.item ? m.item.id : null);
+          userItems.sort((a, b) => {
+            const aIdx = matchedIds.indexOf(a.id);
+            const bIdx = matchedIds.indexOf(b.id);
+            if (aIdx === -1 && bIdx === -1) return 0;
+            if (aIdx === -1) return 1;
+            if (bIdx === -1) return -1;
+            return aIdx - bIdx;
+          });
+          renderPicker(userItems, matches);
+        })
+        .catch(() => renderPicker(userItems, []));
+    })
+    .catch(() => {
+      const grid = document.getElementById('picker-grid');
+      if (grid) grid.innerHTML = '<div style="font-size:12px;color:var(--text-secondary)">Could not load your items.</div>';
+    });
+}
+
+function togglePicker() {
+  const picker = document.getElementById('items-picker');
+  if (picker) picker.classList.toggle('open');
+}
+
+function selectItem(el, emoji, name, value, itemId) {
+  selectedOfferId = itemId;
+  offerValue = parseFloat(value);
   document.querySelectorAll('.picker-item').forEach(p => p.classList.remove('sel'));
   el.classList.add('sel');
-  offerValue = value;
   document.getElementById('offer-box').innerHTML = `
     <span class="trade-item-emoji">${emoji}</span>
     ${name}<br/>
-    <span class="trade-item-val">~₱${value.toLocaleString()} est.</span>
+    <span class="trade-item-val">~₱${offerValue.toLocaleString()} est.</span>
   `;
-  document.getElementById('items-picker').classList.remove('open');
+  const picker = document.getElementById('items-picker');
+  if (picker) picker.classList.remove('open');
   updateFairBanner();
 }
 
 function updateFairBanner() {
   const banner = document.getElementById('fair-banner');
+  if (!banner) return;
   const diff = Math.abs(offerValue - receiveValue);
-  const pct = diff / Math.max(offerValue, receiveValue);
+  const pct = Math.max(offerValue, receiveValue) > 0 ?
+    diff / Math.max(offerValue, receiveValue) : 0;
   if (pct <= 0.15) {
     banner.className = 'fair-banner fair-good';
-    banner.innerHTML = `<div class="fair-icon">✓</div><div><strong>Fair trade!</strong> Both items are within 15% of each other in estimated value. This looks like a balanced exchange.</div>`;
+    banner.innerHTML = `<div class="fair-icon">✓</div><div><strong>Fair trade!</strong> Both items are within 15% of each other in estimated value.</div>`;
   } else {
     const higher = offerValue > receiveValue ? 'Your item' : 'Their item';
     banner.className = 'fair-banner fair-warn';
-    banner.innerHTML = `<div class="fair-icon">!</div><div><strong>Value gap detected:</strong> ${higher} is ~₱${diff.toLocaleString()} higher. You may want to adjust or add a note explaining the offer.</div>`;
+    banner.innerHTML = `<div class="fair-icon">!</div><div><strong>Value gap detected:</strong> ${higher} is ~₱${Math.round(diff).toLocaleString()} higher. You may want to adjust or add a note.</div>`;
   }
 }
 
 function submitProposal() {
-  const sellerName = params.get('sellerName') || 'Seller';
-  const sellerInitials = params.get('sellerInitials') || 'S';
-  const sellerColor = params.get('sellerColor') || '#AFA9EC';
-  const sellerRating = params.get('sellerRating') || '4.0';
+  if (!selectedOfferId) {
+    alert('Please select an item to offer.');
+    return;
+  }
+  const sellerName = decodeURIComponent(params.get('sellerName') || 'Seller');
+  const sellerInitials = decodeURIComponent(params.get('sellerInitials') || 'S');
+  const sellerColor = decodeURIComponent(params.get('sellerColor') || '#AFA9EC');
+  const sellerRating = params.get('sellerRating') || '0';
   const sellerTrades = params.get('sellerTrades') || '0';
+  const receiverId = params.get('sellerId') || null;
 
-  alert(`Trade proposal sent to ${sellerName}!`);
-  window.location.href = `messages.html?itemId=${requestedId}&itemTitle=${encodeURIComponent(requestedTitle)}&itemValue=${requestedValue}&itemEmoji=${encodeURIComponent(requestedEmoji)}&sellerName=${encodeURIComponent(sellerName)}&sellerInitials=${encodeURIComponent(sellerInitials)}&sellerColor=${encodeURIComponent(sellerColor)}&sellerRating=${sellerRating}&sellerTrades=${sellerTrades}`;
+  const msgUrl = `messages.html?itemId=${requestedId}&itemTitle=${encodeURIComponent(requestedTitle)}&itemValue=${requestedValue}&itemEmoji=${encodeURIComponent(requestedEmoji)}&sellerName=${encodeURIComponent(sellerName)}&sellerInitials=${encodeURIComponent(sellerInitials)}&sellerColor=${encodeURIComponent(sellerColor)}&sellerRating=${sellerRating}&sellerTrades=${sellerTrades}`;
+
+  if (userId && receiverId) {
+    fetch('http://localhost:8080/api/trades', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        proposerId: parseInt(userId),
+        receiverId: parseInt(receiverId),
+        offeredItemId: selectedOfferId,
+        requestedItemId: parseInt(requestedId)
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      alert(`Trade proposal sent to ${sellerName}!`);
+      window.location.href = msgUrl + (data.tradeId ? `&tradeId=${data.tradeId}` : '');
+    })
+    .catch(() => {
+      alert(`Trade proposal sent to ${sellerName}!`);
+      window.location.href = msgUrl;
+    });
+  } else {
+    alert(`Trade proposal sent to ${sellerName}!`);
+    window.location.href = msgUrl;
+  }
 }
 
-// Run on load
+// Initialize fair banner
 updateFairBanner();
   </script>
 </body>

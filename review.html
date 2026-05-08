@@ -103,6 +103,9 @@
       gap: 10px;
       align-items: flex-start;
     }
+
+    /* Submitting state */
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -113,7 +116,7 @@
       <a href="browse.html" class="nav-link">Browse</a>
       <a href="create-listing.html" class="nav-link">+ List Item</a>
       <a href="messages.html" class="nav-link">Messages</a>
-      <a href="index.html" class="nav-avatar">L</a>
+      <a href="index.html" class="nav-avatar" id="nav-avatar">?</a>
     </div>
   </nav>
 
@@ -121,27 +124,30 @@
     <!-- SUCCESS BANNER -->
     <div class="alert alert-green" style="margin-bottom:20px">
       <span>✅</span>
-      <div>
+      <div id="trade-summary">
         <strong>Trade completed!</strong><br/>
-        🎮 Nintendo Switch ⇄ 📷 Canon DSLR 200D — confirmed by both parties
+        Loading trade details...
       </div>
     </div>
 
     <!-- HOW IT WORKS -->
     <div class="info-banner">
-  <span>ℹ️</span>
-  <div><strong>How this works:</strong> Both you and <span id="info-seller-name">the seller</span> confirmed the trade is done after your meetup. This review is shown to you independently — your reviews are only visible after both parties submit.</div>
-</div>
+      <span>ℹ️</span>
+      <div>
+        <strong>How this works:</strong> Both you and <span id="info-seller-name">the other trader</span>
+        confirmed the trade is done after your meetup. Reviews are only visible after both parties submit.
+      </div>
+    </div>
 
-    <div class="page-title">Rate your trade</div>
+    <div class="page-title" id="page-title">Rate your trade</div>
     <div class="page-sub">Your review helps build trust in the HobbieTrades community</div>
 
     <!-- SELLER ROW -->
     <div class="seller-row">
-      <div class="seller-ava" style="background:#AFA9EC;color:#3C3489">MR</div>
+      <div class="seller-ava" id="seller-ava">??</div>
       <div>
-        <div class="seller-name">Marco R.</div>
-        <div class="seller-meta">8 trades completed · Member since 2024</div>
+        <div class="seller-name" id="seller-name">Loading...</div>
+        <div class="seller-meta" id="seller-meta">Member of HobbieTrades</div>
       </div>
     </div>
 
@@ -198,7 +204,8 @@
     <!-- REVIEW TEXT -->
     <div class="form-group">
       <label class="form-label">Write a review (optional)</label>
-      <textarea class="form-control" placeholder="Share your experience with this trade..." id="review-text"></textarea>
+      <textarea class="form-control" placeholder="Share your experience with this trade..."
+                id="review-text" style="min-height:90px;resize:vertical"></textarea>
     </div>
 
     <!-- QUICK TAGS -->
@@ -215,77 +222,135 @@
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-primary btn-lg" style="flex:2" onclick="submitReview()">Submit review</button>
+      <button class="btn btn-primary btn-lg" style="flex:2" id="submit-btn" onclick="submitReview()">
+        Submit review
+      </button>
       <a href="browse.html" class="btn btn-outline btn-lg" style="flex:1">Skip for now</a>
     </div>
   </div>
 
   <script>
-    // Read trade info from URL
-const params = new URLSearchParams(window.location.search);
-const itemTitle = params.get('itemTitle') || 'Canon DSLR 200D';
-const itemEmoji = params.get('itemEmoji') || '📷';
-const itemValue = params.get('itemValue') || '8500';
-const sellerName = params.get('sellerName') || 'Marco R.';
-const sellerInitials = params.get('sellerInitials') || 'MR';
-const sellerColor = params.get('sellerColor') || '#AFA9EC';
-const sellerTrades = params.get('sellerTrades') || '8';
+    // ─── Read URL params ───────────────────────────────────────────────────────
+    const params        = new URLSearchParams(window.location.search);
+    const tradeId       = params.get('tradeId')     ? parseInt(params.get('tradeId'))     : null;
+    const revieweeId    = params.get('revieweeId')  ? parseInt(params.get('revieweeId'))  : null;
+    const itemTitle     = params.get('itemTitle')   ? decodeURIComponent(params.get('itemTitle'))   : 'the item';
+    const itemEmoji     = params.get('itemEmoji')   ? decodeURIComponent(params.get('itemEmoji'))   : '📦';
+    const itemValue     = params.get('itemValue')   ? parseInt(params.get('itemValue'))              : 0;
+    const sellerName    = params.get('sellerName')  ? decodeURIComponent(params.get('sellerName'))  : 'Trader';
+    const sellerInitials= params.get('sellerInitials') ? decodeURIComponent(params.get('sellerInitials')) : '??';
+    const sellerColor   = params.get('sellerColor') ? decodeURIComponent(params.get('sellerColor')) : '#AFA9EC';
+    const sellerTrades  = params.get('sellerTrades') || '0';
 
-// Update page with correct trade info
-document.querySelector('.alert-green div').innerHTML = `
-  <strong>Trade completed!</strong><br/>
-  🎮 Nintendo Switch ⇄ ${itemEmoji} ${itemTitle} — confirmed by both parties
-`;
-document.querySelector('.seller-ava').textContent = sellerInitials;
-document.querySelector('.seller-ava').style.background = sellerColor;
-document.querySelector('.seller-name').textContent = sellerName;
-document.querySelector('.seller-meta').textContent = `${sellerTrades} trades completed · Member since 2024`;
-document.getElementById('info-seller-name').textContent = sellerName;
-document.querySelector('.page-title').textContent = `Rate your trade with ${sellerName}`;
+    const loggedInUserId = parseInt(localStorage.getItem('userId')) || null;
+    const loggedInName   = localStorage.getItem('userName') || 'Me';
 
-let mainRating = 0;
-const subRatings = { described: 0, communication: 0, meetup: 0 };
-const captions = ['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent!'];
+    // Nav avatar
+    document.getElementById('nav-avatar').textContent = loggedInName.charAt(0).toUpperCase();
 
-function setMainRating(n) {
-  mainRating = n;
-  document.querySelectorAll('#main-stars .star').forEach((s, i) => {
-    s.classList.toggle('filled', i < n);
-  });
-  document.getElementById('star-caption').textContent = `${n} out of 5 — ${captions[n]}`;
-}
+    // ─── Populate page with trade info ────────────────────────────────────────
+    document.getElementById('trade-summary').innerHTML =
+      `<strong>Trade completed!</strong><br/>
+       ${itemEmoji} ${itemTitle} — confirmed by both parties`;
 
-function setSubRating(key, n) {
-  subRatings[key] = n;
-  const container = document.querySelector(`.sub-stars[data-key="${key}"]`);
-  container.querySelectorAll('.sub-star').forEach((s, i) => {
-    s.classList.toggle('filled', i < n);
-  });
-}
+    document.getElementById('info-seller-name').textContent = sellerName;
+    document.getElementById('page-title').textContent       = `Rate your trade with ${sellerName}`;
 
-function toggleTag(el) {
-  el.classList.toggle('sel');
-}
+    const avaEl = document.getElementById('seller-ava');
+    avaEl.textContent        = sellerInitials;
+    avaEl.style.background   = sellerColor;
+    avaEl.style.color        = '#fff';
 
-function submitReview() {
-  if (mainRating === 0) {
-    alert('Please give an overall rating before submitting.');
-    return;
-  }
-  const tags = [...document.querySelectorAll('.rtag.sel')].map(t => t.textContent);
-  const reviewData = {
-    sellerName,
-    overallRating: mainRating,
-    itemAsDescribed: subRatings.described,
-    communication: subRatings.communication,
-    meetupReliability: subRatings.meetup,
-    reviewText: document.getElementById('review-text').value,
-    tags
-  };
-  console.log('Review submitted:', reviewData);
-  alert(`Review for ${sellerName} submitted! Thank you for helping build a trusted community.`);
-  window.location.href = 'browse.html';
-}
+    document.getElementById('seller-name').textContent = sellerName;
+    document.getElementById('seller-meta').textContent =
+      `${sellerTrades} trades completed · Member of HobbieTrades`;
+
+    // ─── Rating state ─────────────────────────────────────────────────────────
+    let mainRating = 0;
+    const subRatings = { described: 0, communication: 0, meetup: 0 };
+    const captions   = ['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent!'];
+
+    function setMainRating(n) {
+      mainRating = n;
+      document.querySelectorAll('#main-stars .star').forEach((s, i) => {
+        s.classList.toggle('filled', i < n);
+      });
+      document.getElementById('star-caption').textContent =
+        `${n} out of 5 — ${captions[n]}`;
+    }
+
+    function setSubRating(key, n) {
+      subRatings[key] = n;
+      const container = document.querySelector(`.sub-stars[data-key="${key}"]`);
+      container.querySelectorAll('.sub-star').forEach((s, i) => {
+        s.classList.toggle('filled', i < n);
+      });
+    }
+
+    function toggleTag(el) {
+      el.classList.toggle('sel');
+    }
+
+    // ─── Submit review to real API ────────────────────────────────────────────
+    function submitReview() {
+      if (mainRating === 0) {
+        alert('Please give an overall rating before submitting.');
+        return;
+      }
+
+      if (!loggedInUserId) {
+        alert('You must be logged in to submit a review.');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      if (!tradeId || !revieweeId) {
+        // Missing trade/reviewee IDs — still save what we can or warn
+        alert('Review info is incomplete. Please go back to messages and try again.');
+        return;
+      }
+
+      const tags = [...document.querySelectorAll('.rtag.sel')].map(t => t.textContent);
+
+      const payload = {
+        reviewerId:      loggedInUserId,
+        revieweeId:      revieweeId,
+        tradeId:         tradeId,
+        overallRating:   mainRating,
+        itemAsDescribed: subRatings.described  || null,
+        communication:   subRatings.communication || null,
+        meetupReliability: subRatings.meetup   || null,
+        reviewText:      document.getElementById('review-text').value.trim() || null,
+        tags:            tags.join(',')
+      };
+
+      // Disable button while submitting
+      const btn = document.getElementById('submit-btn');
+      btn.disabled     = true;
+      btn.textContent  = 'Submitting...';
+
+      fetch('http://localhost:8080/api/reviews', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload)
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert(`Review for ${sellerName} submitted! Their new rating: ★ ${data.newRating}`);
+            window.location.href = 'browse.html';
+          } else {
+            btn.disabled    = false;
+            btn.textContent = 'Submit review';
+            alert(data.message || 'Could not submit review. Please try again.');
+          }
+        })
+        .catch(() => {
+          btn.disabled    = false;
+          btn.textContent = 'Submit review';
+          alert('Could not reach server. Make sure Spring Boot is running.');
+        });
+    }
   </script>
 </body>
 </html>
