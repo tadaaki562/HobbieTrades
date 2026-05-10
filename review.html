@@ -118,6 +118,15 @@
     .review-banner.show { display: block; }
     .review-banner.err { background: #FEE8E8; border: 1px solid #F9BBBB; color: #7F1D1D; }
     .review-banner.ok { background: #EAF3DE; border: 1px solid #97C459; color: #3B6D11; }
+
+    @media (max-width: 600px) {
+      .review-wrap { padding: 16px; }
+      .btn-row { flex-direction: column; }
+      .btn-row .btn, .btn-row a.btn { width: 100%; text-align: center; min-height: 48px; }
+      .sub-rating-item { flex-wrap: wrap; gap: 8px; }
+      .sub-rating-label { flex: 1 1 100%; }
+      .star { font-size: 28px; }
+    }
   </style>
 </head>
 <body>

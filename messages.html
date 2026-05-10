@@ -348,9 +348,118 @@
       padding: 0;
     }
     .header-text-btn:hover { color: #7F1D1D; }
+
+    @media (max-width: 768px) {
+      body.messages-body {
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        overflow-x: hidden;
+      }
+      body.messages-body .navbar {
+        flex-shrink: 0;
+      }
+      .messages-layout {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+        height: auto;
+      }
+      .chat-sidebar {
+        flex: 0 0 auto;
+        max-height: 42vh;
+        min-height: 140px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .chat-list {
+        max-height: 36vh;
+      }
+      .chat-main {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+      }
+      .chat-header {
+        flex-wrap: wrap;
+        padding: 12px;
+        gap: 8px;
+      }
+      .chat-header-actions {
+        margin-left: 0;
+        width: 100%;
+        justify-content: flex-end;
+      }
+      .chat-messages {
+        padding: 12px;
+        gap: 8px;
+      }
+      .msg-row {
+        max-width: 92%;
+      }
+      .trade-bubble {
+        max-width: 100%;
+        padding: 12px;
+      }
+      .trade-items-row {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .trade-swap-icon {
+        transform: rotate(90deg);
+      }
+      .trade-actions {
+        flex-direction: column;
+      }
+      .trade-actions .trade-btn {
+        width: 100%;
+        min-height: 44px;
+      }
+      .confirm-banner {
+        flex-direction: column;
+        align-items: stretch;
+        margin: 0 12px 12px;
+        padding: 12px 14px;
+      }
+      .confirm-banner .btn {
+        width: 100%;
+        min-height: 48px;
+      }
+      .chat-input-bar {
+        padding: 10px 12px;
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+      }
+      .send-btn {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+      }
+      .chat-input {
+        font-size: 16px;
+      }
+      .chat-notice {
+        margin: 0 12px 10px;
+      }
+      .status-timeline {
+        margin: 8px 10px;
+        padding: 12px;
+      }
+      .timeline-steps {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px 12px;
+      }
+      .timeline-step:not(:last-child)::after {
+        display: none;
+      }
+      .timeline-label {
+        font-size: 9px;
+      }
+    }
   </style>
 </head>
-<body>
+<body class="messages-body">
   <nav class="navbar">
     <a href="browse.html" class="logo"><span>Hobbie</span>Trades</a>
     <div class="nav-search"><span class="search-icon">🔍</span><input type="text" placeholder="Search items to trade..."/></div>

@@ -148,6 +148,15 @@
       margin-right: 5px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 720px) {
+      .create-wrap { padding: 16px; }
+      .form-grid { grid-template-columns: 1fr; gap: 16px; }
+      .btn-row { flex-direction: column; }
+      .btn-row .btn { width: 100%; text-align: center; }
+      .page-title { font-size: 19px; }
+      .upload-box { padding: 20px 16px; }
+    }
   </style>
 </head>
 <body>

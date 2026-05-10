@@ -367,6 +367,24 @@
       color: #2D2480;
     }
     .match-hint-banner strong { font-weight: 700; }
+
+    @media (max-width: 768px) {
+      .detail-hero { padding: 1rem 1rem; }
+      .hero-inner { flex-wrap: wrap; gap: 0.5rem; }
+      .hero-crumb-current { max-width: 100%; flex: 1; min-width: 0; }
+      .detail-wrap {
+        grid-template-columns: 1fr;
+        padding: 0 1rem 2rem;
+        margin: 1rem auto;
+        gap: 1.25rem;
+      }
+      .detail-img-box { height: min(52vw, 280px); min-height: 200px; }
+      .detail-title { font-size: 1.35rem; }
+      .value-bar { flex-wrap: wrap; gap: 0.5rem; }
+      .value-bar-amount { font-size: 1.25rem; }
+      .seller-card { flex-wrap: wrap; }
+      .seller-badge { margin-left: 0; }
+    }
   </style>
 </head>
 <body>

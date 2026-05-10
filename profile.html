@@ -237,12 +237,19 @@
     .modal-btn-row { display: flex; gap: 10px; margin-top: 22px; }
 
     @media (max-width: 720px) {
+      .profile-page { padding: 0 14px 48px; }
       .profile-cols { grid-template-columns: 1fr; }
       .stat-strip   { grid-template-columns: repeat(2, 1fr); }
       .cover        { height: 92px; }
-      .identity-block { margin-top: 10px; }
+      .identity-block { margin-top: 10px; flex-direction: column; align-items: flex-start; }
+      .identity-actions { width: 100%; }
       .big-ava      { width: 68px; height: 68px; font-size: 22px; }
       .identity-name { font-size: 20px; }
+      .own-banner { flex-direction: column; align-items: flex-start; }
+      .modal-box { margin: 12px; padding: 22px 18px; max-height: calc(100dvh - 24px); }
+      .modal-btn-row { flex-direction: column; }
+      .modal-btn-row .btn { width: 100%; }
+      .listings-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
     }
   </style>
 </head>

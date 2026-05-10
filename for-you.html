@@ -383,6 +383,52 @@
       color: var(--text-secondary);
       margin-bottom: 1rem;
     }
+
+    @media (max-width: 768px) {
+      .fy-hero { padding: 1.5rem 1rem; }
+      .hero-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+      }
+      .hero-text h1 { font-size: 1.45rem; }
+      .hero-text p { font-size: 0.82rem; }
+      .hero-icon { font-size: 2.5rem; align-self: flex-end; }
+      .pref-wrap { padding: 0 1rem; margin-top: 1rem; }
+      .pref-bar { gap: 0.35rem; }
+      .pref-tag { font-size: 0.72rem; padding: 0.35rem 0.65rem; }
+      .fy-layout { margin: 1rem auto; padding: 0 1rem 2rem; }
+      .section-header {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+      }
+      .section-link { margin-left: auto; }
+      .item-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 0.85rem;
+      }
+      .empty-state { padding: 2.5rem 1rem; }
+      .prompt-card { padding: 1.5rem 1rem; }
+    }
+
+    @media (max-width: 480px) {
+      .item-grid {
+        grid-template-columns: 1fr;
+      }
+      .card-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+      }
+      .trade-btn-sm {
+        width: 100%;
+        text-align: center;
+        padding: 0.45rem 0.75rem;
+        min-height: 44px;
+      }
+      .seller-rating { margin-left: 0; }
+    }
   </style>
 </head>
 <body>
