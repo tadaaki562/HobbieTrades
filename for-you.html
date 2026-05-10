@@ -456,7 +456,9 @@
 
 <script>
   // ── Constants ──────────────────────────────────────────────────────────────
-  const API = 'http://localhost:8080';
+  const API = window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:8080'
+    : 'https://hobbietrades-backend.onrender.com';
 
   const CAT_EMOJI = {
     Cameras:'📷', Instruments:'🎸', Gaming:'🎮',
