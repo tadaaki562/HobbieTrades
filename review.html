@@ -116,7 +116,7 @@
       <a href="browse.html" class="nav-link">Browse</a>
       <a href="create-listing.html" class="nav-link">+ List Item</a>
       <a href="messages.html" class="nav-link">Messages</a>
-      <a href="index.html" class="nav-avatar" id="nav-avatar">?</a>
+      <a href="profile.html" class="nav-avatar" id="nav-avatar">?</a>
     </div>
   </nav>
 
@@ -230,6 +230,10 @@
   </div>
 
   <script>
+    const API = window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:8080'
+      : 'https://your-backend.onrender.com';
+
     // ─── Read URL params ───────────────────────────────────────────────────────
     const params        = new URLSearchParams(window.location.search);
     const tradeId       = params.get('tradeId')     ? parseInt(params.get('tradeId'))     : null;
@@ -240,6 +244,8 @@
     const sellerName    = params.get('sellerName')  ? decodeURIComponent(params.get('sellerName'))  : 'Trader';
     const sellerInitials= params.get('sellerInitials') ? decodeURIComponent(params.get('sellerInitials')) : '??';
     const sellerColor   = params.get('sellerColor') ? decodeURIComponent(params.get('sellerColor')) : '#AFA9EC';
+    const loggedInUserName = localStorage.getItem('userName') || '?';
+document.getElementById('nav-avatar').textContent = loggedInUserName.charAt(0).toUpperCase();
     const sellerTrades  = params.get('sellerTrades') || '0';
 
     const loggedInUserId = parseInt(localStorage.getItem('userId')) || null;
@@ -329,7 +335,7 @@
       btn.disabled     = true;
       btn.textContent  = 'Submitting...';
 
-      fetch('http://localhost:8080/api/reviews', {
+      fetch(`${API}/api/reviews`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify(payload)

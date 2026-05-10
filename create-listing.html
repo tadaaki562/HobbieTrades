@@ -7,25 +7,80 @@
   <link rel="stylesheet" href="style.css"/>
   <style>
     .create-wrap {
-      max-width: 720px;
+      max-width: 760px;
       margin: 0 auto;
       padding: 32px;
     }
 
+    /* ── PAGE HEADER ── */
     .page-header { margin-bottom: 28px; }
-    .page-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+    .page-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
     .page-sub { font-size: 13px; color: var(--text-secondary); }
 
+    /* ── FORM GRID ── */
     .form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 20px;
     }
-
     .full { grid-column: 1 / -1; }
 
-    /* CONDITION PILLS */
-    .condition-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+    /* ── PHOTO UPLOAD ── */
+    .upload-box {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-md);
+      padding: 28px;
+      text-align: center;
+      background: var(--bg);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .upload-box:hover { border-color: var(--brand-mid); background: var(--brand-light); }
+    .upload-icon { font-size: 26px; margin-bottom: 8px; }
+    .upload-text { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+    .upload-sub  { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
+
+    .preview-img {
+      width: 100%;
+      max-height: 200px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      display: none;
+      margin-top: 10px;
+      border: 1px solid var(--border);
+    }
+
+    /* ── AI RESULT BOX ── */
+    .ai-box {
+      display: none;
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+    .ai-box.loading { display: block; background: var(--brand-light); border: 1.5px solid var(--brand-mid); color: var(--brand-dark); }
+    .ai-box.success { display: block; background: #EAF3DE; border: 1.5px solid #97C459; color: #3B6D11; }
+    .ai-box.error   { display: block; background: #FEF3E2; border: 1.5px solid #F5C459; color: #633806; }
+
+    .ai-box-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .ai-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .ai-tag {
+      background: white;
+      border: 1px solid #97C459;
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-size: 11px;
+      font-weight: 500;
+      color: #3B6D11;
+    }
+
+    /* ── CONDITION PILLS ── */
+    .cond-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
     .cond-pill {
       border: 1.5px solid var(--border);
       border-radius: 20px;
@@ -38,24 +93,9 @@
       background: var(--white);
     }
     .cond-pill:hover { border-color: var(--brand-mid); color: var(--brand); }
-    .cond-pill.sel { background: var(--brand-light); border-color: var(--brand-mid); color: var(--brand); font-weight: 600; }
+    .cond-pill.sel   { background: var(--brand-light); border-color: var(--brand-mid); color: var(--brand); font-weight: 600; }
 
-    /* UPLOAD BOX */
-    .upload-box {
-      border: 2px dashed var(--border);
-      border-radius: var(--radius-md);
-      padding: 32px;
-      text-align: center;
-      background: var(--bg);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .upload-box:hover { border-color: var(--brand-mid); background: var(--brand-light); }
-    .upload-icon { font-size: 28px; margin-bottom: 8px; }
-    .upload-text { font-size: 13px; color: var(--text-secondary); }
-    .upload-sub { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
-
-    /* VALUE ESTIMATOR */
+    /* ── ESTIMATOR BOX ── */
     .estimator-box {
       background: var(--brand-light);
       border: 1.5px solid var(--brand-mid);
@@ -64,240 +104,394 @@
       display: none;
     }
     .estimator-box.show { display: block; }
-    .estimator-title { font-size: 12px; font-weight: 700; color: var(--brand-dark); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
-    .estimator-value { font-size: 22px; font-weight: 700; font-family: 'Syne', sans-serif; color: var(--brand); }
-    .estimator-range { font-size: 12px; color: var(--brand-dark); margin-top: 2px; }
-    .estimator-source { font-size: 11px; color: var(--text-secondary); margin-top: 6px; }
+    .est-title  { font-size: 11px; font-weight: 700; color: var(--brand-dark); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .est-value  { font-size: 22px; font-weight: 700; font-family: 'Syne', sans-serif; color: var(--brand); }
+    .est-range  { font-size: 12px; color: var(--brand-dark); margin-top: 2px; }
+    .est-source { font-size: 11px; color: var(--text-secondary); margin-top: 6px; }
 
+    /* ── FOOTER BUTTONS ── */
     .btn-row { display: flex; gap: 10px; margin-top: 28px; }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    /* PREVIEW */
-    .preview-img {
-      width: 100%;
-      height: 140px;
-      border-radius: var(--radius-sm);
-      object-fit: cover;
-      display: none;
+    /* ── SPINNER ── */
+    .spinner {
+      display: inline-block;
+      width: 13px; height: 13px;
+      border: 2px solid var(--brand-mid);
+      border-top-color: var(--brand);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 5px;
     }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
-  <nav class="navbar">
-    <a href="browse.html" class="logo"><span>Hobbie</span>Trades</a>
-    <div class="nav-search"><span class="search-icon">🔍</span><input type="text" placeholder="Search items to trade..."/></div>
-    <div class="nav-links">
-      <a href="browse.html" class="nav-link">Browse</a>
-      <a href="create-listing.html" class="nav-link active">+ List Item</a>
-      <a href="messages.html" class="nav-link">Messages</a>
-      <a href="index.html" class="nav-avatar">L</a>
-    </div>
-  </nav>
 
-  <div class="create-wrap">
-    <div class="page-header">
-      <div class="page-title">List an item for trade</div>
-      <div class="page-sub">Share what you have, find what you need — no money involved</div>
-    </div>
+<!-- NAV -->
+<nav class="navbar">
+  <a href="browse.html" class="logo"><span>Hobbie</span>Trades</a>
+  <div class="nav-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Search items to trade..."/>
+  </div>
+  <div class="nav-links">
+    <a href="browse.html"         class="nav-link">Browse</a>
+    <a href="messages.html"       class="nav-link">Messages</a>
+    <a href="create-listing.html" class="nav-link active">+ List Item</a>
+    <a href="profile.html"        class="nav-avatar" id="nav-avatar">?</a>
+  </div>
+</nav>
 
-    <div class="form-grid">
-      <!-- TITLE -->
-      <div class="full">
-        <div class="form-group">
-          <label class="form-label">Item title *</label>
-          <input type="text" class="form-control" placeholder="e.g. Vintage Acoustic Guitar, Canon DSLR 200D" id="item-title" oninput="checkEstimate()"/>
-        </div>
-      </div>
-
-      <!-- DESCRIPTION -->
-      <div class="full">
-        <div class="form-group">
-          <label class="form-label">Description *</label>
-          <textarea class="form-control" placeholder="Describe the item, its condition, what's included, and why you're trading it..." id="item-desc"></textarea>
-        </div>
-      </div>
-
-      <!-- CATEGORY -->
-      <div>
-        <div class="form-group">
-          <label class="form-label">Category *</label>
-          <select class="form-control" id="item-category" onchange="checkEstimate()">
-            <option value="">Select category</option>
-            <option value="Cameras">Cameras</option>
-            <option value="Instruments">Instruments</option>
-            <option value="Sports">Sports gear</option>
-            <option value="Art">Art supplies</option>
-            <option value="Gaming">Gaming</option>
-            <option value="Craft">Craft</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- CONDITION -->
-      <div>
-        <div class="form-group">
-          <label class="form-label">Condition *</label>
-          <div class="condition-pills">
-            <div class="cond-pill" onclick="selectCondition(this, 'Like New')">Like New</div>
-            <div class="cond-pill" onclick="selectCondition(this, 'Good')">Good</div>
-            <div class="cond-pill" onclick="selectCondition(this, 'Fair')">Fair</div>
-            <div class="cond-pill" onclick="selectCondition(this, 'Worn')">Worn</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- VALUE ESTIMATOR -->
-      <div class="full">
-        <div class="estimator-box" id="estimator-box">
-          <div class="estimator-title">📊 Market Value Estimate</div>
-          <div class="estimator-value" id="est-value">₱0</div>
-          <div class="estimator-range" id="est-range">Based on current market data</div>
-          <div class="estimator-source" id="est-source">Source: Carousell PH price reference · IQR-filtered average</div>
-        </div>
-      </div>
-
-      <!-- ESTIMATED VALUE (editable) -->
-      <div>
-        <div class="form-group">
-          <label class="form-label">Your estimated value (₱) *</label>
-          <input type="number" class="form-control" placeholder="0.00" id="item-value"/>
-        </div>
-      </div>
-
-      <!-- LOCATION -->
-      <div>
-        <div class="form-group">
-          <label class="form-label">Location</label>
-          <input type="text" class="form-control" placeholder="e.g. Davao City, Cebu, BGC" id="item-location"/>
-        </div>
-      </div>
-
-      <!-- LOOKING FOR -->
-      <div class="full">
-        <div class="form-group">
-          <label class="form-label">I'm looking to trade for</label>
-          <input type="text" class="form-control" placeholder="e.g. DSLR camera, acoustic guitar, gaming console..." id="item-looking"/>
-        </div>
-      </div>
-
-      <!-- PHOTO UPLOAD -->
-      <div class="full">
-        <div class="form-group">
-          <label class="form-label">Photo</label>
-          <div class="upload-box" onclick="document.getElementById('photo-input').click()">
-            <div class="upload-icon">📤</div>
-            <div class="upload-text">Click to upload a photo</div>
-            <div class="upload-sub">PNG, JPG up to 10MB</div>
-          </div>
-          <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="previewPhoto(this)"/>
-          <img id="photo-preview" class="preview-img" alt="Preview"/>
-        </div>
-      </div>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn btn-primary btn-lg" style="flex:2" onclick="submitListing()">List for trade</button>
-      <a href="browse.html" class="btn btn-outline btn-lg" style="flex:1">Cancel</a>
-    </div>
+<div class="create-wrap">
+  <div class="page-header">
+    <div class="page-title">List an item for trade</div>
+    <div class="page-sub">Share what you have, find what you need — no money involved</div>
   </div>
 
-  <script>
-    let selectedCondition = '';
+  <div class="form-grid">
 
+    <!-- ── PHOTO UPLOAD (top so AI fills fields below) ── -->
+    <div class="full">
+      <div class="form-group">
+        <label class="form-label">
+          Photo
+          <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-tertiary)">
+            — upload first and AI will auto-detect category &amp; condition
+          </span>
+        </label>
+        <div class="upload-box" id="upload-box" onclick="document.getElementById('photo-input').click()">
+          <div class="upload-icon">📤</div>
+          <div class="upload-text">Click to upload a photo</div>
+          <div class="upload-sub">PNG, JPG up to 10MB · AI-powered item detection</div>
+        </div>
+        <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="onPhotoSelected(this)"/>
+        <img id="photo-preview" class="preview-img" alt="Preview"/>
 
-    function selectCondition(el, condition) {
-      document.querySelectorAll('.cond-pill').forEach(p => p.classList.remove('sel'));
-      el.classList.add('sel');
-      selectedCondition = condition;
+        <!-- AI result panel -->
+        <div class="ai-box" id="ai-box">
+          <div class="ai-box-title" id="ai-box-title"></div>
+          <div id="ai-box-body"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TITLE ── -->
+    <div class="full">
+      <div class="form-group">
+        <label class="form-label">Item title *</label>
+        <input type="text" class="form-control"
+               placeholder="e.g. Vintage Acoustic Guitar, Canon DSLR 200D"
+               id="item-title" oninput="checkEstimate()"/>
+      </div>
+    </div>
+
+    <!-- ── DESCRIPTION ── -->
+    <div class="full">
+      <div class="form-group">
+        <label class="form-label">Description *</label>
+        <textarea class="form-control"
+                  placeholder="Describe the item, its condition, what's included, and why you're trading it..."
+                  id="item-desc"></textarea>
+      </div>
+    </div>
+
+    <!-- ── CATEGORY ── -->
+    <div>
+      <div class="form-group">
+        <label class="form-label">Category *</label>
+        <select class="form-control" id="item-category" onchange="checkEstimate()">
+          <option value="">Select category</option>
+          <option value="Cameras">Cameras</option>
+          <option value="Instruments">Instruments</option>
+          <option value="Sports">Sports gear</option>
+          <option value="Art">Art supplies</option>
+          <option value="Gaming">Gaming</option>
+          <option value="Craft">Craft</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ── CONDITION ── -->
+    <div>
+      <div class="form-group">
+        <label class="form-label">Condition *</label>
+        <div class="cond-pills">
+          <div class="cond-pill" onclick="selectCondition(this,'Like New')">Like New</div>
+          <div class="cond-pill" onclick="selectCondition(this,'Good')">Good</div>
+          <div class="cond-pill" onclick="selectCondition(this,'Fair')">Fair</div>
+          <div class="cond-pill" onclick="selectCondition(this,'Worn')">Worn</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MARKET VALUE ESTIMATOR ── -->
+    <div class="full">
+      <div class="estimator-box" id="estimator-box">
+        <div class="est-title">📊 Market Value Estimate</div>
+        <div class="est-value"  id="est-value">₱0</div>
+        <div class="est-range"  id="est-range">Based on current market data</div>
+        <div class="est-source" id="est-source">Source: price reference · IQR-filtered average</div>
+      </div>
+    </div>
+
+    <!-- ── ESTIMATED VALUE ── -->
+    <div>
+      <div class="form-group">
+        <label class="form-label">Your estimated value (₱) *</label>
+        <input type="number" class="form-control" placeholder="0.00" id="item-value"/>
+      </div>
+    </div>
+
+    <!-- ── LOCATION ── -->
+    <div>
+      <div class="form-group">
+        <label class="form-label">Location</label>
+        <input type="text" class="form-control"
+               placeholder="e.g. Davao City, Cebu, BGC" id="item-location"/>
+      </div>
+    </div>
+
+    <!-- ── LOOKING FOR ── -->
+    <div class="full">
+      <div class="form-group">
+        <label class="form-label">I'm looking to trade for</label>
+        <input type="text" class="form-control"
+               placeholder="e.g. DSLR camera, acoustic guitar, gaming console..."
+               id="item-looking"/>
+      </div>
+    </div>
+
+  </div><!-- end form-grid -->
+
+  <div class="btn-row">
+    <button class="btn btn-primary btn-lg" style="flex:2" id="submit-btn" onclick="submitListing()">
+      List for trade
+    </button>
+    <a href="browse.html" class="btn btn-outline btn-lg" style="flex:1">Cancel</a>
+  </div>
+</div>
+
+<script>
+  const API = window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:8080'
+    : 'https://your-backend.onrender.com';
+
+  // ─── Init ────────────────────────────────────────────────────────────────────
+  document.getElementById('nav-avatar').textContent =
+    (localStorage.getItem('userName') || '?').charAt(0).toUpperCase();
+
+  let selectedCondition = '';
+  let pendingPhotoFile  = null;
+
+  // ─── Condition pills ──────────────────────────────────────────────────────────
+  function selectCondition(el, val) {
+    document.querySelectorAll('.cond-pill').forEach(p => p.classList.remove('sel'));
+    el.classList.add('sel');
+    selectedCondition = val;
+    checkEstimate();
+  }
+
+  // ─── Market value estimator ───────────────────────────────────────────────────
+  function checkEstimate() {
+    const category = document.getElementById('item-category').value;
+    const box      = document.getElementById('estimator-box');
+    if (!category || !selectedCondition) { box.classList.remove('show'); return; }
+
+    const title = document.getElementById('item-title').value;
+    fetch(`${API}/api/estimate?category=${encodeURIComponent(category)}&condition=${encodeURIComponent(selectedCondition)}&keyword=${encodeURIComponent(title)}`)
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('est-value').textContent  = `₱${data.estimatedValue.toLocaleString()}`;
+        document.getElementById('est-range').textContent  = `Range: ₱${Math.round(data.rangeLow).toLocaleString()} – ₱${Math.round(data.rangeHigh).toLocaleString()} for ${selectedCondition}`;
+        document.getElementById('est-source').textContent = `Source: ${data.source} · Confidence: ${data.confidence}${data.matchedKeyword ? ' · Matched: ' + data.matchedKeyword : ''}`;
+        document.getElementById('item-value').value = data.estimatedValue;
+        box.classList.add('show');
+      })
+      .catch(() => box.classList.remove('show'));
+  }
+
+  // ─── AI box helper ────────────────────────────────────────────────────────────
+  function showAiBox(state, title, bodyHtml) {
+    const box = document.getElementById('ai-box');
+    box.className = 'ai-box ' + state;
+    document.getElementById('ai-box-title').textContent = title;
+    document.getElementById('ai-box-body').innerHTML    = bodyHtml;
+  }
+
+  // ─── Photo selected — show preview + call AI immediately ─────────────────────
+  function onPhotoSelected(input) {
+    if (!input.files || !input.files[0]) return;
+    pendingPhotoFile = input.files[0];
+
+    // Local preview
+    const reader = new FileReader();
+    reader.onload = e => {
+      const prev = document.getElementById('photo-preview');
+      prev.src          = e.target.result;
+      prev.style.display = 'block';
+    };
+    reader.readAsDataURL(pendingPhotoFile);
+
+    // Show loading immediately
+    showAiBox('loading', '🤖 Analyzing photo…',
+      '<span class="spinner"></span> Detecting item type — this may take a few seconds…');
+
+    // Call analyze endpoint
+    const formData = new FormData();
+    formData.append('photo', pendingPhotoFile);
+
+    fetch(`${API}/api/items/analyze`, {
+      method: 'POST',
+      body:   formData
+    })
+    .then(r => r.json())
+    .then(result => {
+      if (!result.success) {
+        showAiBox('error', '⚠️ Analysis unavailable',
+          result.message || 'Could not analyze photo. Fill in category &amp; condition manually.');
+        return;
+      }
+      applyAiResult(result);
+    })
+    .catch(() => {
+      showAiBox('error', '⚠️ Could not connect',
+        'Make sure Spring Boot is running. Fill in category &amp; condition manually.');
+    });
+  }
+
+  // ─── Apply AI result to form ──────────────────────────────────────────────────
+  function applyAiResult(result) {
+    const category  = result.detectedCategory  || '';
+    const condition = result.detectedCondition || '';
+    const caption   = result.caption           || '';
+    const rawLabels = result.rawLabels         || '';
+    const applied   = [];
+
+    // Auto-fill category
+    if (category && category !== 'Other') {
+      const sel = document.getElementById('item-category');
+      sel.value = category;
+      applied.push(`Category → ${category}`);
       checkEstimate();
     }
 
-    function checkEstimate() {
-  const category = document.getElementById('item-category').value;
-  const box = document.getElementById('estimator-box');
+    // Auto-fill condition
+    if (condition) {
+      const pill = [...document.querySelectorAll('.cond-pill')]
+        .find(p => p.textContent.trim() === condition);
+      if (pill) { selectCondition(pill, condition); applied.push(`Condition → ${condition}`); }
+    }
 
-  if (!category || !selectedCondition) {
-    box.classList.remove('show');
-    return;
+    // Build tags list (skip meta strings)
+    const labels = rawLabels.split(',').map(l => l.trim()).filter(l =>
+      l && l !== 'MODEL_LOADING' && !l.startsWith('EXCEPTION') && !l.startsWith('API_ERROR')
+    );
+
+    const captionHtml = caption
+      ? `<div style="font-style:italic;margin-bottom:8px;background:white;border-radius:6px;
+                     padding:7px 10px;border:1px solid #97C459;font-size:12px">
+           💬 "${caption}"
+         </div>`
+      : '';
+
+    const summaryHtml = `
+      <div style="font-size:12px;font-weight:600;margin-bottom:6px">
+        🏷️ Category: <strong>${category || '—'}</strong> &nbsp;·&nbsp;
+        📊 Condition: <strong>${condition || '—'}</strong>
+      </div>`;
+
+    const tagsHtml = labels.length > 0
+      ? `<div class="ai-tags">${labels.slice(0,10).map(l => `<span class="ai-tag">${l}</span>`).join('')}</div>`
+      : '';
+
+    const appliedHtml = applied.length > 0
+      ? `<div style="font-size:12px;margin-top:8px">✅ Auto-filled: ${applied.join(' · ')}</div>`
+      : `<div style="font-size:12px;margin-top:8px;color:#888">Could not detect — please select manually.</div>`;
+
+    showAiBox('success', '🤖 AI Image Analysis',
+      captionHtml + summaryHtml + tagsHtml + appliedHtml);
   }
 
-  // Call real Java API
-  const title = document.getElementById('item-title').value;
-fetch(`http://localhost:8080/api/estimate?category=${encodeURIComponent(category)}&condition=${encodeURIComponent(selectedCondition)}&keyword=${encodeURIComponent(title)}`)
-    .then(res => res.json())
+  // ─── Submit listing ───────────────────────────────────────────────────────────
+  function submitListing() {
+    const title      = document.getElementById('item-title').value.trim();
+    const desc       = document.getElementById('item-desc').value.trim();
+    const category   = document.getElementById('item-category').value;
+    const value      = document.getElementById('item-value').value;
+    const location   = document.getElementById('item-location').value.trim();
+    const lookingFor = document.getElementById('item-looking').value.trim();
+
+    if (!title || !desc || !category || !selectedCondition || !value) {
+      alert('Please fill in all required fields (*).');
+      return;
+    }
+
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      alert('You must be logged in to list an item.');
+      window.location.href = 'index.html';
+      return;
+    }
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled    = true;
+    btn.textContent = '⏳ Saving…';
+
+    // Step 1 — save item
+    fetch(`${API}/api/items`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId,
+        title,
+        description:    desc,
+        category,
+        conditionLabel: selectedCondition,
+        estimatedValue: value,
+        lookingFor,
+        location
+      })
+    })
+    .then(r => r.json())
     .then(data => {
-      document.getElementById('est-value').textContent = `₱${data.estimatedValue.toLocaleString()}`;
-      document.getElementById('est-range').textContent = `Typical range: ₱${Math.round(data.rangeLow).toLocaleString()} – ₱${Math.round(data.rangeHigh).toLocaleString()} for ${selectedCondition} condition`;
-      document.getElementById('est-source').textContent = `Source: ${data.source} · Confidence: ${data.confidence}${data.matchedKeyword ? ' · Matched: ' + data.matchedKeyword : ''}`;
-      document.getElementById('item-value').value = data.estimatedValue;
-      box.classList.add('show');
+      if (!data.success) {
+        btn.disabled    = false;
+        btn.textContent = 'List for trade';
+        alert(data.message || 'Failed to save item. Please try again.');
+        return;
+      }
+
+      const itemId = data.itemId;
+
+      // Step 2 — upload photo if selected
+      if (pendingPhotoFile && itemId) {
+        btn.textContent = '⏳ Uploading photo…';
+        const fd = new FormData();
+        fd.append('photo', pendingPhotoFile);
+
+        fetch(`${API}/api/items/${itemId}/upload`, { method:'POST', body: fd })
+          .then(() => {
+            alert(`"${title}" listed successfully!`);
+            window.location.href = 'browse.html';
+          })
+          .catch(() => {
+            alert(`"${title}" listed! (Photo upload failed — item saved without photo.)`);
+            window.location.href = 'browse.html';
+          });
+      } else {
+        alert(`"${title}" listed successfully!`);
+        window.location.href = 'browse.html';
+      }
     })
     .catch(() => {
-      // Fallback if API is down
-      box.classList.remove('show');
+      btn.disabled    = false;
+      btn.textContent = 'List for trade';
+      alert('Cannot connect to server. Make sure Spring Boot is running.');
     });
-}
-
-    function previewPhoto(input) {
-      if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = e => {
-          const preview = document.getElementById('photo-preview');
-          preview.src = e.target.result;
-          preview.style.display = 'block';
-        };
-        reader.readAsDataURL(input.files[0]);
-      }
-    }
-
-    function submitListing() {
-  const title = document.getElementById('item-title').value;
-  const desc = document.getElementById('item-desc').value;
-  const category = document.getElementById('item-category').value;
-  const value = document.getElementById('item-value').value;
-  const location = document.getElementById('item-location').value;
-  const lookingFor = document.getElementById('item-looking').value;
-
-  if (!title || !desc || !category || !selectedCondition || !value) {
-    alert('Please fill in all required fields (*).');
-    return;
   }
-
-  // Get logged in user ID from localStorage
-  const userId = localStorage.getItem('userId');
-  if (!userId) {
-    alert('You must be logged in to list an item.');
-    window.location.href = 'index.html';
-    return;
-  }
-
-  fetch('http://localhost:8080/api/items', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      userId: userId,
-      title: title,
-      description: desc,
-      category: category,
-      conditionLabel: selectedCondition,
-      estimatedValue: value,
-      lookingFor: lookingFor,
-      location: location
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      alert(`Item "${title}" listed successfully!`);
-      window.location.href = 'browse.html';
-    } else {
-      alert(data.message || 'Failed to list item. Please try again.');
-    }
-  })
-  .catch(() => {
-    alert('Cannot connect to server. Make sure Spring Boot is running.');
-  });
-}
-  </script>
+</script>
 </body>
 </html>

@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HobbieTrades — For You</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    /* ── HERO ── */
+    .fy-hero {
+      background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand) 60%, var(--brand-mid) 100%);
+      padding: 2.5rem 2rem;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+    .fy-hero::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 220px; height: 220px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+    .fy-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -60px; left: 30%;
+      width: 300px; height: 300px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+    }
+    .hero-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .hero-text h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 0.4rem;
+      letter-spacing: -0.5px;
+    }
+    .hero-text p { color: rgba(255,255,255,0.75); font-size: 0.9rem; }
+    .hero-icon { font-size: 3.5rem; line-height: 1; }
+
+    /* ── PREF FILTER BAR ── */
+    .pref-wrap {
+      max-width: 1200px;
+      margin: 1.25rem auto 0;
+      padding: 0 2rem;
+    }
+    .pref-bar {
+      display: flex;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .pref-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+      margin-right: 0.25rem;
+      flex-shrink: 0;
+    }
+    .pref-tag {
+      font-size: 0.77rem;
+      padding: 0.32rem 0.85rem;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.18s;
+      background: var(--white);
+      font-weight: 500;
+    }
+    .pref-tag:hover { border-color: var(--brand-mid); color: var(--brand); }
+    .pref-tag.active {
+      background: var(--brand-light);
+      border-color: var(--brand-mid);
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* ── MAIN LAYOUT ── */
+    .fy-layout {
+      max-width: 1200px;
+      margin: 1.5rem auto;
+      padding: 0 2rem 3rem;
+    }
+
+    /* ── SECTION HEADERS ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      margin-top: 2rem;
+    }
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-count {
+      font-size: 0.7rem;
+      font-weight: 600;
+      background: var(--brand-light);
+      color: var(--brand);
+      padding: 2px 9px;
+      border-radius: 20px;
+    }
+    .section-link {
+      font-size: 0.8rem;
+      color: var(--brand);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .section-link:hover { text-decoration: underline; }
+
+    /* ── ITEM GRID ── */
+    .item-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 1.1rem;
+    }
+
+    /* ── ITEM CARD (mirrors browse.html exactly) ── */
+    .item-card {
+      background: var(--white);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+    }
+    .item-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--brand-mid);
+    }
+
+    .card-img {
+      position: relative;
+      padding-top: 75%;
+      background: var(--bg);
+      overflow: hidden;
+    }
+    .card-img img {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.35s ease;
+    }
+    .item-card:hover .card-img img { transform: scale(1.05); }
+
+    .card-emoji-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+    }
+
+    .card-trade-badge {
+      position: absolute;
+      top: 8px; left: 8px;
+      background: var(--brand);
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 5px;
+      letter-spacing: 0.04em;
+      z-index: 2;
+    }
+
+    .match-badge {
+      position: absolute;
+      top: 8px; right: 8px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 5px;
+      z-index: 2;
+      color: white;
+      background: var(--brand);
+    }
+    .match-badge.high   { background: #1D9E75; }
+    .match-badge.medium { background: #EF9F27; }
+    .match-badge.low    { background: #888; }
+
+    .card-cond-badge {
+      position: absolute;
+      bottom: 8px; right: 8px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 5px;
+      z-index: 2;
+    }
+    .cond-like-new { background: #EAF3DE; color: #3B6D11; }
+    .cond-good     { background: #EEF2FF; color: #4F46E5; }
+    .cond-fair     { background: #FEF3E2; color: #633806; }
+    .cond-worn     { background: #FEE2E2; color: #7F1D1D; }
+
+    .card-body {
+      padding: 0.85rem 0.9rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .card-category {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--brand);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .card-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-meta {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.1rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .cdot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .card-location { font-size: 0.72rem; color: var(--text-tertiary); margin-top: 0.1rem; }
+
+    .match-reason-chip {
+      font-size: 0.68rem;
+      color: var(--brand);
+      background: var(--brand-light);
+      border-radius: 20px;
+      padding: 2px 8px;
+      margin-top: 0.25rem;
+      display: inline-block;
+      font-weight: 500;
+      width: fit-content;
+    }
+
+    .card-seller {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 0.4rem;
+      padding-top: 0.4rem;
+      border-top: 1px solid var(--border-light);
+    }
+    .seller-ava {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      color: white;
+      font-size: 0.6rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .seller-name  { font-size: 0.72rem; color: var(--text-secondary); }
+    .seller-rating { font-size: 0.68rem; color: #EF9F27; margin-left: auto; }
+
+    .card-footer {
+      padding: 0.65rem 0.9rem;
+      border-top: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .card-value span {
+      font-size: 0.7rem;
+      font-weight: 400;
+      color: var(--text-secondary);
+      font-family: 'DM Sans', sans-serif;
+    }
+    .trade-btn-sm {
+      background: var(--brand);
+      color: white;
+      border: none;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .trade-btn-sm:hover { background: var(--brand-dark); }
+
+    /* ── SKELETON ── */
+    .skeleton-card {
+      background: var(--white);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .skel {
+      background: linear-gradient(90deg, var(--bg) 25%, var(--border-light) 50%, var(--bg) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.3s infinite;
+    }
+    .skel-img  { height: 160px; }
+    .skel-body { padding: 0.85rem 0.9rem; }
+    .skel-line { height: 11px; border-radius: 6px; margin-bottom: 7px; }
+    .skel-w80  { width: 80%; }
+    .skel-w55  { width: 55%; }
+    .skel-w40  { width: 40%; }
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ── EMPTY / PROMPT STATES ── */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 3.5rem 1.5rem;
+      color: var(--text-secondary);
+    }
+    .empty-icon { font-size: 2.8rem; margin-bottom: 0.75rem; }
+    .empty-state h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      color: var(--text);
+      margin-bottom: 0.4rem;
+    }
+
+    .prompt-card {
+      grid-column: 1 / -1;
+      background: var(--brand-light);
+      border: 1.5px dashed var(--brand-mid);
+      border-radius: var(--radius-md);
+      padding: 2.5rem;
+      text-align: center;
+    }
+    .prompt-card h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      color: var(--brand);
+      margin-bottom: 0.4rem;
+    }
+    .prompt-card p {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="navbar">
+  <a href="browse.html" class="logo"><span>Hobbie</span>Trades</a>
+  <div class="nav-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Search items to trade..."/>
+  </div>
+  <div class="nav-links">
+    <a href="browse.html"         class="nav-link">Browse</a>
+    <a href="for-you.html"        class="nav-link active">✨ For You</a>
+    <a href="messages.html"       class="nav-link">Messages</a>
+    <a href="create-listing.html" class="nav-link">+ List Item</a>
+    <a href="profile.html"        class="nav-avatar" id="nav-avatar">?</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="fy-hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <h1>For You ✨</h1>
+      <p>Items matched to your listings — the more you list, the better your matches get.</p>
+    </div>
+    <div class="hero-icon">🎯</div>
+  </div>
+</div>
+
+<!-- PREFERENCE FILTER BAR -->
+<div class="pref-wrap">
+  <div class="pref-bar">
+    <span class="pref-label">Filter:</span>
+    <div class="pref-tag active" onclick="filterPref(this,'all')">🌐 All</div>
+    <div class="pref-tag" onclick="filterPref(this,'Cameras')">📷 Cameras</div>
+    <div class="pref-tag" onclick="filterPref(this,'Instruments')">🎸 Instruments</div>
+    <div class="pref-tag" onclick="filterPref(this,'Gaming')">🎮 Gaming</div>
+    <div class="pref-tag" onclick="filterPref(this,'Sports')">🛹 Sports</div>
+    <div class="pref-tag" onclick="filterPref(this,'Art')">🎨 Art</div>
+    <div class="pref-tag" onclick="filterPref(this,'Craft')">🧵 Craft</div>
+    <div class="pref-tag" onclick="filterPref(this,'Other')">📦 Other</div>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="fy-layout">
+
+  <!-- TOP MATCHES -->
+  <div class="section-header">
+    <div class="section-title">
+      🔥 Top matches for you
+      <span class="section-count" id="match-count">—</span>
+    </div>
+    <a href="browse.html" class="section-link">Browse all →</a>
+  </div>
+  <div class="item-grid" id="match-grid"></div>
+
+  <!-- NEW ITEMS -->
+  <div class="section-header">
+    <div class="section-title">
+      🆕 New on HobbieTrades
+      <span class="section-count" id="new-count">—</span>
+    </div>
+    <a href="browse.html" class="section-link">See all →</a>
+  </div>
+  <div class="item-grid" id="new-grid"></div>
+
+</div>
+
+<script>
+  // ── Constants ──────────────────────────────────────────────────────────────
+  const API = 'http://localhost:8080';
+
+  const CAT_EMOJI = {
+    Cameras:'📷', Instruments:'🎸', Gaming:'🎮',
+    Sports:'🛹', Art:'🎨', Craft:'🧵', Other:'📦'
+  };
+  const CAT_BG = {
+    Cameras:'#F0F4FF', Instruments:'#EAF3DE', Gaming:'#FAEEDA',
+    Sports:'#E6F1FB', Art:'#FAECE7', Craft:'#FBEAF0', Other:'#F5F5F5'
+  };
+  const COND_COLOR = {
+    'Like New':'#1D9E75', 'Good':'#639922', 'Fair':'#EF9F27', 'Worn':'#E24B4A'
+  };
+  const COND_CLASS = {
+    'Like New':'cond-like-new', 'Good':'cond-good', 'Fair':'cond-fair', 'Worn':'cond-worn'
+  };
+  const AVATAR_COLORS = ['#AFA9EC','#9FE1CB','#F5C4B3','#85B7EB','#F7D08A','#B5EAD7','#C7CEEA'];
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  const loggedInUserId   = parseInt(localStorage.getItem('userId')) || null;
+  const loggedInUserName = localStorage.getItem('userName') || '?';
+  let allMatches   = [];
+  let activeFilter = 'all';
+
+  // ── Nav avatar ─────────────────────────────────────────────────────────────
+  document.getElementById('nav-avatar').textContent =
+    loggedInUserName.charAt(0).toUpperCase();
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function getInitials(name) {
+    if (!name) return '?';
+    return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  }
+  function avatarColor(id) {
+    return AVATAR_COLORS[(id || 0) % AVATAR_COLORS.length];
+  }
+  function formatPeso(v) {
+    return '₱' + Number(v || 0).toLocaleString('en-PH');
+  }
+  function skeletonHTML(n) {
+    return Array(n).fill(`
+      <div class="skeleton-card">
+        <div class="skel skel-img"></div>
+        <div class="skel-body">
+          <div class="skel skel-line skel-w40" style="margin-bottom:6px"></div>
+          <div class="skel skel-line skel-w80"></div>
+          <div class="skel skel-line skel-w55"></div>
+        </div>
+      </div>`).join('');
+  }
+
+  // Inject skeletons immediately on load
+  document.getElementById('match-grid').innerHTML = skeletonHTML(8);
+  document.getElementById('new-grid').innerHTML   = skeletonHTML(4);
+
+  // ── Render one card ────────────────────────────────────────────────────────
+  // matchPercent + matchReason are optional (omit for new-items section)
+  function renderCard(item, matchPercent, matchReason) {
+    const emoji    = CAT_EMOJI[item.category]  || '📦';
+    const bg       = CAT_BG[item.category]     || '#F5F5F5';
+    const cond     = item.conditionLabel        || '';
+    const val      = parseFloat(item.estimatedValue) || 0;
+    const seller   = item.user ? item.user.name : 'Unknown';
+    const initials = getInitials(seller);
+    const color    = avatarColor(item.user ? item.user.id : 0);
+    const rating   = item.user ? (parseFloat(item.user.rating) || 0).toFixed(1) : '0.0';
+
+    // Match % badge (top-right) — only for matched cards
+    let matchBadgeHtml = '';
+    if (matchPercent !== undefined) {
+      const cls = matchPercent >= 70 ? 'high' : matchPercent >= 40 ? 'medium' : 'low';
+      matchBadgeHtml = `<div class="match-badge ${cls}">${matchPercent}% match</div>`;
+    }
+
+    // Condition badge (bottom-right of image)
+    const condBadge = cond
+      ? `<div class="card-cond-badge ${COND_CLASS[cond] || ''}">${cond}</div>`
+      : '';
+
+    // Image or emoji placeholder
+    const imgHtml = item.photoUrl
+      ? `<img src="${API}${item.photoUrl}" alt="${item.title}" loading="lazy"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+         <div class="card-emoji-placeholder" style="display:none;background:${bg}">${emoji}</div>`
+      : `<div class="card-emoji-placeholder" style="background:${bg}">${emoji}</div>`;
+
+    // Match reason chip
+    const reasonHtml = matchReason
+      ? `<div class="match-reason-chip">🎯 ${matchReason}</div>`
+      : '';
+
+    return `
+      <a class="item-card fade-in" href="item-detail.html?id=${item.id}">
+        <div class="card-img">
+          ${imgHtml}
+          <div class="card-trade-badge">TRADE</div>
+          ${matchBadgeHtml}
+          ${condBadge}
+        </div>
+        <div class="card-body">
+          <div class="card-category">${item.category || 'General'}</div>
+          <div class="card-title">${item.title || 'Untitled'}</div>
+          <div class="card-meta">
+            <span class="cdot" style="background:${COND_COLOR[cond] || '#888'}"></span>
+            ${cond || 'Unknown'}
+          </div>
+          ${item.lookingFor ? `<div class="card-location">Wants: ${item.lookingFor}</div>` : ''}
+          <div class="card-location">📍 ${item.location || 'Philippines'}</div>
+          ${reasonHtml}
+          <div class="card-seller">
+            <div class="seller-ava" style="background:${color}">${initials}</div>
+            <div class="seller-name">${seller}</div>
+            <div class="seller-rating">★ ${rating}</div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="card-value">${formatPeso(val)} <span>est.</span></div>
+          <button class="trade-btn-sm"
+            onclick="event.preventDefault();goTrade(${item.id})">Trade ⇄</button>
+        </div>
+      </a>`;
+  }
+
+  // ── Load matches: GET /api/trades/matches?userId=X&limit=20 ───────────────
+  function loadMatches() {
+    if (!loggedInUserId) {
+      document.getElementById('match-grid').innerHTML = `
+        <div class="prompt-card">
+          <h3>🔐 Log in to see your matches</h3>
+          <p>Sign in to get personalized trade recommendations based on your listings.</p>
+          <a href="index.html" class="btn btn-primary">Log in</a>
+        </div>`;
+      document.getElementById('match-count').textContent = '0';
+      return;
+    }
+
+    fetch(`${API}/api/trades/matches?userId=${loggedInUserId}&limit=20`)
+      .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+      .then(data => {
+        // data shape: [{ item: {...}, matchPercent: 85, matchReason: "..." }]
+        allMatches = data;
+        renderMatchGrid();
+      })
+      .catch(() => {
+        document.getElementById('match-grid').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">⚠️</div>
+            <h3>Could not load matches</h3>
+            <p>Make sure your Spring Boot server is running on port 8080.</p>
+          </div>`;
+        document.getElementById('match-count').textContent = '0';
+      });
+  }
+
+  function renderMatchGrid() {
+    const grid = document.getElementById('match-grid');
+
+    const visible = activeFilter === 'all'
+      ? allMatches
+      : allMatches.filter(m => m.item && m.item.category === activeFilter);
+
+    document.getElementById('match-count').textContent = visible.length;
+
+    if (allMatches.length === 0) {
+      // User hasn't listed anything yet
+      grid.innerHTML = `
+        <div class="prompt-card">
+          <h3>📦 List an item to get matches!</h3>
+          <p>Once you list items, we'll find the best trades for you automatically.</p>
+          <a href="create-listing.html" class="btn btn-primary">List your first item</a>
+        </div>`;
+      return;
+    }
+
+    if (visible.length === 0) {
+      grid.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <h3>No matches in this category</h3>
+          <p>Try a different filter or list more items to improve your matches.</p>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = visible
+      .map(m => renderCard(m.item, m.matchPercent, m.matchReason))
+      .join('');
+  }
+
+  // ── Load new items: GET /api/items ─────────────────────────────────────────
+  function loadNewItems() {
+    fetch(`${API}/api/items`)
+      .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+      .then(items => {
+        // Exclude current user's own items, sort newest first, cap at 8
+        const others = items
+          .filter(item => !loggedInUserId || !item.user || item.user.id !== loggedInUserId)
+          .sort((a, b) => b.id - a.id)
+          .slice(0, 8);
+
+        document.getElementById('new-count').textContent = others.length;
+
+        document.getElementById('new-grid').innerHTML = others.length === 0
+          ? `<div class="empty-state">
+               <div class="empty-icon">📭</div>
+               <h3>No items yet</h3>
+               <p>Be the first to list something!</p>
+             </div>`
+          : others.map(item => renderCard(item)).join('');
+      })
+      .catch(() => {
+        document.getElementById('new-grid').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">⚠️</div>
+            <h3>Could not load items</h3>
+            <p>Make sure your Spring Boot server is running on port 8080.</p>
+          </div>`;
+      });
+  }
+
+  // ── Filter preference bar ──────────────────────────────────────────────────
+  function filterPref(el, cat) {
+    document.querySelectorAll('.pref-tag').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    activeFilter = cat;
+    renderMatchGrid();
+  }
+
+  // ── Trade shortcut ─────────────────────────────────────────────────────────
+  function goTrade(id) {
+    if (!loggedInUserId) { window.location.href = 'index.html'; return; }
+    window.location.href = `item-detail.html?id=${id}`;
+  }
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  loadMatches();
+  loadNewItems();
+</script>
+</body>
+</html>

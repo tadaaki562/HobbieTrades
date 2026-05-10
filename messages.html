@@ -8,11 +8,11 @@
   <style>
     .messages-layout {
       display: grid;
-      grid-template-columns: 280px 1fr;
+      grid-template-columns: 300px 1fr;
       height: calc(100vh - 60px);
     }
 
-    /* SIDEBAR */
+    /* ── SIDEBAR ──────────────────────────────────────────── */
     .chat-sidebar {
       border-right: 1px solid var(--border);
       background: var(--white);
@@ -21,14 +21,17 @@
     }
 
     .chat-sidebar-header {
-      padding: 20px 16px 12px;
+      padding: 20px 16px 14px;
       border-bottom: 1px solid var(--border);
-      font-family: 'Syne', sans-serif;
-      font-size: 18px;
-      font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: space-between;
+    }
+
+    .chat-sidebar-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
     }
 
     .sidebar-badge {
@@ -51,12 +54,11 @@
       cursor: pointer;
       transition: background 0.15s;
     }
-
-    .chat-item:hover { background: var(--bg); }
-    .chat-item.active { background: var(--brand-light); }
+    .chat-item:hover  { background: var(--bg); }
+    .chat-item.active { background: var(--brand-light); border-left: 3px solid var(--brand); }
 
     .chat-ava {
-      width: 38px; height: 38px;
+      width: 40px; height: 40px;
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
       font-size: 13px; font-weight: 700;
@@ -65,22 +67,25 @@
     }
 
     .chat-info { flex: 1; min-width: 0; }
-    .chat-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .chat-name    { font-size: 13px; font-weight: 600; color: var(--text); }
     .chat-preview { font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
-    .chat-time { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; }
+    .chat-time    { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; }
 
+    /* Status pills */
     .status-pill {
       font-size: 10px;
       font-weight: 700;
-      padding: 2px 7px;
+      padding: 2px 8px;
       border-radius: 10px;
       white-space: nowrap;
-      margin-top: 4px;
+      display: inline-block;
+      margin-top: 5px;
     }
-    .status-pending  { background: #FEF3E2; color: #633806; }
-    .status-accepted { background: var(--green-light); color: #085041; }
-    .status-completed{ background: #E6F1FB; color: #0C447C; }
-    .status-declined { background: #FEE; color: var(--red); }
+    .status-pending           { background: #FEF3E2; color: #633806; }
+    .status-accepted          { background: #EAF3DE; color: #3B6D11; }
+    .status-awaiting-confirm  { background: #E6F1FB; color: #0C447C; }
+    .status-completed         { background: #EAF3DE; color: #085041; }
+    .status-declined          { background: #FEE2E2; color: #7F1D1D; }
 
     .sidebar-empty {
       padding: 40px 20px;
@@ -89,7 +94,7 @@
       color: var(--text-secondary);
     }
 
-    /* MAIN CHAT */
+    /* ── MAIN CHAT ────────────────────────────────────────── */
     .chat-main {
       display: flex;
       flex-direction: column;
@@ -104,7 +109,6 @@
       align-items: center;
       gap: 12px;
     }
-
     .chat-header-name { font-size: 14px; font-weight: 600; color: var(--text); }
     .chat-header-sub  { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
 
@@ -114,70 +118,156 @@
       padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
     }
 
+    /* Message rows */
+    .msg-row     { display: flex; flex-direction: column; max-width: 65%; }
+    .msg-row-out { align-self: flex-end; align-items: flex-end; }
+    .msg-row-in  { align-self: flex-start; align-items: flex-start; }
+
     .msg-bubble {
-      max-width: 65%;
       padding: 10px 14px;
       font-size: 13px;
       border-radius: 12px;
       line-height: 1.5;
+      word-break: break-word;
+      display: inline-block;
+      max-width: 100%;
     }
-
-    .msg-in  { background: var(--white); color: var(--text); align-self: flex-start; border: 1px solid var(--border); border-bottom-left-radius: 4px; }
-    .msg-out { background: var(--brand); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
-
-    .msg-time { font-size: 10px; color: var(--text-tertiary); margin-top: 3px; }
+    .msg-in  { background: var(--white); color: var(--text); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+    .msg-out { background: var(--brand); color: white; border-bottom-right-radius: 4px; }
+    .msg-time       { font-size: 10px; color: var(--text-tertiary); margin-top: 3px; }
     .msg-time-right { text-align: right; }
 
-    /* TRADE PROPOSAL BUBBLE */
+    /* ── TRADE PROPOSAL BUBBLE ───────────────────────────── */
     .trade-bubble {
-      background: var(--brand-light);
+      background: var(--white);
       border: 1.5px solid var(--brand-mid);
       border-radius: var(--radius-md);
-      padding: 14px 16px;
+      padding: 16px;
       align-self: flex-start;
-      max-width: 75%;
+      max-width: 80%;
+      box-shadow: var(--shadow-sm);
     }
 
-    .trade-bubble-title { font-size: 12px; font-weight: 700; color: var(--brand-dark); margin-bottom: 6px; }
-    .trade-bubble-items { font-size: 13px; color: var(--brand); font-weight: 500; margin-bottom: 10px; }
+    .trade-bubble-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .trade-bubble-title { font-size: 12px; font-weight: 700; color: var(--brand-dark); }
 
-    .trade-actions { display: flex; gap: 8px; }
-    .trade-btn { padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
-    .trade-btn-accept  { background: var(--brand); color: white; }
-    .trade-btn-accept:hover { background: var(--brand-dark); }
-    .trade-btn-counter { background: var(--white); color: var(--text); border: 1px solid var(--border) !important; }
-    .trade-btn-decline { background: #FEE; color: var(--red); }
-
-    .trade-done-label {
+    .trade-items-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      margin-bottom: 12px;
+    }
+    .trade-item-chip {
+      flex: 1;
+      text-align: center;
       font-size: 12px;
       font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 6px;
+      color: var(--text);
     }
-    .trade-done-accepted  { background: var(--green-light); color: #085041; }
-    .trade-done-declined  { background: #FEE; color: var(--red); }
-    .trade-done-completed { background: #E6F1FB; color: #0C447C; }
+    .trade-item-chip-emoji { font-size: 20px; display: block; margin-bottom: 3px; }
+    .trade-item-chip-val { font-size: 11px; color: var(--text-secondary); font-weight: 400; }
+    .trade-swap-icon { font-size: 16px; color: var(--text-tertiary); }
 
-    /* AGREED BANNER */
-    .agreed-banner {
-      background: #FEF3E2;
-      border: 1.5px solid var(--orange);
+    .trade-actions { display: flex; gap: 8px; }
+    .trade-btn {
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .trade-btn-accept  { background: var(--brand); color: white; }
+    .trade-btn-accept:hover { background: var(--brand-dark); }
+    .trade-btn-decline { background: #FEE2E2; color: #7F1D1D; }
+    .trade-btn-decline:hover { background: #FECACA; }
+
+    .trade-status-label {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: var(--radius-sm);
+      display: inline-block;
+    }
+
+    /* ── STATUS TIMELINE ─────────────────────────────────── */
+    .status-timeline {
+      background: var(--white);
+      border: 1px solid var(--border);
       border-radius: var(--radius-md);
-      padding: 12px 16px;
+      padding: 14px 16px;
+      align-self: center;
+      max-width: 90%;
+      width: 100%;
+      margin: 8px 0;
+    }
+    .timeline-title { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
+    .timeline-steps { display: flex; align-items: center; gap: 0; }
+    .timeline-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      position: relative;
+    }
+    .timeline-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      width: 100%;
+      height: 2px;
+      background: var(--border);
+      z-index: 0;
+    }
+    .timeline-step.done:not(:last-child)::after { background: var(--brand); }
+    .timeline-dot {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--white);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-tertiary);
+      position: relative;
+      z-index: 1;
+    }
+    .timeline-step.done .timeline-dot { background: var(--brand); border-color: var(--brand); color: white; }
+    .timeline-step.current .timeline-dot { border-color: var(--brand); color: var(--brand); }
+    .timeline-label { font-size: 10px; color: var(--text-tertiary); margin-top: 5px; text-align: center; }
+    .timeline-step.done .timeline-label { color: var(--brand); font-weight: 600; }
+    .timeline-step.current .timeline-label { color: var(--text); font-weight: 600; }
+
+    /* ── CONFIRM BANNER ──────────────────────────────────── */
+    .confirm-banner {
+      background: #EAF3DE;
+      border: 1.5px solid #97C459;
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin: 0 20px;
+      margin: 0 20px 12px;
     }
+    .confirm-banner-text strong { display: block; font-size: 13px; color: #3B6D11; margin-bottom: 2px; }
+    .confirm-banner-text span   { font-size: 12px; color: #3B6D11; opacity: 0.85; }
 
-    .agreed-banner-text { font-size: 13px; color: #633806; }
-    .agreed-banner-text strong { display: block; margin-bottom: 2px; }
-
-    /* INPUT */
+    /* ── INPUT BAR ───────────────────────────────────────── */
     .chat-input-bar {
       background: var(--white);
       border-top: 1px solid var(--border);
@@ -186,7 +276,6 @@
       gap: 10px;
       align-items: center;
     }
-
     .chat-input {
       flex: 1;
       background: var(--bg);
@@ -199,9 +288,7 @@
       outline: none;
       transition: border-color 0.2s;
     }
-
     .chat-input:focus { border-color: var(--brand-mid); }
-
     .send-btn {
       width: 36px; height: 36px;
       border-radius: 50%;
@@ -214,10 +301,9 @@
       flex-shrink: 0;
       transition: all 0.2s;
     }
-
     .send-btn:hover { background: var(--brand-dark); transform: scale(1.05); }
 
-    /* EMPTY STATE */
+    /* ── EMPTY STATE ─────────────────────────────────────── */
     .chat-empty {
       flex: 1;
       display: flex;
@@ -228,7 +314,6 @@
       gap: 12px;
       font-size: 13px;
     }
-
     .chat-empty-icon { font-size: 40px; }
   </style>
 </head>
@@ -240,7 +325,7 @@
       <a href="browse.html" class="nav-link">Browse</a>
       <a href="create-listing.html" class="nav-link">+ List Item</a>
       <a href="messages.html" class="nav-link active">Messages</a>
-      <a href="index.html" class="nav-avatar" id="nav-avatar">?</a>
+      <a href="profile.html" class="nav-avatar" id="nav-avatar">?</a>
     </div>
   </nav>
 
@@ -248,7 +333,7 @@
     <!-- SIDEBAR -->
     <div class="chat-sidebar">
       <div class="chat-sidebar-header">
-        Messages
+        <div class="chat-sidebar-title">Messages</div>
         <span class="sidebar-badge" id="trade-count" style="display:none">0</span>
       </div>
       <div class="chat-list" id="chat-list">
@@ -256,7 +341,7 @@
       </div>
     </div>
 
-    <!-- CHAT MAIN -->
+    <!-- MAIN -->
     <div class="chat-main" id="chat-main">
       <div class="chat-empty">
         <div class="chat-empty-icon">💬</div>
@@ -266,50 +351,47 @@
   </div>
 
   <script>
+    const API = window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:8080'
+      : 'https://your-backend.onrender.com';
+
     // ─── State ────────────────────────────────────────────────────────────────
     const loggedInUserId   = parseInt(localStorage.getItem('userId')) || null;
     const loggedInUserName = localStorage.getItem('userName') || 'Me';
     const params           = new URLSearchParams(window.location.search);
+    document.getElementById('nav-avatar').textContent = loggedInUserName.charAt(0).toUpperCase();
 
-    // The trade that was just proposed (may arrive via URL from propose-trade.html)
-    const urlTradeId   = params.get('tradeId') ? parseInt(params.get('tradeId')) : null;
-    const urlItemTitle = params.get('itemTitle')  ? decodeURIComponent(params.get('itemTitle'))  : null;
-    const urlItemEmoji = params.get('itemEmoji')  ? decodeURIComponent(params.get('itemEmoji'))  : null;
-    const urlItemValue = params.get('itemValue')  ? parseInt(params.get('itemValue'))             : null;
-    const urlSeller    = params.get('sellerName') ? decodeURIComponent(params.get('sellerName')) : null;
+    const urlTradeId = params.get('tradeId') ? parseInt(params.get('tradeId')) : null;
 
-    // Nav avatar initial
-    if (loggedInUserName) {
-      document.getElementById('nav-avatar').textContent = loggedInUserName.charAt(0).toUpperCase();
-    }
-
-    // Avatar colour palette (consistent per user ID)
     const AVATAR_COLORS = ['#AFA9EC','#9FE1CB','#F5C4B3','#85B7EB','#F7D08A','#B5EAD7','#C7CEEA'];
-    function avatarColor(id) { return AVATAR_COLORS[id % AVATAR_COLORS.length]; }
-
+    function avatarColor(id) { return AVATAR_COLORS[(id||0) % AVATAR_COLORS.length]; }
     function getInitials(name) {
       if (!name) return '??';
       return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
     }
-
-    function getCategoryEmoji(category) {
-      const map = { Cameras:'📷', Instruments:'🎸', Sports:'🛹', Gaming:'🎮', Art:'🎨', Craft:'🧵', Other:'📦' };
-      return map[category] || '📦';
+    function getCategoryEmoji(cat) {
+      return { Cameras:'📷',Instruments:'🎸',Sports:'🛹',Gaming:'🎮',Art:'🎨',Craft:'🧵',Other:'📦' }[cat] || '📦';
     }
-
     function formatRelativeTime(dateStr) {
       if (!dateStr) return '';
-      const date = new Date(dateStr);
-      const diff = Math.floor((Date.now() - date) / 1000);
-      if (diff < 60)   return 'Just now';
-      if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-      if (diff < 86400)return `${Math.floor(diff / 3600)}h ago`;
-      return `${Math.floor(diff / 86400)}d ago`;
+      const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+      if (diff < 60)    return 'Just now';
+      if (diff < 3600)  return `${Math.floor(diff/60)}m ago`;
+      if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+      return `${Math.floor(diff/86400)}d ago`;
     }
 
-    // ─── Load trades from API ─────────────────────────────────────────────────
-    let allTrades       = [];
-    let activeTrade     = null;
+    // ─── Status helpers ───────────────────────────────────────────────────────
+    function getStatusClass(status) {
+      return { pending:'status-pending', accepted:'status-accepted', completed:'status-completed', declined:'status-declined' }[status] || 'status-pending';
+    }
+    function getStatusLabel(status) {
+      return { pending:'⏳ Pending', accepted:'🤝 Accepted', completed:'✅ Completed', declined:'✗ Declined' }[status] || status;
+    }
+
+    // ─── Load trades ──────────────────────────────────────────────────────────
+    let allTrades   = [];
+    let activeTrade = null;
 
     function loadTrades() {
       if (!loggedInUserId) {
@@ -318,30 +400,25 @@
         return;
       }
 
-      fetch(`http://localhost:8080/api/trades/user/${loggedInUserId}`)
+      fetch(`${API}/api/trades/user/${loggedInUserId}`)
         .then(res => res.json())
         .then(trades => {
           allTrades = trades;
-
           if (trades.length === 0) {
             document.getElementById('chat-list').innerHTML =
               '<div class="sidebar-empty">No trades yet. <a href="browse.html">Browse items</a> to propose one!</div>';
             return;
           }
-
-          // Show count badge
           const badge = document.getElementById('trade-count');
-          badge.textContent = trades.length;
+          badge.textContent  = trades.length;
           badge.style.display = 'inline';
-
           renderSidebar(trades);
 
-          // Auto-open: prefer the trade that just came from propose-trade.html
+          // Auto-open
           if (urlTradeId) {
             const match = trades.find(t => t.id === urlTradeId);
             if (match) { openTrade(match); return; }
           }
-          // Otherwise open the most recent trade
           openTrade(trades[0]);
         })
         .catch(() => {
@@ -353,64 +430,45 @@
     function renderSidebar(trades) {
       document.getElementById('chat-list').innerHTML = trades.map(trade => {
         const isProposer = trade.proposer && trade.proposer.id === loggedInUserId;
-        const other      = isProposer ? trade.receiver : trade.proposer;
-        const myItem     = isProposer ? trade.offeredItem   : trade.requestedItem;
+        const other      = isProposer ? trade.receiver    : trade.proposer;
         const theirItem  = isProposer ? trade.requestedItem : trade.offeredItem;
         const otherName  = other ? other.name : 'Unknown';
-        const initials   = getInitials(otherName);
         const color      = avatarColor(other ? other.id : 0);
         const emoji      = theirItem ? getCategoryEmoji(theirItem.category) : '📦';
-        const preview    = `${isProposer ? 'You offered' : 'Trade proposal'}: ${emoji} ${theirItem ? theirItem.title : ''}`;
+        const preview    = `${isProposer ? 'You offered' : 'Incoming proposal'}: ${emoji} ${theirItem ? theirItem.title : ''}`;
         const timeStr    = formatRelativeTime(trade.createdAt);
 
-        const statusClass = {
-          pending:   'status-pending',
-          accepted:  'status-accepted',
-          completed: 'status-completed',
-          declined:  'status-declined'
-        }[trade.status] || 'status-pending';
-
-        const statusLabel = {
-          pending:   '⏳ Pending',
-          accepted:  '✓ Accepted',
-          completed: '✅ Completed',
-          declined:  '✗ Declined'
-        }[trade.status] || trade.status;
-
         return `
-          <div class="chat-item" id="trade-item-${trade.id}" onclick="openTrade(allTrades.find(t => t.id === ${trade.id}))">
-            <div class="chat-ava" style="background:${color}">${initials}</div>
+          <div class="chat-item" id="trade-item-${trade.id}"
+               onclick="openTrade(allTrades.find(t => t.id === ${trade.id}))">
+            <div class="chat-ava" style="background:${color}">${getInitials(otherName)}</div>
             <div class="chat-info">
               <div class="chat-name">${otherName}</div>
               <div class="chat-preview">${preview}</div>
-              <span class="status-pill ${statusClass}">${statusLabel}</span>
+              <span class="status-pill ${getStatusClass(trade.status)}">${getStatusLabel(trade.status)}</span>
             </div>
             <div class="chat-time">${timeStr}</div>
-          </div>
-        `;
+          </div>`;
       }).join('');
     }
 
-    // ─── Open a trade conversation ─────────────────────────────────────────────
+    // ─── Open trade ───────────────────────────────────────────────────────────
     function openTrade(trade) {
       if (!trade) return;
       activeTrade = trade;
 
-      // Highlight sidebar item
       document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
       const sidebarEl = document.getElementById(`trade-item-${trade.id}`);
       if (sidebarEl) sidebarEl.classList.add('active');
 
-      const isProposer = trade.proposer && trade.proposer.id === loggedInUserId;
-      const other      = isProposer ? trade.receiver     : trade.proposer;
-      const myItem     = isProposer ? trade.offeredItem  : trade.requestedItem;
-      const theirItem  = isProposer ? trade.requestedItem : trade.offeredItem;
-
-      const otherName    = other     ? other.name         : 'Unknown';
-      const otherRating  = other     ? (other.rating || 0).toFixed(1) : '0.0';
-      const otherTrades  = other     ? (other.tradeCount || 0)        : 0;
-      const otherInitials= getInitials(otherName);
-      const otherColor   = avatarColor(other ? other.id : 0);
+      const isProposer  = trade.proposer && trade.proposer.id === loggedInUserId;
+      const other       = isProposer ? trade.receiver     : trade.proposer;
+      const myItem      = isProposer ? trade.offeredItem  : trade.requestedItem;
+      const theirItem   = isProposer ? trade.requestedItem : trade.offeredItem;
+      const otherName   = other ? other.name : 'Unknown';
+      const otherColor  = avatarColor(other ? other.id : 0);
+      const otherRating = other ? (other.rating || 0).toFixed(1) : '0.0';
+      const otherTrades = other ? (other.tradeCount || 0) : 0;
 
       const myEmoji    = myItem    ? getCategoryEmoji(myItem.category)    : '📦';
       const theirEmoji = theirItem ? getCategoryEmoji(theirItem.category) : '📦';
@@ -419,57 +477,72 @@
       const myValue    = myItem    ? parseFloat(myItem.estimatedValue)    : 0;
       const theirValue = theirItem ? parseFloat(theirItem.estimatedValue) : 0;
 
-      // Agreed banner visibility
-      const showAgreed    = trade.status === 'accepted';
-      const showCompleted = trade.status === 'completed';
-
-      // Trade action buttons — only show for receiver if still pending
-      const showActions = trade.status === 'pending' && !isProposer;
-
-      let tradeBubbleActions = '';
-      if (showActions) {
-        tradeBubbleActions = `
+      // Determine what action buttons / labels to show on the trade bubble
+      const canAct = trade.status === 'pending' && !isProposer;
+      let tradeActions = '';
+      if (canAct) {
+        tradeActions = `
           <div class="trade-actions">
-            <button class="trade-btn trade-btn-accept"  onclick="acceptTrade(${trade.id})">✓ Accept</button>
-            <button class="trade-btn trade-btn-counter" onclick="alert('Counter offer coming soon!')">Counter</button>
+            <button class="trade-btn trade-btn-accept" onclick="acceptTrade(${trade.id})">✓ Accept trade</button>
             <button class="trade-btn trade-btn-decline" onclick="declineTrade(${trade.id})">✗ Decline</button>
           </div>`;
       } else if (trade.status === 'pending' && isProposer) {
-        tradeBubbleActions = `<span class="trade-done-label" style="background:#FEF3E2;color:#633806">⏳ Waiting for response</span>`;
-      } else if (trade.status !== 'pending') {
-        const doneClass = {
-          accepted:  'trade-done-accepted',
-          completed: 'trade-done-completed',
-          declined:  'trade-done-declined'
-        }[trade.status] || '';
-        const doneLabel = {
-          accepted:  '✓ Accepted',
-          completed: '✅ Completed',
-          declined:  '✗ Declined'
-        }[trade.status] || trade.status;
-        tradeBubbleActions = `<span class="trade-done-label ${doneClass}">${doneLabel}</span>`;
+        tradeActions = `<span class="trade-status-label" style="background:#FEF3E2;color:#633806">⏳ Waiting for response</span>`;
+      } else if (trade.status === 'accepted') {
+        tradeActions = `<span class="trade-status-label" style="background:#EAF3DE;color:#3B6D11">🤝 Accepted — awaiting confirmation</span>`;
+      } else if (trade.status === 'completed') {
+        tradeActions = `<span class="trade-status-label" style="background:#EAF3DE;color:#085041">✅ Trade completed</span>`;
+      } else if (trade.status === 'declined') {
+        tradeActions = `<span class="trade-status-label" style="background:#FEE2E2;color:#7F1D1D">✗ Declined</span>`;
       }
 
+      // Timeline steps
+      const steps = [
+        { label: 'Proposed',  done: true },
+        { label: 'Accepted',  done: ['accepted','completed'].includes(trade.status) },
+        { label: 'Confirmed', done: trade.status === 'completed' },
+        { label: 'Completed', done: trade.status === 'completed' },
+      ];
+
+      const timelineHtml = `
+        <div class="status-timeline">
+          <div class="timeline-title">Trade progress</div>
+          <div class="timeline-steps">
+            ${steps.map((s, i) => `
+              <div class="timeline-step ${s.done ? 'done' : i === steps.findIndex(x => !x.done) ? 'current' : ''}">
+                <div class="timeline-dot">${s.done ? '✓' : i + 1}</div>
+                <div class="timeline-label">${s.label}</div>
+              </div>`).join('')}
+          </div>
+        </div>`;
+
+      // Confirm banner — shown when accepted
+      const showConfirmBanner = trade.status === 'accepted';
+      const confirmBannerHtml = showConfirmBanner ? `
+        <div class="confirm-banner" id="confirm-banner">
+          <div class="confirm-banner-text">
+            <strong>🤝 Trade accepted! Meet up and exchange items.</strong>
+            <span>Once you've exchanged in person, click "Confirm done" below. Both parties must confirm for the trade to complete and items to be marked as traded.</span>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="confirmTrade(${trade.id})">Confirm done</button>
+        </div>` : '';
+
       document.getElementById('chat-main').innerHTML = `
-        <!-- HEADER -->
         <div class="chat-header">
-          <div class="chat-ava" style="background:${otherColor};width:36px;height:36px;font-size:12px">${otherInitials}</div>
+          <div class="chat-ava" style="background:${otherColor};width:38px;height:38px;font-size:13px">${getInitials(otherName)}</div>
           <div>
             <div class="chat-header-name">${otherName}</div>
-            <div class="chat-header-sub">★ ${otherRating} · ${otherTrades} trades</div>
+            <div class="chat-header-sub">★ ${otherRating} · ${otherTrades} trades completed</div>
           </div>
-          <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-            <span class="status-pill ${({pending:'status-pending',accepted:'status-accepted',completed:'status-completed',declined:'status-declined'})[trade.status]||'status-pending'}">
-              ${({pending:'⏳ Pending',accepted:'✓ Accepted',completed:'✅ Completed',declined:'✗ Declined'})[trade.status]||trade.status}
-            </span>
+          <div style="margin-left:auto">
+            <span class="status-pill ${getStatusClass(trade.status)}">${getStatusLabel(trade.status)}</span>
           </div>
         </div>
 
-        <!-- MESSAGES AREA -->
         <div class="chat-messages" id="chat-messages">
 
-          <!-- Opening message (proposer) -->
-          <div ${isProposer ? 'style="align-self:flex-end"' : ''}>
+          <!-- Opening message -->
+          <div class="msg-row ${isProposer ? 'msg-row-out' : 'msg-row-in'}">
             <div class="msg-bubble ${isProposer ? 'msg-out' : 'msg-in'}">
               Hi! I'm interested in trading for your ${theirTitle}. Would you like to swap?
             </div>
@@ -477,67 +550,68 @@
           </div>
 
           <!-- Trade proposal bubble -->
-          <div>
-            <div class="trade-bubble">
+          <div class="trade-bubble">
+            <div class="trade-bubble-header">
               <div class="trade-bubble-title">🔄 Trade Proposal</div>
-              <div class="trade-bubble-items">
-                ${myEmoji} ${myTitle} (~₱${myValue.toLocaleString()})
-                ⇄
-                ${theirEmoji} ${theirTitle} (~₱${theirValue.toLocaleString()})
-              </div>
-              ${tradeBubbleActions}
             </div>
-            <div class="msg-time">${formatRelativeTime(trade.createdAt)}</div>
+            <div class="trade-items-row">
+              <div class="trade-item-chip">
+                <span class="trade-item-chip-emoji">${myEmoji}</span>
+                ${myTitle}
+                <div class="trade-item-chip-val">~₱${myValue.toLocaleString()}</div>
+              </div>
+              <div class="trade-swap-icon">⇄</div>
+              <div class="trade-item-chip">
+                <span class="trade-item-chip-emoji">${theirEmoji}</span>
+                ${theirTitle}
+                <div class="trade-item-chip-val">~₱${theirValue.toLocaleString()}</div>
+              </div>
+            </div>
+            ${tradeActions}
           </div>
 
-          ${showCompleted ? `
-          <div style="align-self:center">
-            <div class="msg-bubble" style="background:var(--green-light);border:1px solid #97C459;color:#3B6D11;text-align:center">
-              ✅ Trade completed! Both parties confirmed.
+          <!-- Status timeline -->
+          ${timelineHtml}
+
+          ${trade.status === 'completed' ? `
+          <div style="align-self:center;text-align:center">
+            <div class="msg-bubble" style="background:#EAF3DE;border:1px solid #97C459;color:#3B6D11">
+              ✅ Trade completed! Both items are now marked as traded.
             </div>
           </div>` : ''}
 
         </div>
 
-        <!-- AGREED BANNER (shown when accepted, waiting for confirm) -->
-        ${showAgreed ? `
-        <div class="agreed-banner" id="agreed-banner">
-          <div class="agreed-banner-text">
-            <strong>🤝 Trade agreed!</strong>
-            Meet up and exchange items in person, then confirm below.
-          </div>
-          <button class="btn btn-primary btn-sm" onclick="confirmTrade(${trade.id})">Confirm trade done</button>
-        </div>` : ''}
+        ${confirmBannerHtml}
 
-        <!-- INPUT BAR -->
         <div class="chat-input-bar">
           <input class="chat-input" type="text" placeholder="Type a message..."
                  id="msg-input" onkeypress="if(event.key==='Enter') sendMessage()"/>
           <button class="send-btn" onclick="sendMessage()">↑</button>
         </div>
       `;
+
+      loadMessages(trade.id);
     }
 
     // ─── Trade actions ────────────────────────────────────────────────────────
     function acceptTrade(tradeId) {
-      fetch(`http://localhost:8080/api/trades/${tradeId}/accept`, { method: 'PUT' })
+      fetch(`${API}/api/trades/${tradeId}/accept`, { method: 'PUT' })
         .then(res => res.json())
         .then(data => {
           if (data.success) {
-            // Update local state
             const t = allTrades.find(t => t.id === tradeId);
             if (t) t.status = 'accepted';
             renderSidebar(allTrades);
             openTrade(t);
-          } else {
-            alert(data.message || 'Could not accept trade.');
-          }
+          } else alert(data.message || 'Could not accept trade.');
         })
         .catch(() => alert('Could not reach server.'));
     }
 
     function declineTrade(tradeId) {
-      fetch(`http://localhost:8080/api/trades/${tradeId}/decline`, { method: 'PUT' })
+      if (!confirm('Are you sure you want to decline this trade?')) return;
+      fetch(`${API}/api/trades/${tradeId}/decline`, { method: 'PUT' })
         .then(res => res.json())
         .then(data => {
           if (data.success) {
@@ -545,76 +619,102 @@
             if (t) t.status = 'declined';
             renderSidebar(allTrades);
             openTrade(t);
-          } else {
-            alert(data.message || 'Could not decline trade.');
-          }
+          } else alert(data.message || 'Could not decline trade.');
         })
         .catch(() => alert('Could not reach server.'));
     }
 
     function confirmTrade(tradeId) {
       if (!loggedInUserId) { alert('Please log in first.'); return; }
-      fetch(`http://localhost:8080/api/trades/${tradeId}/confirm`, {
+      if (!confirm('Confirm that you have exchanged items in person?')) return;
+
+      fetch(`${API}/api/trades/${tradeId}/confirm`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: loggedInUserId })
       })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            const t = allTrades.find(t => t.id === tradeId);
-            if (t) t.status = data.status;
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          const t = allTrades.find(t => t.id === tradeId);
+          if (t) t.status = data.status;
 
-            if (data.status === 'completed') {
-              // Both confirmed — go to review page
-              renderSidebar(allTrades);
-              const isProposer = t.proposer && t.proposer.id === loggedInUserId;
-              const other      = isProposer ? t.receiver    : t.proposer;
-              const theirItem  = isProposer ? t.requestedItem : t.offeredItem;
-              const otherName  = other ? other.name : 'Trader';
-              const theirEmoji = theirItem ? getCategoryEmoji(theirItem.category) : '📦';
-              const theirValue = theirItem ? theirItem.estimatedValue : 0;
-              const revieweeId = other ? other.id : '';
+          if (data.status === 'completed') {
+            renderSidebar(allTrades);
+            const isProposer = t.proposer && t.proposer.id === loggedInUserId;
+            const other      = isProposer ? t.receiver    : t.proposer;
+            const theirItem  = isProposer ? t.requestedItem : t.offeredItem;
+            const otherName  = other ? other.name : 'Trader';
+            const theirEmoji = theirItem ? getCategoryEmoji(theirItem.category) : '📦';
 
-              window.location.href =
-                `review.html?tradeId=${tradeId}` +
-                `&revieweeId=${revieweeId}` +
-                `&itemTitle=${encodeURIComponent(theirItem ? theirItem.title : '')}` +
-                `&itemEmoji=${encodeURIComponent(theirEmoji)}` +
-                `&itemValue=${theirValue}` +
-                `&sellerName=${encodeURIComponent(otherName)}` +
-                `&sellerInitials=${encodeURIComponent(getInitials(otherName))}` +
-                `&sellerColor=${encodeURIComponent(avatarColor(other ? other.id : 0))}` +
-                `&sellerTrades=${other ? other.tradeCount || 0 : 0}`;
-            } else {
-              alert('Your confirmation recorded! Waiting for the other party to confirm.');
-              openTrade(t);
-            }
+            window.location.href =
+              `review.html?tradeId=${tradeId}` +
+              `&revieweeId=${other ? other.id : ''}` +
+              `&itemTitle=${encodeURIComponent(theirItem ? theirItem.title : '')}` +
+              `&itemEmoji=${encodeURIComponent(theirEmoji)}` +
+              `&itemValue=${theirItem ? theirItem.estimatedValue : 0}` +
+              `&sellerName=${encodeURIComponent(otherName)}` +
+              `&sellerInitials=${encodeURIComponent(getInitials(otherName))}` +
+              `&sellerColor=${encodeURIComponent(avatarColor(other ? other.id : 0))}` +
+              `&sellerTrades=${other ? other.tradeCount || 0 : 0}`;
           } else {
-            alert(data.message || 'Could not confirm trade.');
+            alert('Your confirmation recorded! Waiting for the other party to confirm. Items will be marked as traded once both confirm.');
+            renderSidebar(allTrades);
+            openTrade(t);
           }
-        })
-        .catch(() => alert('Could not reach server.'));
+        } else {
+          alert(data.message || 'Could not confirm trade.');
+        }
+      })
+      .catch(() => alert('Could not reach server.'));
     }
 
-    // ─── Messaging ────────────────────────────────────────────────────────────
+    // ─── Messages ─────────────────────────────────────────────────────────────
+    function loadMessages(tradeId) {
+      fetch(`${API}/api/messages/trade/${tradeId}`)
+        .then(res => res.json())
+        .then(messages => {
+          const msgs = document.getElementById('chat-messages');
+          if (!msgs) return;
+          msgs.querySelectorAll('.db-message').forEach(el => el.remove());
+          messages.forEach(msg => {
+            const isMe   = msg.sender && msg.sender.id === loggedInUserId;
+            const div    = document.createElement('div');
+            div.className = `db-message msg-row ${isMe ? 'msg-row-out' : 'msg-row-in'}`;
+            div.innerHTML = `
+              <div class="msg-bubble ${isMe ? 'msg-out' : 'msg-in'}">${msg.content}</div>
+              <div class="msg-time ${isMe ? 'msg-time-right' : ''}">${formatRelativeTime(msg.sentAt)}</div>`;
+            msgs.appendChild(div);
+          });
+          msgs.scrollTop = msgs.scrollHeight;
+        })
+        .catch(() => {});
+    }
+
     function sendMessage() {
+      if (!activeTrade) return;
       const input = document.getElementById('msg-input');
       if (!input) return;
       const text = input.value.trim();
       if (!text) return;
+
       const msgs = document.getElementById('chat-messages');
-      msgs.innerHTML += `
-        <div style="align-self:flex-end">
-          <div class="msg-bubble msg-out">${text}</div>
-          <div class="msg-time msg-time-right">Just now</div>
-        </div>
-      `;
-      input.value = '';
+      const div  = document.createElement('div');
+      div.className = 'db-message msg-row msg-row-out';
+      div.innerHTML = `
+        <div class="msg-bubble msg-out">${text}</div>
+        <div class="msg-time msg-time-right">Just now</div>`;
+      msgs.appendChild(div);
       msgs.scrollTop = msgs.scrollHeight;
+      input.value = '';
+
+      fetch(`${API}/api/messages`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tradeId: activeTrade.id, senderId: loggedInUserId, content: text })
+      }).catch(() => {});
     }
 
-    // ─── Init ─────────────────────────────────────────────────────────────────
     loadTrades();
   </script>
 </body>

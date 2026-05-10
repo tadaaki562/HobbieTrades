@@ -112,7 +112,7 @@
       <a href="browse.html" class="nav-link">Browse</a>
       <a href="create-listing.html" class="nav-link">+ List Item</a>
       <a href="messages.html" class="nav-link">Messages</a>
-      <a href="index.html" class="nav-avatar">L</a>
+      <a href="profile.html" class="nav-avatar" id="nav-avatar">?</a>
     </div>
   </nav>
 
@@ -146,9 +146,12 @@
     </div>
 
     <!-- ITEM PICKER -->
-    <div class="picker-grid" id="picker-grid">
-  <div style="font-size:12px;color:var(--text-secondary)">Loading your items...</div>
-</div>
+    <div class="items-picker open" id="items-picker">
+      <div class="picker-title">Choose one of your listings</div>
+      <div class="picker-grid" id="picker-grid">
+        <div style="font-size:12px;color:var(--text-secondary);grid-column:1/-1">Loading your items...</div>
+      </div>
+    </div>
 
     <!-- FAIR VALUE BANNER -->
     <div class="fair-banner fair-warn" id="fair-banner">
@@ -157,7 +160,7 @@
     </div>
 
     <!-- NOTE -->
-    <div class="note-label">Add a note to the seller</div>
+    <div class="note-label" id="note-label">Add a note to the seller</div>
     <textarea class="note-area" placeholder="Introduce yourself and explain your offer...">Hi! I'm offering my Nintendo Switch in good condition. Open to negotiating if needed!</textarea>
 
     <div class="btn-row">
@@ -167,12 +170,23 @@
   </div>
 
   <script>
+const API = window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:8080'
+  : 'https://your-backend.onrender.com';
+
   // Read the item being requested from URL
 const params = new URLSearchParams(window.location.search);
 const requestedId = params.get('itemId') || '1';
 const requestedTitle = decodeURIComponent(params.get('itemTitle') || 'Item');
 const requestedValue = parseInt(params.get('itemValue')) || 0;
 const requestedEmoji = decodeURIComponent(params.get('itemEmoji') || '📦');
+const loggedInUserName = localStorage.getItem('userName') || '?';
+document.getElementById('nav-avatar').textContent = loggedInUserName.charAt(0).toUpperCase();
+const userId = localStorage.getItem('userId');
+if (!userId) {
+  alert('Please log in to propose a trade.');
+  window.location.href = 'index.html';
+}
 
 // Declare ALL variables at top before anything else
 let offerValue = 0;
@@ -211,7 +225,9 @@ function renderPicker(userItems, matches) {
     return;
   }
   const matchMap = {};
-  matches.forEach(m => { if(m.item) matchMap[m.item.id] = m.matchScore; });
+  matches.forEach(m => {
+    if (m.item) matchMap[m.item.id] = m.matchPercent ?? m.matchScore ?? 0;
+  });
 
   grid.innerHTML = userItems.map((item, idx) => {
     const emoji = getCategoryEmoji(item.category);
@@ -242,12 +258,11 @@ function renderPicker(userItems, matches) {
 }
 
 // Load user's items from API
-const userId = localStorage.getItem('userId');
 if (userId) {
-  fetch(`http://localhost:8080/api/items/user/${userId}`)
+  fetch(`${API}/api/items/user/${userId}`)
     .then(res => res.json())
     .then(userItems => {
-      fetch(`http://localhost:8080/api/trades/matches?itemId=${requestedId}&userId=${userId}`)
+      fetch(`${API}/api/trades/matches?itemId=${requestedId}&userId=${userId}`)
         .then(res => res.json())
         .then(matches => {
           const matchedIds = matches.map(m => m.item ? m.item.id : null);
@@ -320,7 +335,7 @@ function submitProposal() {
   const msgUrl = `messages.html?itemId=${requestedId}&itemTitle=${encodeURIComponent(requestedTitle)}&itemValue=${requestedValue}&itemEmoji=${encodeURIComponent(requestedEmoji)}&sellerName=${encodeURIComponent(sellerName)}&sellerInitials=${encodeURIComponent(sellerInitials)}&sellerColor=${encodeURIComponent(sellerColor)}&sellerRating=${sellerRating}&sellerTrades=${sellerTrades}`;
 
   if (userId && receiverId) {
-    fetch('http://localhost:8080/api/trades', {
+    fetch(`${API}/api/trades`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

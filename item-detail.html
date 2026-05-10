@@ -6,222 +6,638 @@
   <title>HobbieTrades — Item Detail</title>
   <link rel="stylesheet" href="style.css"/>
   <style>
-    .detail-wrap { display: grid; grid-template-columns: 380px 1fr; gap: 32px; padding: 32px; max-width: 1100px; margin: 0 auto; }
+    /* ── HERO ── */
+    .detail-hero {
+      background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand) 60%, var(--brand-mid) 100%);
+      padding: 1.5rem 2rem;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+    .detail-hero::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 180px; height: 180px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+    .detail-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -50px; left: 25%;
+      width: 260px; height: 260px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+    }
+    .hero-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .back-link {
+      color: rgba(255,255,255,0.85);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: color 0.15s;
+    }
+    .back-link:hover { color: white; }
+    .hero-crumb {
+      color: rgba(255,255,255,0.5);
+      font-size: 0.85rem;
+      margin: 0 0.4rem;
+    }
+    .hero-crumb-current {
+      color: rgba(255,255,255,0.9);
+      font-size: 0.85rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 320px;
+    }
+
+    /* ── DETAIL LAYOUT ── */
+    .detail-wrap {
+      max-width: 1100px;
+      margin: 2rem auto;
+      padding: 0 2rem 3rem;
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    /* ── LEFT: IMAGE COLUMN ── */
+    .img-col { display: flex; flex-direction: column; gap: 1rem; }
 
     .detail-img-box {
-      background: #F0F4FF;
       border-radius: var(--radius-lg);
-      height: 340px;
+      height: 360px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 80px;
+      font-size: 5rem;
       border: 1px solid var(--border);
       position: relative;
+      overflow: hidden;
+      background: var(--bg);
     }
-
+    .detail-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
     .detail-trade-badge {
       position: absolute;
-      top: 16px; left: 16px;
+      top: 12px; left: 12px;
       background: var(--brand);
       color: white;
-      font-size: 11px;
+      font-size: 0.68rem;
       font-weight: 700;
-      padding: 4px 12px;
-      border-radius: 8px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.05em;
+      z-index: 2;
+    }
+    .detail-cond-badge {
+      position: absolute;
+      top: 12px; right: 12px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 6px;
+      z-index: 2;
+    }
+    .cond-like-new { background: #EAF3DE; color: #3B6D11; }
+    .cond-good     { background: #EEF2FF; color: #4F46E5; }
+    .cond-fair     { background: #FEF3E2; color: #633806; }
+    .cond-worn     { background: #FEE2E2; color: #7F1D1D; }
+
+    /* Quick stats row below image */
+    .img-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+    .img-stat {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.75rem 0.9rem;
+      text-align: center;
+    }
+    .img-stat-val {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .img-stat-lbl {
+      font-size: 0.68rem;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+      font-weight: 500;
     }
 
-    .detail-info { display: flex; flex-direction: column; gap: 0; }
+    /* ── RIGHT: INFO COLUMN ── */
+    .info-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
 
-    .back-link { font-size: 13px; color: var(--brand); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 16px; }
-    .back-link:hover { text-decoration: underline; }
-
-    .detail-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
-    .detail-meta { font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; }
-
-    .value-chip {
-      display: inline-block;
-      background: var(--brand-light);
+    .detail-category {
+      font-size: 0.72rem;
+      font-weight: 700;
       color: var(--brand);
-      font-size: 13px;
-      font-weight: 600;
-      padding: 6px 14px;
-      border-radius: 8px;
-      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 0.4rem;
     }
-
-    .tag-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-
-    .section-head { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; margin-top: 14px; }
-
-    .desc-text { font-size: 13px; color: var(--text); line-height: 1.7; }
-
-    .looking-for { font-size: 13px; color: var(--brand); font-weight: 500; }
-
-    .seller-box {
+    .detail-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.3px;
+    }
+    .detail-meta {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-top: 20px;
-      padding: 14px 16px;
-      background: var(--bg);
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .detail-meta strong { color: var(--text); }
+    .meta-dot { color: var(--border); }
+
+    /* Value bar */
+    .value-bar {
+      background: var(--brand-light);
+      border: 1.5px solid var(--brand-mid);
+      border-radius: var(--radius-md);
+      padding: 0.9rem 1.1rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .value-bar-left { font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; }
+    .value-bar-amount {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--brand);
+    }
+    .value-bar-amount span {
+      font-size: 0.8rem;
+      font-weight: 400;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text-secondary);
+    }
+
+    /* Section labels */
+    .section-head {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.5rem;
+      margin-top: 1.25rem;
+    }
+
+    .desc-text {
+      font-size: 0.88rem;
+      color: var(--text);
+      line-height: 1.75;
+    }
+
+    /* Looking for chip */
+    .looking-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--brand-light);
+      border: 1.5px solid var(--brand-mid);
+      color: var(--brand);
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+    }
+
+    /* Location row */
+    .location-row {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+
+    /* Seller card */
+    .seller-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      padding: 1rem 1.25rem;
+      background: var(--white);
       border-radius: var(--radius-md);
       border: 1px solid var(--border);
     }
-
     .seller-ava {
-      width: 42px; height: 42px;
+      width: 48px; height: 48px;
       border-radius: 50%;
-      background: var(--brand);
       color: white;
       display: flex; align-items: center; justify-content: center;
-      font-size: 14px; font-weight: 700;
+      font-size: 1rem; font-weight: 700;
       flex-shrink: 0;
     }
+    .seller-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .seller-stats {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      margin-top: 3px;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .seller-rating-star { color: #EF9F27; font-size: 0.85rem; }
+    .seller-badge {
+      margin-left: auto;
+      background: #EAF3DE;
+      color: #3B6D11;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
 
-    .seller-name { font-size: 14px; font-weight: 600; color: var(--text); }
-    .seller-stats { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    /* Action buttons */
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+    .btn-lg {
+      padding: 0.85rem 1.5rem;
+      font-size: 0.95rem;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-family: 'DM Sans', sans-serif;
+      border: none;
+    }
+    .btn-propose {
+      background: var(--brand);
+      color: white;
+    }
+    .btn-propose:hover { background: var(--brand-dark); transform: translateY(-1px); }
 
-    .action-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+    .btn-message {
+      background: var(--white);
+      color: var(--brand);
+      border: 2px solid var(--brand-mid);
+    }
+    .btn-message:hover { background: var(--brand-light); }
+
+    /* Own item state */
+    .own-item-note {
+      background: var(--bg);
+      border: 1.5px dashed var(--border);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: 1.5rem;
+    }
+    .own-item-note strong { color: var(--text); display: block; margin-bottom: 0.25rem; font-size: 0.9rem; }
+
+    /* Loading skeleton */
+    .skel {
+      background: linear-gradient(90deg, var(--bg) 25%, var(--border-light) 50%, var(--bg) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.3s infinite;
+      border-radius: 6px;
+    }
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
   </style>
 </head>
 <body>
-  <nav class="navbar">
-    <a href="browse.html" class="logo"><span>Hobbie</span>Trades</a>
-    <div class="nav-search">
-      <span class="search-icon">🔍</span>
-      <input type="text" placeholder="Search items to trade..."/>
+
+<!-- NAV -->
+<nav class="navbar">
+  <a href="browse.html" class="logo"><span>Hobbie</span>Trades</a>
+  <div class="nav-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Search items to trade..."/>
+  </div>
+  <div class="nav-links">
+    <a href="browse.html"         class="nav-link">Browse</a>
+    <a href="messages.html"       class="nav-link">Messages</a>
+    <a href="create-listing.html" class="nav-link">+ List Item</a>
+    <a href="profile.html"        class="nav-avatar" id="nav-avatar">?</a>
+  </div>
+</nav>
+
+<!-- HERO BREADCRUMB -->
+<div class="detail-hero">
+  <div class="hero-inner">
+    <a href="browse.html" class="back-link">← Browse</a>
+    <span class="hero-crumb">/</span>
+    <span class="hero-crumb-current" id="hero-title">Loading…</span>
+  </div>
+</div>
+
+<!-- DETAIL LAYOUT -->
+<div class="detail-wrap">
+
+  <!-- LEFT: IMAGE -->
+  <div class="img-col">
+    <div class="detail-img-box" id="item-img-box">
+      <div class="detail-trade-badge">TRADE</div>
+      <div class="detail-cond-badge" id="cond-badge"></div>
+      <span id="item-emoji" style="font-size:5rem">📦</span>
     </div>
-    <div class="nav-links">
-      <a href="browse.html" class="nav-link active">Browse</a>
-      <a href="create-listing.html" class="nav-link">+ List Item</a>
-      <a href="messages.html" class="nav-link">Messages</a>
-      <a href="index.html" class="nav-avatar">L</a>
-    </div>
-  </nav>
 
-  <div class="detail-wrap">
-    <!-- IMAGE -->
-    <div>
-      <div class="detail-img-box" id="item-img">
-        📷
-        <div class="detail-trade-badge">TRADE</div>
+    <!-- Quick stats -->
+    <div class="img-stats">
+      <div class="img-stat">
+        <div class="img-stat-val" id="stat-cond">—</div>
+        <div class="img-stat-lbl">Condition</div>
       </div>
-    </div>
-
-    <!-- INFO -->
-    <div class="detail-info">
-      <a href="browse.html" class="back-link">← Back to browse</a>
-      <div class="detail-title" id="item-title">Canon DSLR 200D + 18-55mm kit lens</div>
-      <div class="detail-meta" id="item-meta">Posted by <strong>Marco R.</strong> · Davao City · 2 days ago</div>
-      <div class="value-chip" id="item-value">~₱8,500 estimated value</div>
-
-      <div class="tag-row">
-        <span class="badge badge-brand" id="item-category">📷 Cameras</span>
-        <span class="badge badge-green" id="item-condition">● Good condition</span>
+      <div class="img-stat">
+        <div class="img-stat-val" id="stat-cat">—</div>
+        <div class="img-stat-lbl">Category</div>
       </div>
-
-      <div class="section-head">Description</div>
-      <div class="desc-text" id="item-desc">Used for one year, sensor is clean. Shutter count ~4,000. Well maintained and comes with original box. Looking to trade for audio/music equipment or gaming gear of similar value.</div>
-
-      <div class="section-head">Looking to trade for</div>
-      <div class="looking-for" id="item-looking">🎯 Music instruments, audio gear, gaming consoles</div>
-
-      <!-- SELLER -->
-      <div class="seller-box">
-        <div class="seller-ava" id="seller-ava">MR</div>
-        <div>
-          <div class="seller-name" id="seller-name">Marco R.</div>
-          <div class="seller-stats">
-            <span class="stars">★★★★☆</span>
-            <span id="seller-rating"> 4.2 · 8 trades completed</span>
-          </div>
-        </div>
+      <div class="img-stat">
+        <div class="img-stat-val" id="stat-trades">—</div>
+        <div class="img-stat-lbl">Seller Trades</div>
       </div>
-
-      <!-- ACTIONS -->
-      <div class="action-buttons">
-       <a href="#" class="btn btn-primary btn-lg" id="propose-btn">🔄 Propose a trade</a>
-<a href="#" class="btn btn-outline btn-lg" id="message-btn">💬 Send message</a>      </div>
     </div>
   </div>
 
+  <!-- RIGHT: INFO -->
+  <div class="info-col">
+    <div class="detail-category" id="item-category">—</div>
+    <div class="detail-title"    id="item-title">Loading…</div>
+    <div class="detail-meta"     id="item-meta"></div>
 
+    <!-- Value -->
+    <div class="value-bar">
+      <div class="value-bar-left">Estimated Value</div>
+      <div class="value-bar-amount" id="item-value">—</div>
+    </div>
 
-  <script>
-    // Read item ID from URL
-const params = new URLSearchParams(window.location.search);
-const id = parseInt(params.get('id')) || 1;
+    <!-- Description -->
+    <div class="section-head">Description</div>
+    <div class="desc-text" id="item-desc">—</div>
 
-// Load item from real API
-fetch(`http://localhost:8080/api/items/${id}`)
-  .then(res => res.json())
-  .then(item => {
-    const emoji = getCategoryEmoji(item.category);
-    const bg = getCategoryBg(item.category);
+    <!-- Looking for -->
+    <div class="section-head">Looking to trade for</div>
+    <div class="looking-chip" id="item-looking">🎯 Open to offers</div>
 
-    document.getElementById('item-img').innerHTML = `<span style="font-size:80px">${emoji}</span><div class="detail-trade-badge">TRADE</div>`;
-    document.getElementById('item-img').style.background = bg;
-    document.getElementById('item-title').textContent = item.title;
-    document.getElementById('item-meta').innerHTML = `Posted by <strong>${item.user ? item.user.name : 'Unknown'}</strong> · ${item.location || 'Philippines'} · ${formatDate(item.createdAt)}`;
-    document.getElementById('item-value').textContent = `~₱${parseFloat(item.estimatedValue).toLocaleString()} estimated value`;
-    document.getElementById('item-category').textContent = item.category;
-    document.getElementById('item-condition').textContent = `● ${item.conditionLabel} condition`;
-    document.getElementById('item-desc').textContent = item.description;
-    document.getElementById('item-looking').textContent = `🎯 ${item.lookingFor || 'Open to offers'}`;
+    <!-- Location -->
+    <div class="location-row">
+      <span>📍</span>
+      <span id="item-location">Philippines</span>
+    </div>
 
-    if (item.user) {
-      document.getElementById('seller-ava').textContent = getInitials(item.user.name);
-      document.getElementById('seller-name').textContent = item.user.name;
-      document.getElementById('seller-rating').textContent = ` ${item.user.rating || 0} · ${item.user.tradeCount || 0} trades completed`;
+    <!-- Seller -->
+    <div class="seller-card">
+      <div class="seller-ava" id="seller-ava" style="background:var(--brand)">?</div>
+      <div>
+        <div class="seller-name"  id="seller-name">Loading…</div>
+        <div class="seller-stats">
+          <span class="seller-rating-star">★</span>
+          <span id="seller-rating">0.0</span>
+          <span>·</span>
+          <span id="seller-trades">0 trades</span>
+        </div>
+      </div>
+      <div class="seller-badge" id="seller-badge" style="display:none">Verified</div>
+    </div>
+
+    <!-- Action buttons injected by JS -->
+    <div class="action-buttons" id="action-buttons"></div>
+  </div>
+</div>
+
+<script>
+  // ── Constants ──────────────────────────────────────────────────────────────
+  const API = window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:8080'
+    : 'https://your-backend.onrender.com';
+
+  const CAT_EMOJI = {
+    Cameras:'📷', Instruments:'🎸', Gaming:'🎮',
+    Sports:'🛹', Art:'🎨', Craft:'🧵', Other:'📦'
+  };
+  const CAT_BG = {
+    Cameras:'#F0F4FF', Instruments:'#EAF3DE', Gaming:'#FAEEDA',
+    Sports:'#E6F1FB', Art:'#FAECE7', Craft:'#FBEAF0', Other:'#F5F5F5'
+  };
+  const COND_CLASS = {
+    'Like New':'cond-like-new', 'Good':'cond-good',
+    'Fair':'cond-fair', 'Worn':'cond-worn'
+  };
+  const AVATAR_COLORS = ['#AFA9EC','#9FE1CB','#F5C4B3','#85B7EB','#F7D08A','#B5EAD7','#C7CEEA'];
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  const params           = new URLSearchParams(window.location.search);
+  const itemId           = parseInt(params.get('id')) || 1;
+  const loggedInUserId   = parseInt(localStorage.getItem('userId')) || null;
+  const loggedInUserName = localStorage.getItem('userName') || '?';
+
+  document.getElementById('nav-avatar').textContent =
+    loggedInUserName.charAt(0).toUpperCase();
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function getInitials(name) {
+    if (!name) return '?';
+    return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  }
+  function avatarColor(id) {
+    return AVATAR_COLORS[(id || 0) % AVATAR_COLORS.length];
+  }
+  function formatPeso(v) {
+    return '₱' + Number(v || 0).toLocaleString('en-PH');
+  }
+  function formatDate(dateStr) {
+    if (!dateStr) return 'recently';
+    const diff = Math.floor((new Date() - new Date(dateStr)) / 86400000);
+    if (diff === 0) return 'today';
+    if (diff === 1) return '1 day ago';
+    return `${diff} days ago`;
+  }
+
+  // ── Load item ──────────────────────────────────────────────────────────────
+  fetch(`${API}/api/items/${itemId}`)
+    .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+    .then(item => renderItem(item))
+    .catch(() => {
+      document.getElementById('item-title').textContent = 'Could not load item.';
+      document.getElementById('item-desc').textContent  =
+        'Make sure your Spring Boot server is running on port 8080.';
+    });
+
+  function renderItem(item) {
+    const emoji    = CAT_EMOJI[item.category]  || '📦';
+    const bg       = CAT_BG[item.category]     || '#F5F5F5';
+    const cond     = item.conditionLabel        || '';
+    const val      = parseFloat(item.estimatedValue) || 0;
+    const seller   = item.user || {};
+    const initials = getInitials(seller.name);
+    const color    = avatarColor(seller.id);
+    const isOwnItem = loggedInUserId && seller.id === loggedInUserId;
+
+    // ── Hero breadcrumb ──
+    document.getElementById('hero-title').textContent = item.title || 'Item Detail';
+
+    // ── Image box ──
+    const imgBox = document.getElementById('item-img-box');
+    imgBox.style.background = item.photoUrl ? '#fff' : bg;
+
+    if (item.photoUrl) {
+      document.getElementById('item-emoji').style.display = 'none';
+      const img = document.createElement('img');
+      img.src = `${API}${item.photoUrl}`;
+      img.alt = item.title;
+      img.onerror = () => {
+        img.remove();
+        document.getElementById('item-emoji').style.display = '';
+        imgBox.style.background = bg;
+      };
+      imgBox.appendChild(img);
+    } else {
+      document.getElementById('item-emoji').textContent = emoji;
     }
 
-    // Set propose trade button with correct data
-    document.getElementById('propose-btn').onclick = function() {
-  const sellerName = item.user ? item.user.name : 'Seller';
-  const sellerInitials = item.user ? getInitials(item.user.name) : 'S';
-  const sellerRating = item.user ? item.user.rating : 0;
-  const sellerTrades = item.user ? item.user.tradeCount : 0;
-  const sellerId = item.user ? item.user.id : null;
-  window.location.href = `propose-trade.html?itemId=${item.id}&itemTitle=${encodeURIComponent(item.title)}&itemValue=${item.estimatedValue}&itemEmoji=${encodeURIComponent(emoji)}&sellerName=${encodeURIComponent(sellerName)}&sellerInitials=${encodeURIComponent(sellerInitials)}&sellerRating=${sellerRating}&sellerTrades=${sellerTrades}&sellerId=${sellerId}`;
-};
+    // ── Condition badge ──
+    const condBadge = document.getElementById('cond-badge');
+    if (cond) {
+      condBadge.textContent = cond;
+      condBadge.className   = `detail-cond-badge ${COND_CLASS[cond] || ''}`;
+    } else {
+      condBadge.style.display = 'none';
+    }
 
-    // Set message button with correct data
-    document.getElementById('message-btn').onclick = function() {
-      const sellerName = item.user ? item.user.name : 'Seller';
-      const sellerInitials = item.user ? getInitials(item.user.name) : 'S';
-      const sellerRating = item.user ? item.user.rating : 0;
-      const sellerTrades = item.user ? item.user.tradeCount : 0;
-      window.location.href = `messages.html?itemId=${item.id}&itemTitle=${encodeURIComponent(item.title)}&itemValue=${item.estimatedValue}&itemEmoji=${encodeURIComponent(emoji)}&sellerName=${encodeURIComponent(sellerName)}&sellerInitials=${encodeURIComponent(sellerInitials)}&sellerRating=${sellerRating}&sellerTrades=${sellerTrades}`;
-    };
-  })
-  .catch(() => {
-    alert('Could not load item details. Make sure Spring Boot is running.');
-  });
+    // ── Quick stats ──
+    document.getElementById('stat-cond').textContent   = cond   || '—';
+    document.getElementById('stat-cat').textContent    = item.category || '—';
+    document.getElementById('stat-trades').textContent = seller.tradeCount != null ? seller.tradeCount : '—';
 
-function getCategoryEmoji(category) {
-  const map = { 'Cameras':'📷','Instruments':'🎸','Sports':'🛹','Gaming':'🎮','Art':'🎨','Craft':'🧵','Other':'📦' };
-  return map[category] || '📦';
-}
+    // ── Info column ──
+    document.getElementById('item-category').textContent = item.category || 'General';
+    document.getElementById('item-title').textContent    = item.title    || 'Untitled';
+    document.getElementById('item-meta').innerHTML =
+      `Posted by <strong>${seller.name || 'Unknown'}</strong>
+       <span class="meta-dot">·</span>
+       ${item.location || 'Philippines'}
+       <span class="meta-dot">·</span>
+       ${formatDate(item.createdAt)}`;
 
-function getCategoryBg(category) {
-  const map = { 'Cameras':'#F0F4FF','Instruments':'#EAF3DE','Sports':'#E6F1FB','Gaming':'#FAEEDA','Art':'#FAECE7','Craft':'#FBEAF0','Other':'#F5F5F5' };
-  return map[category] || '#F5F5F5';
-}
+    document.getElementById('item-value').innerHTML =
+      `${formatPeso(val)} <span>est.</span>`;
 
-function getInitials(name) {
-  if (!name) return '??';
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-}
+    document.getElementById('item-desc').textContent =
+      item.description || 'No description provided.';
 
-function formatDate(dateStr) {
-  if (!dateStr) return 'recently';
-  const date = new Date(dateStr);
-  const diff = Math.floor((new Date() - date) / (1000 * 60 * 60 * 24));
-  if (diff === 0) return 'today';
-  if (diff === 1) return '1 day ago';
-  return `${diff} days ago`;
-}
-  </script>
+    document.getElementById('item-looking').textContent =
+      item.lookingFor ? `🎯 ${item.lookingFor}` : '🎯 Open to offers';
+
+    document.getElementById('item-location').textContent =
+      item.location || 'Philippines';
+
+    // ── Seller card ──
+    document.getElementById('seller-ava').textContent   = initials;
+    document.getElementById('seller-ava').style.background = color;
+    document.getElementById('seller-name').textContent  = seller.name || 'Unknown';
+    document.getElementById('seller-rating').textContent =
+      `${parseFloat(seller.rating || 0).toFixed(1)}`;
+    document.getElementById('seller-trades').textContent =
+      `${seller.tradeCount || 0} trades`;
+
+    if (seller.tradeCount >= 5) {
+      document.getElementById('seller-badge').style.display = '';
+    }
+
+    // ── Action buttons ──
+    const actionsEl = document.getElementById('action-buttons');
+
+    if (isOwnItem) {
+      // User is viewing their own item
+      actionsEl.innerHTML = `
+        <div class="own-item-note">
+          <strong>This is your listing</strong>
+          You can manage it from your profile page.
+        </div>
+        <a href="profile.html" class="btn-lg btn-message">👤 Go to my profile</a>`;
+    } else if (!loggedInUserId) {
+      // Not logged in
+      actionsEl.innerHTML = `
+        <a href="index.html" class="btn-lg btn-propose">🔄 Log in to propose a trade</a>`;
+    } else {
+      // Normal flow — propose or message
+      const proposeUrl =
+        `propose-trade.html?itemId=${item.id}` +
+        `&itemTitle=${encodeURIComponent(item.title || '')}` +
+        `&itemValue=${item.estimatedValue || 0}` +
+        `&itemEmoji=${encodeURIComponent(emoji)}` +
+        `&sellerName=${encodeURIComponent(seller.name || '')}` +
+        `&sellerInitials=${encodeURIComponent(initials)}` +
+        `&sellerRating=${seller.rating || 0}` +
+        `&sellerTrades=${seller.tradeCount || 0}` +
+        `&sellerId=${seller.id || ''}`;
+
+      const messageUrl =
+        `messages.html?itemId=${item.id}` +
+        `&itemTitle=${encodeURIComponent(item.title || '')}` +
+        `&itemValue=${item.estimatedValue || 0}` +
+        `&itemEmoji=${encodeURIComponent(emoji)}` +
+        `&sellerName=${encodeURIComponent(seller.name || '')}` +
+        `&sellerInitials=${encodeURIComponent(initials)}` +
+        `&sellerRating=${seller.rating || 0}` +
+        `&sellerTrades=${seller.tradeCount || 0}`;
+
+      actionsEl.innerHTML = `
+        <a href="${proposeUrl}" class="btn-lg btn-propose">🔄 Propose a trade</a>
+        <a href="${messageUrl}" class="btn-lg btn-message">💬 Send a message</a>`;
+    }
+  }
+</script>
 </body>
 </html>

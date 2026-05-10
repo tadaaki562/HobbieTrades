@@ -265,6 +265,10 @@
   </div>
 
   <script>
+    const API = window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:8080'
+      : 'https://your-backend.onrender.com';
+
     function showTab(tab) {
       document.getElementById('login-panel').style.display = tab === 'login' ? 'block' : 'none';
       document.getElementById('register-panel').style.display = tab === 'register' ? 'block' : 'none';
@@ -280,7 +284,7 @@
   const password = document.getElementById('login-password').value;
   if (!email || !password) { alert('Please fill in all fields.'); return; }
 
-  fetch('http://localhost:8080/api/auth/login', {
+  fetch(`${API}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password })
@@ -311,7 +315,7 @@
   const password = document.getElementById('reg-password').value;
   if (!name || !email || !password) { alert('Please fill in all required fields.'); return; }
 
-  fetch('http://localhost:8080/api/auth/register', {
+  fetch(`${API}/api/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, email, password, location })
