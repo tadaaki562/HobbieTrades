@@ -354,6 +354,19 @@
       0%   { background-position: 200% 0; }
       100% { background-position: -200% 0; }
     }
+
+    .match-hint-banner {
+      display: none;
+      margin-bottom: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius-md);
+      font-size: 0.82rem;
+      line-height: 1.45;
+      background: linear-gradient(90deg, #F0EEFF, #E8F4FF);
+      border: 1px solid #C8BFFF;
+      color: #2D2480;
+    }
+    .match-hint-banner strong { font-weight: 700; }
   </style>
 </head>
 <body>
@@ -415,6 +428,7 @@
     <div class="detail-category" id="item-category">—</div>
     <div class="detail-title"    id="item-title">Loading…</div>
     <div class="detail-meta"     id="item-meta"></div>
+    <div id="match-hint-banner" class="match-hint-banner" role="status"></div>
 
     <!-- Value -->
     <div class="value-bar">
@@ -607,6 +621,26 @@
 
     if (seller.tradeCount >= 5) {
       document.getElementById('seller-badge').style.display = '';
+    }
+
+    const matchBanner = document.getElementById('match-hint-banner');
+    matchBanner.style.display = 'none';
+    matchBanner.textContent = '';
+    if (loggedInUserId && !isOwnItem) {
+      fetch(`${API}/api/trades/matches?userId=${loggedInUserId}&limit=50`)
+        .then(r => r.json())
+        .then(matches => {
+          const row = matches.find(x => x.item && x.item.id === item.id);
+          if (!row) return;
+          const pct = row.matchPercent != null ? row.matchPercent : (row.matchScore || 0);
+          if (pct < 22) return;
+          const why = row.matchReason || 'Rule-based match from your listings and preferences.';
+          matchBanner.innerHTML =
+            '<strong>Recommended for you</strong> · ' + pct + '% match — ' +
+            String(why).replace(/</g, '&lt;');
+          matchBanner.style.display = 'block';
+        })
+        .catch(() => {});
     }
 
     // ── Action buttons ──

@@ -314,6 +314,38 @@
       letter-spacing: 0.04em;
     }
 
+    .card-match-badge {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      font-size: 0.62rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      max-width: calc(100% - 16px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-match-badge.high { background: #EAF3DE; color: #3B6D11; border: 1px solid #97C459; }
+    .card-match-badge.med  { background: #EEF2FF; color: #4338CA; border: 1px solid #C7D2FE; }
+    .card-match-badge.low  { background: rgba(255,255,255,0.92); color: #4B5563; border: 1px solid var(--border); }
+
+    .card-match-reason {
+      font-size: 0.68rem;
+      color: var(--brand-dark);
+      margin-top: 2px;
+      line-height: 1.3;
+    }
+
+    .hero-method-note {
+      margin-top: 0.65rem;
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.65);
+      max-width: 36rem;
+      line-height: 1.45;
+    }
+
     /* Condition badge on card */
     .card-cond-badge {
       position: absolute;
@@ -457,6 +489,7 @@
   <div class="hero-inner">
     <h1>Browse &amp; Trade ✦</h1>
     <p>Zero cash. Pure barter. Find your perfect hobby swap.</p>
+    <p class="hero-method-note">How it works: your listing details + optional photo → Hugging Face vision labels → curated PH marketplace price references &amp; rules for fair value → rule-based matching to surface strong trade fits (when you’re logged in).</p>
   </div>
 </div>
 
@@ -555,6 +588,7 @@
       <div class="result-count" id="result-count">Loading items…</div>
       <select class="sort-select" id="sort-select" onchange="applyFilters()">
         <option value="newest">Newest First</option>
+        <option value="match-best">Best match for you</option>
         <option value="value-high">Value: High → Low</option>
         <option value="value-low">Value: Low → High</option>
         <option value="name-az">Name A–Z</option>
@@ -594,6 +628,8 @@
   let currentPage = 1;
   let activeCat   = 'all';
   let activeCond  = 'all';
+  let matchByItemId = {};
+  const loggedInUserId = parseInt(localStorage.getItem('userId') || '', 10) || null;
 
   // ─── Init ────────────────────────────────────────────────────────────────────
   document.getElementById('nav-avatar').textContent =
@@ -644,12 +680,38 @@
 
   function condBadgeClass(cond) { return COND_CLASS[cond] || ''; }
 
+  function escapeHtml(s) {
+    return String(s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  async function loadMatchHints() {
+    matchByItemId = {};
+    if (!loggedInUserId) return;
+    try {
+      const res = await fetch(`${API}/api/trades/matches?userId=${loggedInUserId}&limit=60`);
+      if (!res.ok) return;
+      const matches = await res.json();
+      matches.forEach(m => {
+        if (m.item && m.item.id != null) {
+          matchByItemId[m.item.id] = {
+            pct: m.matchPercent != null ? m.matchPercent : (m.matchScore || 0),
+            reason: m.matchReason || ''
+          };
+        }
+      });
+    } catch (_) { /* optional */ }
+  }
+
   // ─── Load items from API ──────────────────────────────────────────────────────
   async function loadItems() {
     try {
       const res = await fetch(`${API}/api/items`);
       if (!res.ok) throw new Error('Server error');
       allItems = await res.json();
+      await loadMatchHints();
       updateCounts();
       applyFilters();
     } catch(e) {
@@ -692,6 +754,14 @@
     if      (sort === 'value-high') filtered.sort((a,b) => (parseFloat(b.estimatedValue)||0) - (parseFloat(a.estimatedValue)||0));
     else if (sort === 'value-low')  filtered.sort((a,b) => (parseFloat(a.estimatedValue)||0) - (parseFloat(b.estimatedValue)||0));
     else if (sort === 'name-az')    filtered.sort((a,b) => (a.title||'').localeCompare(b.title||''));
+    else if (sort === 'match-best') {
+      filtered.sort((a, b) => {
+        const ma = matchByItemId[a.id]?.pct ?? -1;
+        const mb = matchByItemId[b.id]?.pct ?? -1;
+        if (mb !== ma) return mb - ma;
+        return b.id - a.id;
+      });
+    }
     else                            filtered.sort((a,b) => b.id - a.id);
 
     currentPage = 1;
@@ -729,12 +799,23 @@
       const color   = avatarColor(item.user ? item.user.id : 0);
 
       const imgHtml = item.photoUrl
-        ? `<img src="${API}${item.photoUrl}" alt="${item.title}"
+        ? `<img src="${API}${item.photoUrl}" alt="${escapeHtml(item.title)}"
                loading="lazy"
                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
            />
            <div class="card-emoji-placeholder" style="display:none;background:${bg}">${emoji}</div>`
         : `<div class="card-emoji-placeholder" style="background:${bg}">${emoji}</div>`;
+
+      const mh = matchByItemId[item.id];
+      let matchBadgeHtml = '';
+      if (loggedInUserId && mh && mh.pct >= 22) {
+        const tier = mh.pct >= 70 ? 'high' : mh.pct >= 45 ? 'med' : 'low';
+        const tip = escapeHtml((mh.reason || 'Rule-based match').replace(/"/g, "'"));
+        matchBadgeHtml = `<div class="card-match-badge ${tier}" title="${tip}">${mh.pct}% match</div>`;
+      }
+      const matchReasonHtml = (loggedInUserId && mh && mh.pct >= 22 && mh.reason)
+        ? `<div class="card-match-reason">🎯 ${escapeHtml(mh.reason)}</div>`
+        : '';
 
       return `
         <a class="item-card fade-in" href="item-detail.html?id=${item.id}">
@@ -742,17 +823,19 @@
             ${imgHtml}
             <div class="card-trade-badge">TRADE</div>
             ${cond ? `<div class="card-cond-badge ${condBadgeClass(cond)}">${cond}</div>` : ''}
+            ${matchBadgeHtml}
           </div>
           <div class="card-body">
             <div class="card-category">${item.category || 'General'}</div>
-            <div class="card-title">${item.title}</div>
+            <div class="card-title">${escapeHtml(item.title)}</div>
             <div class="card-meta">
               <span style="display:inline-flex;align-items:center;gap:3px">
                 <span class="cdot" style="background:${condColor(cond)}"></span>${cond}
               </span>
             </div>
-            ${item.lookingFor ? `<div class="card-location">Wants: ${item.lookingFor}</div>` : ''}
-            <div class="card-location">📍 ${item.location || 'Philippines'}</div>
+            ${matchReasonHtml}
+            ${item.lookingFor ? `<div class="card-location">Wants: ${escapeHtml(item.lookingFor)}</div>` : ''}
+            <div class="card-location">📍 ${escapeHtml(item.location || 'Philippines')}</div>
           </div>
           <div class="card-footer">
             <div class="card-value">${formatPeso(val)} <span>est.</span></div>
