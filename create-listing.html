@@ -181,7 +181,7 @@
         <label class="form-label">
           Photo
           <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-tertiary)">
-            — upload first and AI will auto-detect category &amp; condition
+            — upload first and AI will suggest title, category &amp; condition
           </span>
         </label>
         <div class="upload-box" id="upload-box" onclick="document.getElementById('photo-input').click()">
@@ -203,7 +203,7 @@
     <!-- ── TITLE ── -->
     <div class="full">
       <div class="form-group">
-        <label class="form-label">Item title *</label>
+        <label class="form-label">Item title * <span id="title-lock-hint" style="display:none;font-weight:400;color:var(--text-tertiary)">(set by AI)</span></label>
         <input type="text" class="form-control"
                placeholder="e.g. Vintage Acoustic Guitar, Canon DSLR 200D"
                id="item-title" oninput="checkEstimate()"/>
@@ -323,6 +323,10 @@
   }
 
   function applyAiLocks() {
+    const titleEl = document.getElementById('item-title');
+    titleEl.readOnly = true;
+    titleEl.classList.add('field-locked');
+    document.getElementById('title-lock-hint').style.display = 'inline';
     document.getElementById('item-category').disabled = true;
     document.getElementById('item-category').classList.add('field-locked');
     document.getElementById('item-value').readOnly = true;
@@ -338,6 +342,10 @@
 
   function releaseAiLocks() {
     aiLocked = false;
+    const titleEl = document.getElementById('item-title');
+    titleEl.readOnly = false;
+    titleEl.classList.remove('field-locked');
+    document.getElementById('title-lock-hint').style.display = 'none';
     document.getElementById('item-category').disabled = false;
     document.getElementById('item-category').classList.remove('field-locked');
     document.getElementById('item-value').readOnly = false;
@@ -443,7 +451,13 @@
     const condition = result.detectedCondition || '';
     const caption   = result.caption           || '';
     const rawLabels = result.rawLabels         || '';
+    const suggestedTitle = (result.suggestedTitle || '').trim();
     const applied   = [];
+
+    if (suggestedTitle) {
+      document.getElementById('item-title').value = suggestedTitle;
+      applied.push(`Title → ${suggestedTitle}`);
+    }
 
     // Auto-fill category
     if (category && category !== 'Other') {
@@ -472,10 +486,12 @@
          </div>`
       : '';
 
+    const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
     const summaryHtml = `
       <div style="font-size:12px;font-weight:600;margin-bottom:6px">
-        🏷️ Category: <strong>${category || '—'}</strong> &nbsp;·&nbsp;
-        📊 Condition: <strong>${condition || '—'}</strong>
+        ${suggestedTitle ? `📝 Title: <strong>${esc(suggestedTitle)}</strong> &nbsp;·&nbsp; ` : ''}
+        🏷️ Category: <strong>${esc(category || '—')}</strong> &nbsp;·&nbsp;
+        📊 Condition: <strong>${esc(condition || '—')}</strong>
       </div>`;
 
     const tagsHtml = labels.length > 0
