@@ -315,6 +315,39 @@
       font-size: 13px;
     }
     .chat-empty-icon { font-size: 40px; }
+
+    .chat-notice {
+      margin: 0 20px 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      line-height: 1.5;
+      display: none;
+    }
+    .chat-notice.show { display: block; }
+    .chat-notice.err { background: #FEE8E8; border: 1px solid #F9BBBB; color: #7F1D1D; }
+    .chat-notice.ok { background: #EAF3DE; border: 1px solid #97C459; color: #3B6D11; }
+    .chat-notice.neutral { background: var(--white); border: 1px solid var(--border); color: var(--text); }
+
+    .chat-header-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .header-text-btn {
+      font-size: 12px;
+      font-weight: 600;
+      color: #991B1B;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+      font-family: inherit;
+      padding: 0;
+    }
+    .header-text-btn:hover { color: #7F1D1D; }
   </style>
 </head>
 <body>
@@ -369,8 +402,22 @@
       if (!name) return '??';
       return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
     }
-    function getCategoryEmoji(cat) {
-      return { Cameras:'📷',Instruments:'🎸',Sports:'🛹',Gaming:'🎮',Art:'🎨',Craft:'🧵',Other:'📦' }[cat] || '📦';
+    function getItemDisplayEmoji(title, category) {
+      const t = (title || '').toLowerCase();
+      if ((/\bpiano\b|grand piano|upright piano|digital piano/.test(t)) && !/nintendo/.test(t)) return '🎹';
+      if (/\bcello\b|\bviolin\b|\bviola\b/.test(t)) return '🎻';
+      if (/electric\s*guitar|acoustic\s*guitar|bass\s*guitar|\bguitar\b|\bbass\b(?!ball)/.test(t)) return '🎸';
+      if (/\bdrum\b|cymbal/.test(t)) return '🥁';
+      if (/\bsax|\btrumpet|\btrombone|\bclarinet|\bflute|\boboe|\bbassoon\b/.test(t)) return '🎷';
+      if (/\bmicrophone\b|\bmic\b/.test(t)) return '🎤';
+      if (/\bukulele\b|\bbanjo\b|\bharp\b|\bmandolin\b/.test(t)) return '🪕';
+      if (/canon|nikon|sony\s*alpha|\bcamera\b|\bdslr\b|\blens\b|gopro|mirrorless/.test(t)) return '📷';
+      if (/nintendo|playstation|\bps5\b|\bxbox\b|steam\s*deck|game\s*console/.test(t)) return '🎮';
+      if (/\bbike\b|\bbicycle\b|skate|badminton|tennis|racket/.test(t)) return '🛹';
+      if (/paint|canvas|brush|easel|sketch/.test(t)) return '🎨';
+      if (/sewing|yarn|crochet|knit|craft/.test(t)) return '🧵';
+      const fallback = { Cameras:'📷', Instruments:'🎼', Sports:'⚽', Gaming:'🎮', Art:'🎨', Craft:'🧵', Other:'📦' };
+      return fallback[category] || '📦';
     }
     function formatRelativeTime(dateStr) {
       if (!dateStr) return '';
@@ -434,7 +481,7 @@
         const theirItem  = isProposer ? trade.requestedItem : trade.offeredItem;
         const otherName  = other ? other.name : 'Unknown';
         const color      = avatarColor(other ? other.id : 0);
-        const emoji      = theirItem ? getCategoryEmoji(theirItem.category) : '📦';
+        const emoji      = theirItem ? getItemDisplayEmoji(theirItem.title, theirItem.category) : '📦';
         const preview    = `${isProposer ? 'You offered' : 'Incoming proposal'}: ${emoji} ${theirItem ? theirItem.title : ''}`;
         const timeStr    = formatRelativeTime(trade.createdAt);
 
@@ -450,6 +497,64 @@
             <div class="chat-time">${timeStr}</div>
           </div>`;
       }).join('');
+    }
+
+    let removeTradeTarget = null;
+
+    function showChatNotice(kind, html) {
+      const n = document.getElementById('chat-notice');
+      if (!n) return;
+      n.className = 'chat-notice show ' + (kind || 'neutral');
+      n.innerHTML = html;
+    }
+    function clearChatNotice() {
+      const n = document.getElementById('chat-notice');
+      if (!n) return;
+      n.className = 'chat-notice';
+      n.innerHTML = '';
+      removeTradeTarget = null;
+    }
+
+    function promptRemoveTrade(tradeId) {
+      removeTradeTarget = tradeId;
+      showChatNotice('neutral',
+        '<strong>Remove this chat?</strong> It disappears from your inbox (completed or declined trades only). ' +
+        '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">' +
+        '<button type="button" class="trade-btn trade-btn-decline" onclick="executeRemoveTrade()">Remove</button>' +
+        '<button type="button" class="trade-btn" style="background:var(--border);color:var(--text)" onclick="clearChatNotice()">Cancel</button>' +
+        '</div>');
+    }
+
+    function executeRemoveTrade() {
+      if (!removeTradeTarget || !loggedInUserId) return;
+      const tid = removeTradeTarget;
+      clearChatNotice();
+      fetch(`${API}/api/trades/${tid}?userId=${loggedInUserId}`, { method: 'DELETE' })
+        .then(r => r.json())
+        .then(data => {
+          if (!data.success) {
+            showChatNotice('err', data.message || 'Could not remove chat.');
+            return;
+          }
+          allTrades = allTrades.filter(t => t.id !== tid);
+          const badge = document.getElementById('trade-count');
+          if (allTrades.length === 0) {
+            badge.style.display = 'none';
+            document.getElementById('chat-list').innerHTML =
+              '<div class="sidebar-empty">No trades yet. <a href="browse.html">Browse items</a> to propose one!</div>';
+            document.getElementById('chat-main').innerHTML = `
+              <div class="chat-empty">
+                <div class="chat-empty-icon">💬</div>
+                <div>Select a trade to view the conversation</div>
+              </div>`;
+            activeTrade = null;
+            return;
+          }
+          badge.textContent = allTrades.length;
+          renderSidebar(allTrades);
+          openTrade(allTrades[0]);
+        })
+        .catch(() => showChatNotice('err', 'Could not reach the server.'));
     }
 
     // ─── Open trade ───────────────────────────────────────────────────────────
@@ -470,8 +575,8 @@
       const otherRating = other ? (other.rating || 0).toFixed(1) : '0.0';
       const otherTrades = other ? (other.tradeCount || 0) : 0;
 
-      const myEmoji    = myItem    ? getCategoryEmoji(myItem.category)    : '📦';
-      const theirEmoji = theirItem ? getCategoryEmoji(theirItem.category) : '📦';
+      const myEmoji    = myItem    ? getItemDisplayEmoji(myItem.title, myItem.category)    : '📦';
+      const theirEmoji = theirItem ? getItemDisplayEmoji(theirItem.title, theirItem.category) : '📦';
       const myTitle    = myItem    ? myItem.title    : 'Your item';
       const theirTitle = theirItem ? theirItem.title : 'Their item';
       const myValue    = myItem    ? parseFloat(myItem.estimatedValue)    : 0;
@@ -527,6 +632,8 @@
           <button class="btn btn-primary btn-sm" onclick="confirmTrade(${trade.id})">Confirm done</button>
         </div>` : '';
 
+      const canRemoveChat = ['completed', 'declined'].includes(trade.status);
+
       document.getElementById('chat-main').innerHTML = `
         <div class="chat-header">
           <div class="chat-ava" style="background:${otherColor};width:38px;height:38px;font-size:13px">${getInitials(otherName)}</div>
@@ -534,10 +641,13 @@
             <div class="chat-header-name">${otherName}</div>
             <div class="chat-header-sub">★ ${otherRating} · ${otherTrades} trades completed</div>
           </div>
-          <div style="margin-left:auto">
+          <div class="chat-header-actions">
+            ${canRemoveChat ? `<button type="button" class="header-text-btn" onclick="promptRemoveTrade(${trade.id})">Remove chat</button>` : ''}
             <span class="status-pill ${getStatusClass(trade.status)}">${getStatusLabel(trade.status)}</span>
           </div>
         </div>
+
+        <div id="chat-notice" class="chat-notice"></div>
 
         <div class="chat-messages" id="chat-messages">
 
@@ -604,13 +714,22 @@
             if (t) t.status = 'accepted';
             renderSidebar(allTrades);
             openTrade(t);
-          } else alert(data.message || 'Could not accept trade.');
+          } else showChatNotice('err', data.message || 'Could not accept trade.');
         })
-        .catch(() => alert('Could not reach server.'));
+        .catch(() => showChatNotice('err', 'Could not reach the server.'));
     }
 
     function declineTrade(tradeId) {
-      if (!confirm('Are you sure you want to decline this trade?')) return;
+      showChatNotice('neutral',
+        '<strong>Decline this trade?</strong> The other person will see it as declined. ' +
+        '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">' +
+        '<button type="button" class="trade-btn trade-btn-decline" onclick="confirmDeclineTrade(' + tradeId + ')">Decline trade</button>' +
+        '<button type="button" class="trade-btn" style="background:var(--border);color:var(--text)" onclick="clearChatNotice()">Cancel</button>' +
+        '</div>');
+    }
+
+    function confirmDeclineTrade(tradeId) {
+      clearChatNotice();
       fetch(`${API}/api/trades/${tradeId}/decline`, { method: 'PUT' })
         .then(res => res.json())
         .then(data => {
@@ -619,15 +738,26 @@
             if (t) t.status = 'declined';
             renderSidebar(allTrades);
             openTrade(t);
-          } else alert(data.message || 'Could not decline trade.');
+          } else showChatNotice('err', data.message || 'Could not decline trade.');
         })
-        .catch(() => alert('Could not reach server.'));
+        .catch(() => showChatNotice('err', 'Could not reach the server.'));
     }
 
     function confirmTrade(tradeId) {
-      if (!loggedInUserId) { alert('Please log in first.'); return; }
-      if (!confirm('Confirm that you have exchanged items in person?')) return;
+      if (!loggedInUserId) {
+        showChatNotice('err', 'Please log in first.');
+        return;
+      }
+      showChatNotice('neutral',
+        '<strong>Confirm meetup done?</strong> Only tap yes after you have exchanged items in person. ' +
+        '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">' +
+        '<button type="button" class="trade-btn trade-btn-accept" onclick="submitConfirmTrade(' + tradeId + ')">Yes, we exchanged items</button>' +
+        '<button type="button" class="trade-btn" style="background:var(--border);color:var(--text)" onclick="clearChatNotice()">Cancel</button>' +
+        '</div>');
+    }
 
+    function submitConfirmTrade(tradeId) {
+      clearChatNotice();
       fetch(`${API}/api/trades/${tradeId}/confirm`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -645,7 +775,7 @@
             const other      = isProposer ? t.receiver    : t.proposer;
             const theirItem  = isProposer ? t.requestedItem : t.offeredItem;
             const otherName  = other ? other.name : 'Trader';
-            const theirEmoji = theirItem ? getCategoryEmoji(theirItem.category) : '📦';
+            const theirEmoji = theirItem ? getItemDisplayEmoji(theirItem.title, theirItem.category) : '📦';
 
             window.location.href =
               `review.html?tradeId=${tradeId}` +
@@ -658,15 +788,15 @@
               `&sellerColor=${encodeURIComponent(avatarColor(other ? other.id : 0))}` +
               `&sellerTrades=${other ? other.tradeCount || 0 : 0}`;
           } else {
-            alert('Your confirmation recorded! Waiting for the other party to confirm. Items will be marked as traded once both confirm.');
             renderSidebar(allTrades);
             openTrade(t);
+            setTimeout(() => showChatNotice('ok', 'Your confirmation was saved. Waiting for the other trader to confirm before the trade completes.'), 0);
           }
         } else {
-          alert(data.message || 'Could not confirm trade.');
+          showChatNotice('err', data.message || 'Could not confirm trade.');
         }
       })
-      .catch(() => alert('Could not reach server.'));
+      .catch(() => showChatNotice('err', 'Could not reach the server.'));
     }
 
     // ─── Messages ─────────────────────────────────────────────────────────────

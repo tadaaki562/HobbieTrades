@@ -113,6 +113,29 @@
     .btn-row { display: flex; gap: 10px; margin-top: 28px; }
     .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
+    .form-feedback {
+      display: none;
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      font-size: 13px;
+      margin-top: 16px;
+      line-height: 1.45;
+    }
+    .form-feedback.show { display: block; }
+    .form-feedback.err { background: #FEE8E8; border: 1px solid #F9BBBB; color: #7F1D1D; }
+    .form-feedback.ok { background: #EAF3DE; border: 1px solid #97C459; color: #3B6D11; }
+
+    select.field-locked, input.field-locked {
+      background: var(--bg) !important;
+      color: var(--text-secondary);
+      cursor: not-allowed;
+    }
+    .cond-pill.locked {
+      pointer-events: none;
+      opacity: 0.75;
+      cursor: not-allowed;
+    }
+
     /* ── SPINNER ── */
     .spinner {
       display: inline-block;
@@ -200,7 +223,7 @@
     <!-- ── CATEGORY ── -->
     <div>
       <div class="form-group">
-        <label class="form-label">Category *</label>
+        <label class="form-label">Category * <span id="cat-lock-hint" style="display:none;font-weight:400;color:var(--text-tertiary)">(set by AI)</span></label>
         <select class="form-control" id="item-category" onchange="checkEstimate()">
           <option value="">Select category</option>
           <option value="Cameras">Cameras</option>
@@ -217,7 +240,7 @@
     <!-- ── CONDITION ── -->
     <div>
       <div class="form-group">
-        <label class="form-label">Condition *</label>
+        <label class="form-label">Condition * <span id="cond-lock-hint" style="display:none;font-weight:400;color:var(--text-tertiary)">(set by AI)</span></label>
         <div class="cond-pills">
           <div class="cond-pill" onclick="selectCondition(this,'Like New')">Like New</div>
           <div class="cond-pill" onclick="selectCondition(this,'Good')">Good</div>
@@ -240,7 +263,7 @@
     <!-- ── ESTIMATED VALUE ── -->
     <div>
       <div class="form-group">
-        <label class="form-label">Your estimated value (₱) *</label>
+        <label class="form-label">Your estimated value (₱) * <span id="val-lock-hint" style="display:none;font-weight:400;color:var(--text-tertiary)">(from estimate)</span></label>
         <input type="number" class="form-control" placeholder="0.00" id="item-value"/>
       </div>
     </div>
@@ -272,6 +295,7 @@
     </button>
     <a href="browse.html" class="btn btn-outline btn-lg" style="flex:1">Cancel</a>
   </div>
+  <div id="form-feedback" class="form-feedback" role="status"></div>
 </div>
 
 <script>
@@ -285,9 +309,56 @@
 
   let selectedCondition = '';
   let pendingPhotoFile  = null;
+  let aiLocked = false;
+
+  function setFormFeedback(kind, text) {
+    const el = document.getElementById('form-feedback');
+    el.textContent = text;
+    el.className = 'form-feedback show ' + (kind === 'ok' ? 'ok' : 'err');
+  }
+  function clearFormFeedback() {
+    const el = document.getElementById('form-feedback');
+    el.className = 'form-feedback';
+    el.textContent = '';
+  }
+
+  function applyAiLocks() {
+    document.getElementById('item-category').disabled = true;
+    document.getElementById('item-category').classList.add('field-locked');
+    document.getElementById('item-value').readOnly = true;
+    document.getElementById('item-value').classList.add('field-locked');
+    document.querySelectorAll('.cond-pill').forEach(p => {
+      p.classList.add('locked');
+      p.onclick = null;
+    });
+    document.getElementById('cat-lock-hint').style.display = 'inline';
+    document.getElementById('cond-lock-hint').style.display = 'inline';
+    document.getElementById('val-lock-hint').style.display = 'inline';
+  }
+
+  function releaseAiLocks() {
+    aiLocked = false;
+    document.getElementById('item-category').disabled = false;
+    document.getElementById('item-category').classList.remove('field-locked');
+    document.getElementById('item-value').readOnly = false;
+    document.getElementById('item-value').classList.remove('field-locked');
+    document.getElementById('cat-lock-hint').style.display = 'none';
+    document.getElementById('cond-lock-hint').style.display = 'none';
+    document.getElementById('val-lock-hint').style.display = 'none';
+    document.querySelectorAll('.cond-pill').forEach(p => {
+      p.classList.remove('locked');
+    });
+    // restore pill handlers
+    const vals = ['Like New', 'Good', 'Fair', 'Worn'];
+    document.querySelectorAll('.cond-pill').forEach((p, i) => {
+      const v = vals[i];
+      p.onclick = function() { selectCondition(this, v); };
+    });
+  }
 
   // ─── Condition pills ──────────────────────────────────────────────────────────
   function selectCondition(el, val) {
+    if (el.classList.contains('locked')) return;
     document.querySelectorAll('.cond-pill').forEach(p => p.classList.remove('sel'));
     el.classList.add('sel');
     selectedCondition = val;
@@ -325,6 +396,8 @@
   function onPhotoSelected(input) {
     if (!input.files || !input.files[0]) return;
     pendingPhotoFile = input.files[0];
+    releaseAiLocks();
+    clearFormFeedback();
 
     // Local preview
     const reader = new FileReader();
@@ -355,6 +428,8 @@
         return;
       }
       applyAiResult(result);
+      aiLocked = true;
+      applyAiLocks();
     })
     .catch(() => {
       showAiBox('error', '⚠️ Could not connect',
@@ -417,6 +492,7 @@
 
   // ─── Submit listing ───────────────────────────────────────────────────────────
   function submitListing() {
+    clearFormFeedback();
     const title      = document.getElementById('item-title').value.trim();
     const desc       = document.getElementById('item-desc').value.trim();
     const category   = document.getElementById('item-category').value;
@@ -425,14 +501,14 @@
     const lookingFor = document.getElementById('item-looking').value.trim();
 
     if (!title || !desc || !category || !selectedCondition || !value) {
-      alert('Please fill in all required fields (*).');
+      setFormFeedback('err', 'Please fill in all required fields marked with *.');
       return;
     }
 
     const userId = localStorage.getItem('userId');
     if (!userId) {
-      alert('You must be logged in to list an item.');
-      window.location.href = 'index.html';
+      setFormFeedback('err', 'You must be logged in to list an item. Redirecting to sign in…');
+      setTimeout(() => { window.location.href = 'index.html'; }, 1600);
       return;
     }
 
@@ -460,7 +536,7 @@
       if (!data.success) {
         btn.disabled    = false;
         btn.textContent = 'List for trade';
-        alert(data.message || 'Failed to save item. Please try again.');
+        setFormFeedback('err', data.message || 'Failed to save item. Please try again.');
         return;
       }
 
@@ -474,22 +550,22 @@
 
         fetch(`${API}/api/items/${itemId}/upload`, { method:'POST', body: fd })
           .then(() => {
-            alert(`"${title}" listed successfully!`);
-            window.location.href = 'browse.html';
+            setFormFeedback('ok', `"${title}" was listed successfully. Taking you to Browse…`);
+            setTimeout(() => { window.location.href = 'browse.html'; }, 900);
           })
           .catch(() => {
-            alert(`"${title}" listed! (Photo upload failed — item saved without photo.)`);
-            window.location.href = 'browse.html';
+            setFormFeedback('ok', `"${title}" was saved, but the photo upload failed. You can add a photo later from your profile. Redirecting…`);
+            setTimeout(() => { window.location.href = 'browse.html'; }, 2000);
           });
       } else {
-        alert(`"${title}" listed successfully!`);
-        window.location.href = 'browse.html';
+        setFormFeedback('ok', `"${title}" was listed successfully. Taking you to Browse…`);
+        setTimeout(() => { window.location.href = 'browse.html'; }, 900);
       }
     })
     .catch(() => {
       btn.disabled    = false;
       btn.textContent = 'List for trade';
-      alert('Cannot connect to server. Make sure Spring Boot is running.');
+      setFormFeedback('err', 'Cannot connect to the server. Check that the HobbieTrades API is running.');
     });
   }
 </script>

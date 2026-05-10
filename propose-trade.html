@@ -102,6 +102,20 @@
     .note-area:focus { border-color: var(--brand-mid); box-shadow: 0 0 0 3px rgba(83,74,183,0.1); }
 
     .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+
+    .propose-banner {
+      display: none;
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-size: 13px;
+      margin-bottom: 14px;
+      line-height: 1.45;
+    }
+    .propose-banner.show { display: block; }
+    .propose-banner.err { background: #FEE8E8; border: 1px solid #F9BBBB; color: #7F1D1D; }
+    .propose-banner.ok { background: #EAF3DE; border: 1px solid #97C459; color: #3B6D11; }
+
+    .login-gate { max-width: 420px; margin: 40px auto; padding: 24px; text-align: center; font-size: 14px; color: var(--text-secondary); }
   </style>
 </head>
 <body>
@@ -116,19 +130,21 @@
     </div>
   </nav>
 
-  <div class="propose-wrap">
-    <a href="item-detail.html" class="back-link" style="font-size:13px;color:var(--brand);text-decoration:none;display:inline-flex;align-items:center;gap:6px;margin-bottom:20px">← Back to item</a>
+  <div class="propose-wrap" id="propose-main" style="display:none">
+    <a href="item-detail.html" class="back-link" id="back-to-item" style="font-size:13px;color:var(--brand);text-decoration:none;display:inline-flex;align-items:center;gap:6px;margin-bottom:20px">← Back to item</a>
     <div class="page-title">Propose a trade</div>
     <div class="page-sub">Select one of your listed items to offer in exchange</div>
+
+    <div id="propose-banner" class="propose-banner" role="status"></div>
 
     <!-- TRADE COLS -->
     <div class="trade-cols">
       <div class="trade-col">
         <div class="trade-col-label">You offer</div>
         <div class="trade-item-box trade-item-offer" id="offer-box">
-          <span class="trade-item-emoji">🎮</span>
-          Nintendo Switch<br/>
-          <span class="trade-item-val">~₱12,000 est.</span>
+          <span class="trade-item-emoji">⏳</span>
+          Loading your listings…<br/>
+          <span class="trade-item-val">Choose an item below</span>
         </div>
         <div class="change-link" onclick="togglePicker()">Change item ↓</div>
       </div>
@@ -137,16 +153,16 @@
 
       <div class="trade-col">
         <div class="trade-col-label">You receive</div>
-        <div class="trade-item-box trade-item-receive">
-          <span class="trade-item-emoji">📷</span>
-          Canon DSLR 200D<br/>
-          <span class="trade-item-val">~₱8,500 est.</span>
+        <div class="trade-item-box trade-item-receive" id="receive-box">
+          <span class="trade-item-emoji">📦</span>
+          …<br/>
+          <span class="trade-item-val">~₱0 est.</span>
         </div>
       </div>
     </div>
 
     <!-- ITEM PICKER -->
-    <div class="items-picker open" id="items-picker">
+    <div class="items-picker" id="items-picker">
       <div class="picker-title">Choose one of your listings</div>
       <div class="picker-grid" id="picker-grid">
         <div style="font-size:12px;color:var(--text-secondary);grid-column:1/-1">Loading your items...</div>
@@ -161,7 +177,7 @@
 
     <!-- NOTE -->
     <div class="note-label" id="note-label">Add a note to the seller</div>
-    <textarea class="note-area" placeholder="Introduce yourself and explain your offer...">Hi! I'm offering my Nintendo Switch in good condition. Open to negotiating if needed!</textarea>
+    <textarea class="note-area" id="note-text" placeholder="Introduce yourself and explain your offer (optional)…"></textarea>
 
     <div class="btn-row">
       <button class="btn btn-primary btn-lg" style="flex:2" onclick="submitProposal()">Send trade proposal</button>
@@ -169,51 +185,77 @@
     </div>
   </div>
 
+  <div class="login-gate" id="login-gate" style="display:none">
+    <p>Please <a href="index.html" style="color:var(--brand)">sign in</a> to propose a trade.</p>
+  </div>
+
   <script>
 const API = window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:8080'
   : 'https://hobbietrades-backend.onrender.com';
 
-  // Read the item being requested from URL
 const params = new URLSearchParams(window.location.search);
 const requestedId = params.get('itemId') || '1';
 const requestedTitle = decodeURIComponent(params.get('itemTitle') || 'Item');
-const requestedValue = parseInt(params.get('itemValue')) || 0;
-const requestedEmoji = decodeURIComponent(params.get('itemEmoji') || '📦');
+const requestedValue = parseInt(params.get('itemValue'), 10) || 0;
+const requestedEmojiParam = params.get('itemEmoji') ? decodeURIComponent(params.get('itemEmoji')) : null;
 const loggedInUserName = localStorage.getItem('userName') || '?';
 document.getElementById('nav-avatar').textContent = loggedInUserName.charAt(0).toUpperCase();
 const userId = localStorage.getItem('userId');
-if (!userId) {
-  alert('Please log in to propose a trade.');
-  window.location.href = 'index.html';
+
+function getItemDisplayEmoji(title, category) {
+  const t = (title || '').toLowerCase();
+  if ((/\bpiano\b|grand piano|upright piano|digital piano/.test(t)) && !/nintendo/.test(t)) return '🎹';
+  if (/\bcello\b|\bviolin\b|\bviola\b/.test(t)) return '🎻';
+  if (/electric\s*guitar|acoustic\s*guitar|bass\s*guitar|\bguitar\b|\bbass\b(?!ball)/.test(t)) return '🎸';
+  if (/\bdrum\b|cymbal/.test(t)) return '🥁';
+  if (/\bsax|\btrumpet|\btrombone|\bclarinet|\bflute|\boboe|\bbassoon\b/.test(t)) return '🎷';
+  if (/\bmicrophone\b|\bmic\b/.test(t)) return '🎤';
+  if (/\bukulele\b|\bbanjo\b|\bharp\b|\bmandolin\b/.test(t)) return '🪕';
+  if (/canon|nikon|sony\s*alpha|\bcamera\b|\bdslr\b|\blens\b|gopro|mirrorless/.test(t)) return '📷';
+  if (/nintendo|playstation|\bps5\b|\bxbox\b|steam\s*deck|game\s*console/.test(t)) return '🎮';
+  if (/\bbike\b|\bbicycle\b|skate|badminton|tennis|racket/.test(t)) return '🛹';
+  if (/paint|canvas|brush|easel|sketch/.test(t)) return '🎨';
+  if (/sewing|yarn|crochet|knit|craft/.test(t)) return '🧵';
+  const fallback = { Cameras:'📷', Instruments:'🎼', Sports:'⚽', Gaming:'🎮', Art:'🎨', Craft:'🧵', Other:'📦' };
+  return fallback[category] || '📦';
 }
 
-// Declare ALL variables at top before anything else
+if (!userId) {
+  document.getElementById('login-gate').style.display = 'block';
+} else {
+  document.getElementById('propose-main').style.display = 'block';
+}
+
 let offerValue = 0;
 let selectedOfferId = null;
 const receiveValue = requestedValue;
+const requestedEmoji = requestedEmojiParam || getItemDisplayEmoji(requestedTitle, null);
 
-// Update "You receive" box
-document.querySelector('.trade-item-receive').innerHTML = `
+document.getElementById('receive-box').innerHTML = `
   <span class="trade-item-emoji">${requestedEmoji}</span>
-  ${requestedTitle}<br/>
+  ${escapeHtml(requestedTitle)}<br/>
   <span class="trade-item-val">~₱${requestedValue.toLocaleString()} est.</span>
 `;
 
-// Update back link and cancel button
-document.querySelector('.back-link').href = `item-detail.html?id=${requestedId}`;
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+document.getElementById('back-to-item').href = `item-detail.html?id=${requestedId}`;
 document.getElementById('cancel-btn').href = `item-detail.html?id=${requestedId}`;
 
-// Update note label
 const noteLabel = document.getElementById('note-label');
 if (noteLabel) {
   noteLabel.textContent = `Add a note to ${decodeURIComponent(params.get('sellerName') || 'the seller')}`;
 }
 
-// Category emoji helper
-function getCategoryEmoji(category) {
-  const map = {'Cameras':'📷','Instruments':'🎸','Sports':'🛹','Gaming':'🎮','Art':'🎨','Craft':'🧵','Other':'📦'};
-  return map[category] || '📦';
+function setProposeBanner(kind, text) {
+  const b = document.getElementById('propose-banner');
+  b.textContent = text;
+  b.className = 'propose-banner show ' + (kind === 'ok' ? 'ok' : 'err');
 }
 
 // Render picker with real items
@@ -230,11 +272,12 @@ function renderPicker(userItems, matches) {
   });
 
   grid.innerHTML = userItems.map((item, idx) => {
-    const emoji = getCategoryEmoji(item.category);
+    const emoji = getItemDisplayEmoji(item.title, item.category);
+    const safeTitle = item.title.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
     const score = matchMap[item.id] ? `<div style="font-size:10px;color:var(--brand);margin-top:2px">Match: ${matchMap[item.id]}%</div>` : '';
     return `
       <div class="picker-item ${idx === 0 ? 'sel' : ''}"
-           onclick="selectItem(this, '${emoji}', '${item.title.replace(/'/g,"\\'")}', ${item.estimatedValue}, ${item.id})">
+           onclick="selectItem(this, '${emoji}', '${safeTitle}', ${item.estimatedValue}, ${item.id})">
         <span class="picker-item-emoji">${emoji}</span>
         ${item.title}<br/>
         <span style="color:var(--brand);font-weight:600">₱${parseFloat(item.estimatedValue).toLocaleString()}</span>
@@ -243,22 +286,30 @@ function renderPicker(userItems, matches) {
     `;
   }).join('');
 
-  // Auto-select first item
   if (userItems.length > 0) {
     const first = userItems[0];
     offerValue = parseFloat(first.estimatedValue);
     selectedOfferId = first.id;
     document.getElementById('offer-box').innerHTML = `
-      <span class="trade-item-emoji">${getCategoryEmoji(first.category)}</span>
-      ${first.title}<br/>
+      <span class="trade-item-emoji">${getItemDisplayEmoji(first.title, first.category)}</span>
+      ${escapeHtml(first.title)}<br/>
       <span class="trade-item-val">~₱${offerValue.toLocaleString()} est.</span>
+    `;
+    updateFairBanner();
+  } else {
+    selectedOfferId = null;
+    offerValue = 0;
+    document.getElementById('offer-box').innerHTML = `
+      <span class="trade-item-emoji">📭</span>
+      No listings yet<br/>
+      <span class="trade-item-val"><a href="create-listing.html" style="color:var(--brand)">List an item first</a></span>
     `;
     updateFairBanner();
   }
 }
 
-// Load user's items from API
 if (userId) {
+  document.getElementById('items-picker').classList.add('open');
   fetch(`${API}/api/items/user/${userId}`)
     .then(res => res.json())
     .then(userItems => {
@@ -296,7 +347,7 @@ function selectItem(el, emoji, name, value, itemId) {
   el.classList.add('sel');
   document.getElementById('offer-box').innerHTML = `
     <span class="trade-item-emoji">${emoji}</span>
-    ${name}<br/>
+    ${escapeHtml(name)}<br/>
     <span class="trade-item-val">~₱${offerValue.toLocaleString()} est.</span>
   `;
   const picker = document.getElementById('items-picker');
@@ -307,6 +358,11 @@ function selectItem(el, emoji, name, value, itemId) {
 function updateFairBanner() {
   const banner = document.getElementById('fair-banner');
   if (!banner) return;
+  if (!selectedOfferId) {
+    banner.className = 'fair-banner fair-warn';
+    banner.innerHTML = `<div class="fair-icon">!</div><div><strong>Select an item to offer</strong> to see a fair-value hint.</div>`;
+    return;
+  }
   const diff = Math.abs(offerValue - receiveValue);
   const pct = Math.max(offerValue, receiveValue) > 0 ?
     diff / Math.max(offerValue, receiveValue) : 0;
@@ -321,8 +377,13 @@ function updateFairBanner() {
 }
 
 function submitProposal() {
+  if (!userId) {
+    window.location.href = 'index.html';
+    return;
+  }
   if (!selectedOfferId) {
-    alert('Please select an item to offer.');
+    setProposeBanner('err', 'Choose one of your listings to offer in this trade.');
+    document.getElementById('items-picker').classList.add('open');
     return;
   }
   const sellerName = decodeURIComponent(params.get('sellerName') || 'Seller');
@@ -347,20 +408,23 @@ function submitProposal() {
     })
     .then(res => res.json())
     .then(data => {
-      alert(`Trade proposal sent to ${sellerName}!`);
-      window.location.href = msgUrl + (data.tradeId ? `&tradeId=${data.tradeId}` : '');
+      if (data.success === false) {
+        setProposeBanner('err', data.message || 'Could not send proposal. Please try again.');
+        return;
+      }
+      setProposeBanner('ok', `Proposal sent to ${sellerName}. Opening Messages…`);
+      setTimeout(() => {
+        window.location.href = msgUrl + (data.tradeId ? `&tradeId=${data.tradeId}` : '');
+      }, 600);
     })
     .catch(() => {
-      alert(`Trade proposal sent to ${sellerName}!`);
-      window.location.href = msgUrl;
+      setProposeBanner('err', 'Could not reach the server. Check your connection and try again.');
     });
   } else {
-    alert(`Trade proposal sent to ${sellerName}!`);
-    window.location.href = msgUrl;
+    setProposeBanner('err', 'Missing seller information. Go back to the item and try again.');
   }
 }
 
-// Initialize fair banner
 updateFairBanner();
   </script>
 </body>

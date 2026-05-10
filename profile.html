@@ -286,13 +286,14 @@
     <div class="identity-actions" id="identity-actions"></div>
   </div>
 
+  <div id="profile-feedback" style="display:none;margin-bottom:16px;padding:12px 14px;border-radius:12px;font-size:13px;line-height:1.45"></div>
+
   <!-- OWN BANNER -->
   <div class="own-banner" id="own-banner" style="display:none">
     <span>👤 <strong>This is your profile.</strong> Keep your listings fresh!</span>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <a href="create-listing.html" class="btn btn-primary btn-sm">+ New listing</a>
       <a href="browse.html"         class="btn btn-secondary btn-sm">Browse</a>
-      <button class="btn btn-danger btn-sm" onclick="logout()">Log out</button>
     </div>
   </div>
 
@@ -435,7 +436,23 @@
 
   const params    = new URLSearchParams(window.location.search);
   const profileId = params.get('userId') ? parseInt(params.get('userId')) : loggedInUserId;
-  if (!profileId) { alert('Please log in.'); window.location.href = 'index.html'; }
+
+  function setProfileFeedback(kind, text) {
+    const el = document.getElementById('profile-feedback');
+    el.style.display = 'block';
+    el.style.background = kind === 'ok' ? '#EAF3DE' : '#FEE8E8';
+    el.style.border = '1px solid ' + (kind === 'ok' ? '#97C459' : '#F9BBBB');
+    el.style.color = kind === 'ok' ? '#3B6D11' : '#7F1D1D';
+    el.textContent = text;
+  }
+
+  if (!profileId) {
+    setProfileFeedback('err', 'Please log in. Redirecting…');
+    setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+  } else if (profileId === loggedInUserId && loggedInUserId) {
+    document.getElementById('identity-actions').innerHTML =
+      '<button type="button" class="btn btn-danger btn-sm" onclick="logout()">Log out</button>';
+  }
 
   let _items = [];
 
@@ -490,10 +507,11 @@
   }
 
   // ── Fetch profile ──────────────────────────────────────────────────────────
-  fetch(`${API}/api/users/${profileId}/profile`)
+  if (!profileId) { /* wait for redirect */ }
+  else fetch(`${API}/api/users/${profileId}/profile`)
     .then(r => { if (!r.ok) throw new Error(); return r.json(); })
     .then(data => {
-      if (!data.success) { alert('Profile not found.'); return; }
+      if (!data.success) { setProfileFeedback('err', 'Profile not found.'); return; }
       const { user, items=[], trades=[], reviews=[], subRatings={} } = data;
       _items = items;
       const isOwn = profileId === loggedInUserId;
@@ -696,7 +714,7 @@
         });
       }
     })
-    .catch(() => alert('Could not load profile. Is Spring Boot running on port 8080?'));
+    .catch(() => setProfileFeedback('err', 'Could not load profile. Check your connection and that the HobbieTrades API is running.'));
 
   // ── Edit modal ─────────────────────────────────────────────────────────────
   function openEditModal(idx) {
@@ -720,7 +738,7 @@
     const title  = document.getElementById('edit-title').value.trim();
     const desc   = document.getElementById('edit-desc').value.trim();
     const val    = document.getElementById('edit-value').value;
-    if (!title || !desc || !val) { alert('Please fill in all required fields.'); return; }
+    if (!title || !desc || !val) { setProfileFeedback('err', 'Please fill in title, description, and estimated value.'); return; }
 
     fetch(`${API}/api/items/${itemId}`, {
       method: 'PUT',
@@ -739,13 +757,34 @@
     .then(r => r.json())
     .then(d => {
       if (d.success || d.id) { closeEditModal(); window.location.reload(); }
-      else alert(d.message || 'Could not update listing.');
+      else setProfileFeedback('err', d.message || 'Could not update listing.');
     })
-    .catch(() => alert('Could not reach server.'));
+    .catch(() => setProfileFeedback('err', 'Could not reach the server.'));
   }
 
   function deleteItem(itemId, idx) {
-    if (!confirm(`Delete "${_items[idx]?.title || 'this item'}"? This cannot be undone.`)) return;
+    const fb = document.getElementById('profile-feedback');
+    fb.style.display = 'block';
+    fb.style.background = '#F3F1FA';
+    fb.style.border = '1px solid #E2DCFF';
+    fb.style.color = '#1A1040';
+    fb.innerHTML =
+      '<strong>Delete this listing?</strong> ' +
+      (_items[idx]?.title || 'This item') +
+      ' cannot be recovered. ' +
+      '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">' +
+      '<button type="button" class="btn btn-danger btn-sm" onclick="confirmDeleteItem(' + itemId + ')">Delete listing</button>' +
+      '<button type="button" class="btn btn-ghost btn-sm" onclick="cancelDeleteItem()">Cancel</button></div>';
+  }
+
+  function cancelDeleteItem() {
+    const fb = document.getElementById('profile-feedback');
+    fb.style.display = 'none';
+    fb.textContent = '';
+  }
+
+  function confirmDeleteItem(itemId) {
+    cancelDeleteItem();
     fetch(`${API}/api/items/${itemId}`, {
       method: 'DELETE',
       headers: {'Content-Type':'application/json'},
@@ -754,9 +793,9 @@
     .then(r => r.json())
     .then(d => {
       if (d.success) window.location.reload();
-      else alert(d.message || 'Could not delete listing.');
+      else setProfileFeedback('err', d.message || 'Could not delete listing.');
     })
-    .catch(() => alert('Could not reach server.'));
+    .catch(() => setProfileFeedback('err', 'Could not reach the server.'));
   }
 
   document.getElementById('edit-modal').addEventListener('click', e => {

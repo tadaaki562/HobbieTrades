@@ -106,6 +106,18 @@
 
     /* Submitting state */
     .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .review-banner {
+      display: none;
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-size: 13px;
+      margin-bottom: 20px;
+      line-height: 1.45;
+    }
+    .review-banner.show { display: block; }
+    .review-banner.err { background: #FEE8E8; border: 1px solid #F9BBBB; color: #7F1D1D; }
+    .review-banner.ok { background: #EAF3DE; border: 1px solid #97C459; color: #3B6D11; }
   </style>
 </head>
 <body>
@@ -121,6 +133,8 @@
   </nav>
 
   <div class="review-wrap">
+    <div id="review-banner" class="review-banner" role="status"></div>
+
     <!-- SUCCESS BANNER -->
     <div class="alert alert-green" style="margin-bottom:20px">
       <span>✅</span>
@@ -251,6 +265,12 @@ document.getElementById('nav-avatar').textContent = loggedInUserName.charAt(0).t
     const loggedInUserId = parseInt(localStorage.getItem('userId')) || null;
     const loggedInName   = localStorage.getItem('userName') || 'Me';
 
+    function setReviewBanner(kind, text) {
+      const b = document.getElementById('review-banner');
+      b.textContent = text;
+      b.className = 'review-banner show ' + (kind === 'ok' ? 'ok' : 'err');
+    }
+
     // Nav avatar
     document.getElementById('nav-avatar').textContent = loggedInName.charAt(0).toUpperCase();
 
@@ -300,19 +320,18 @@ document.getElementById('nav-avatar').textContent = loggedInUserName.charAt(0).t
     // ─── Submit review to real API ────────────────────────────────────────────
     function submitReview() {
       if (mainRating === 0) {
-        alert('Please give an overall rating before submitting.');
+        setReviewBanner('err', 'Please choose an overall star rating before submitting.');
         return;
       }
 
       if (!loggedInUserId) {
-        alert('You must be logged in to submit a review.');
-        window.location.href = 'index.html';
+        setReviewBanner('err', 'You must be logged in. Redirecting to sign in…');
+        setTimeout(() => { window.location.href = 'index.html'; }, 1400);
         return;
       }
 
       if (!tradeId || !revieweeId) {
-        // Missing trade/reviewee IDs — still save what we can or warn
-        alert('Review info is incomplete. Please go back to messages and try again.');
+        setReviewBanner('err', 'Review data is incomplete. Open this page again from Messages after a completed trade.');
         return;
       }
 
@@ -343,18 +362,18 @@ document.getElementById('nav-avatar').textContent = loggedInUserName.charAt(0).t
         .then(res => res.json())
         .then(data => {
           if (data.success) {
-            alert(`Review for ${sellerName} submitted! Their new rating: ★ ${data.newRating}`);
-            window.location.href = 'browse.html';
+            setReviewBanner('ok', `Thanks! Your review for ${sellerName} was submitted. Their community rating is now ★ ${data.newRating}. Redirecting…`);
+            setTimeout(() => { window.location.href = 'browse.html'; }, 1600);
           } else {
             btn.disabled    = false;
             btn.textContent = 'Submit review';
-            alert(data.message || 'Could not submit review. Please try again.');
+            setReviewBanner('err', data.message || 'Could not submit review. Please try again.');
           }
         })
         .catch(() => {
           btn.disabled    = false;
           btn.textContent = 'Submit review';
-          alert('Could not reach server. Make sure Spring Boot is running.');
+          setReviewBanner('err', 'Could not reach the server. Check your connection and try again.');
         });
     }
   </script>

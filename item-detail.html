@@ -462,10 +462,6 @@
     ? 'http://localhost:8080'
     : 'https://hobbietrades-backend.onrender.com';
 
-  const CAT_EMOJI = {
-    Cameras:'📷', Instruments:'🎸', Gaming:'🎮',
-    Sports:'🛹', Art:'🎨', Craft:'🧵', Other:'📦'
-  };
   const CAT_BG = {
     Cameras:'#F0F4FF', Instruments:'#EAF3DE', Gaming:'#FAEEDA',
     Sports:'#E6F1FB', Art:'#FAECE7', Craft:'#FBEAF0', Other:'#F5F5F5'
@@ -504,6 +500,24 @@
     return `${diff} days ago`;
   }
 
+  function getItemDisplayEmoji(title, category) {
+    const t = (title || '').toLowerCase();
+    if ((/\bpiano\b|grand piano|upright piano|digital piano/.test(t)) && !/nintendo/.test(t)) return '🎹';
+    if (/\bcello\b|\bviolin\b|\bviola\b/.test(t)) return '🎻';
+    if (/electric\s*guitar|acoustic\s*guitar|bass\s*guitar|\bguitar\b|\bbass\b(?!ball)/.test(t)) return '🎸';
+    if (/\bdrum\b|cymbal/.test(t)) return '🥁';
+    if (/\bsax|\btrumpet|\btrombone|\bclarinet|\bflute|\boboe|\bbassoon\b/.test(t)) return '🎷';
+    if (/\bmicrophone\b|\bmic\b/.test(t)) return '🎤';
+    if (/\bukulele\b|\bbanjo\b|\bharp\b|\bmandolin\b/.test(t)) return '🪕';
+    if (/canon|nikon|sony\s*alpha|\bcamera\b|\bdslr\b|\blens\b|gopro|mirrorless/.test(t)) return '📷';
+    if (/nintendo|playstation|\bps5\b|\bxbox\b|steam\s*deck|game\s*console/.test(t)) return '🎮';
+    if (/\bbike\b|\bbicycle\b|skate|badminton|tennis|racket/.test(t)) return '🛹';
+    if (/paint|canvas|brush|easel|sketch/.test(t)) return '🎨';
+    if (/sewing|yarn|crochet|knit|craft/.test(t)) return '🧵';
+    const fallback = { Cameras:'📷', Instruments:'🎼', Sports:'⚽', Gaming:'🎮', Art:'🎨', Craft:'🧵', Other:'📦' };
+    return fallback[category] || '📦';
+  }
+
   // ── Load item ──────────────────────────────────────────────────────────────
   fetch(`${API}/api/items/${itemId}`)
     .then(res => { if (!res.ok) throw new Error(); return res.json(); })
@@ -515,7 +529,7 @@
     });
 
   function renderItem(item) {
-    const emoji    = CAT_EMOJI[item.category]  || '📦';
+    const emoji    = getItemDisplayEmoji(item.title, item.category);
     const bg       = CAT_BG[item.category]     || '#F5F5F5';
     const cond     = item.conditionLabel        || '';
     const val      = parseFloat(item.estimatedValue) || 0;
