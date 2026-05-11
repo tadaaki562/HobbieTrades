@@ -98,8 +98,9 @@
     /* ── SECTION HEADERS ── */
     .section-header {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
+      gap: 0.75rem;
       margin-bottom: 1rem;
       margin-top: 2rem;
     }
@@ -109,8 +110,11 @@
       font-weight: 700;
       color: var(--text);
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: 0.5rem;
+      min-width: 0;
+      flex: 1;
     }
     .section-count {
       font-size: 0.7rem;
@@ -125,6 +129,8 @@
       color: var(--brand);
       text-decoration: none;
       font-weight: 500;
+      flex-shrink: 0;
+      padding-top: 0.15rem;
     }
     .section-link:hover { text-decoration: underline; }
 
@@ -384,6 +390,48 @@
       margin-bottom: 1rem;
     }
 
+    .fy-signals-wrap {
+      max-width: 1200px;
+      margin: 0 auto 0.5rem;
+      padding: 0 2rem;
+    }
+    .fy-signals-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+      margin-bottom: 0.45rem;
+    }
+    .fy-signals-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      align-items: center;
+    }
+    .signal-chip {
+      font-size: 0.76rem;
+      font-weight: 600;
+      padding: 0.28rem 0.65rem;
+      border-radius: 20px;
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      color: var(--text-secondary);
+    }
+    .signal-chip.cat {
+      background: var(--brand-light);
+      border-color: var(--brand-mid);
+      color: var(--brand);
+    }
+    .section-sub {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      margin-top: 0.15rem;
+      width: 100%;
+      flex-basis: 100%;
+    }
+
     @media (max-width: 768px) {
       .fy-hero { padding: 1.5rem 1rem; }
       .hero-inner {
@@ -394,6 +442,7 @@
       .hero-text h1 { font-size: 1.45rem; }
       .hero-text p { font-size: 0.82rem; }
       .hero-icon { font-size: 2.5rem; align-self: flex-end; }
+      .fy-signals-wrap { padding: 0 1rem; }
       .pref-wrap { padding: 0 1rem; margin-top: 1rem; }
       .pref-bar { gap: 0.35rem; }
       .pref-tag { font-size: 0.72rem; padding: 0.35rem 0.65rem; }
@@ -454,7 +503,7 @@
   <div class="hero-inner">
     <div class="hero-text">
       <h1>For You ✨</h1>
-      <p>Items matched to your listings — the more you list, the better your matches get.</p>
+      <p>Personal picks from your listings, your “looking for” lines, and items you’ve traded toward—so a trade aimed at a Switch can surface more handhelds and gaming gear like it.</p>
     </div>
     <div class="hero-icon">🎯</div>
   </div>
@@ -475,14 +524,20 @@
   </div>
 </div>
 
+<div class="fy-signals-wrap" id="trade-signals-wrap" style="display:none" aria-live="polite">
+  <div class="fy-signals-label">Inspired by your trade activity</div>
+  <div class="fy-signals-chips" id="trade-signals-chips"></div>
+</div>
+
 <!-- MAIN LAYOUT -->
 <div class="fy-layout">
 
   <!-- TOP MATCHES -->
   <div class="section-header">
     <div class="section-title">
-      🔥 Top matches for you
+      🔥 Picked for you
       <span class="section-count" id="match-count">—</span>
+      <div class="section-sub">Ranked using listings, wish text, and the items you wanted in past trades.</div>
     </div>
     <a href="browse.html" class="section-link">Browse all →</a>
   </div>
@@ -738,7 +793,46 @@
     window.location.href = `item-detail.html?id=${id}`;
   }
 
+  // ── Trade history signals (hero chips) ───────────────────────────────────────
+  async function loadTradeSignals() {
+    const wrap = document.getElementById('trade-signals-wrap');
+    const chipsEl = document.getElementById('trade-signals-chips');
+    if (!loggedInUserId) {
+      wrap.style.display = 'none';
+      return;
+    }
+    try {
+      const res = await fetch(`${API}/api/trades/for-you-signals?userId=${loggedInUserId}`);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      const cats = data.wantedCategories || [];
+      const kws = (data.topKeywords || []).map(String);
+      if (cats.length === 0 && kws.length === 0) {
+        wrap.style.display = 'none';
+        return;
+      }
+      const catLower = new Set(cats.map(c => String(c).toLowerCase()));
+      const html = [];
+      cats.forEach(c => {
+        const em = CAT_EMOJI[c] || '📦';
+        html.push(`<span class="signal-chip cat">${em} ${c}</span>`);
+      });
+      let added = html.length;
+      for (const k of kws) {
+        if (added >= 12) break;
+        if (catLower.has(k.toLowerCase())) continue;
+        html.push(`<span class="signal-chip">${k}</span>`);
+        added++;
+      }
+      chipsEl.innerHTML = html.join('');
+      wrap.style.display = 'block';
+    } catch {
+      wrap.style.display = 'none';
+    }
+  }
+
   // ── Init ───────────────────────────────────────────────────────────────────
+  loadTradeSignals();
   loadMatches();
   loadNewItems();
 </script>
