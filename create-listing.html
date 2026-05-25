@@ -266,7 +266,10 @@
         <div class="est-title">📊 Market Value Estimate</div>
         <div class="est-value"  id="est-value">₱0</div>
         <div class="est-range"  id="est-range">Based on current market data</div>
-        <div class="est-source" id="est-source">Source: price reference · IQR-filtered average</div>
+        <div class="est-source" id="est-source">Source: price reference</div>
+        <button type="button" class="btn btn-outline btn-sm" style="margin-top:8px" id="scrape-price-btn" onclick="refreshMarketPrice()">
+          ↻ Refresh from marketplace scrape
+        </button>
       </div>
     </div>
 
@@ -308,10 +311,14 @@
   <div id="form-feedback" class="form-feedback" role="status"></div>
 </div>
 
+<script src="js/api.js"></script>
 <script>
-  const API = window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:8080'
-    : 'https://hobbietrades-backend.onrender.com';
+  const API = window.HobbieAPI ? window.HobbieAPI.baseUrl : (
+    window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:8080'
+      : 'https://hobbietrades-backend.onrender.com'
+  );
+  if (window.HobbieAPI) window.HobbieAPI.wakeBackend();
 
   // ─── Init ────────────────────────────────────────────────────────────────────
   document.getElementById('nav-avatar').textContent =
@@ -381,6 +388,37 @@
     el.classList.add('sel');
     selectedCondition = val;
     checkEstimate();
+  }
+
+  function refreshMarketPrice() {
+    const category = document.getElementById('item-category').value;
+    const title = document.getElementById('item-title').value.trim();
+    if (!category || !title) {
+      setFormFeedback('err', 'Enter a title and category before refreshing market prices.');
+      return;
+    }
+    const btn = document.getElementById('scrape-price-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Scraping marketplace…';
+    const kw = title.split(/\s+/).slice(0, 3).join(' ');
+    fetch(`${API}/api/prices/scrape?keyword=${encodeURIComponent(kw)}&category=${encodeURIComponent(category)}`, { method: 'POST' })
+      .then(r => r.json())
+      .then(data => {
+        btn.disabled = false;
+        btn.textContent = '↻ Refresh from marketplace scrape';
+        if (data.success) {
+          setFormFeedback('ok', 'Market prices updated from web scrape. Re-checking estimate…');
+          checkEstimate();
+        } else {
+          setFormFeedback('err', data.message || 'Scrape did not return prices (site may block automated requests). Using cached references.');
+          checkEstimate();
+        }
+      })
+      .catch(() => {
+        btn.disabled = false;
+        btn.textContent = '↻ Refresh from marketplace scrape';
+        setFormFeedback('err', 'Could not reach scrape API. Try again after the backend wakes up.');
+      });
   }
 
   // ─── Market value estimator ───────────────────────────────────────────────────

@@ -337,7 +337,7 @@ if (userId) {
   fetch(`${API}/api/items/user/${userId}`)
     .then(res => res.json())
     .then(userItems => {
-      fetch(`${API}/api/trades/matches?itemId=${requestedId}&userId=${userId}`)
+      fetch(`${API}/api/trades/matches?userId=${userId}&limit=30`)
         .then(res => res.json())
         .then(matches => {
           const matchedIds = matches.map(m => m.item ? m.item.id : null);
