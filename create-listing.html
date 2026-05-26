@@ -216,7 +216,8 @@
         <label class="form-label">Item title * <span id="title-lock-hint" style="display:none;font-weight:400;color:var(--text-tertiary)">(set by AI)</span></label>
         <input type="text" class="form-control"
                placeholder="e.g. Vintage Acoustic Guitar, Canon DSLR 200D"
-               id="item-title" oninput="checkEstimate()"/>
+               id="item-title" oninput="onTitleInput()"/>
+        <input type="hidden" id="estimate-keyword" value=""/>
       </div>
     </div>
 
@@ -421,6 +422,11 @@
       });
   }
 
+  function onTitleInput() {
+    document.getElementById('estimate-keyword').value = '';
+    checkEstimate();
+  }
+
   // ─── Market value estimator ───────────────────────────────────────────────────
   function checkEstimate() {
     const category = document.getElementById('item-category').value;
@@ -428,7 +434,9 @@
     if (!category || !selectedCondition) { box.classList.remove('show'); return; }
 
     const title = document.getElementById('item-title').value;
-    fetch(`${API}/api/estimate?category=${encodeURIComponent(category)}&condition=${encodeURIComponent(selectedCondition)}&keyword=${encodeURIComponent(title)}`)
+    const aiKw  = document.getElementById('estimate-keyword').value.trim();
+    const keyword = aiKw || title;
+    fetch(`${API}/api/estimate?category=${encodeURIComponent(category)}&condition=${encodeURIComponent(selectedCondition)}&keyword=${encodeURIComponent(keyword)}`)
       .then(r => r.json())
       .then(data => {
         document.getElementById('est-value').textContent  = `₱${data.estimatedValue.toLocaleString()}`;
@@ -466,7 +474,7 @@
 
     // Show loading immediately
     showAiBox('loading', '🤖 Analyzing photo…',
-      '<span class="spinner"></span> Detecting item type — this may take a few seconds…');
+      '<span class="spinner"></span> Detecting item type, brand, and model — this may take a few seconds…');
 
     // Call analyze endpoint
     const formData = new FormData();
@@ -500,12 +508,21 @@
     const caption   = result.caption           || '';
     const rawLabels = result.rawLabels         || '';
     const suggestedTitle = (result.suggestedTitle || '').trim();
+    const brand          = (result.detectedBrand || '').trim();
+    const model          = (result.detectedModel || '').trim();
+    const estimateKw     = (result.estimateKeyword || '').trim();
     const applied   = [];
+
+    if (estimateKw) {
+      document.getElementById('estimate-keyword').value = estimateKw;
+    }
 
     if (suggestedTitle) {
       document.getElementById('item-title').value = suggestedTitle;
       applied.push(`Title → ${suggestedTitle}`);
     }
+    if (brand) applied.push(`Brand → ${brand}`);
+    if (model) applied.push(`Model → ${model}`);
 
     // Auto-fill category
     if (category && category !== 'Other') {
@@ -535,12 +552,16 @@
       : '';
 
     const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+    const brandModelLine = (brand || model)
+      ? `<div style="font-size:12px;margin-bottom:6px">🎸 ${brand ? `Brand: <strong>${esc(brand)}</strong>` : ''}${brand && model ? ' · ' : ''}${model ? `Model: <strong>${esc(model)}</strong>` : ''}</div>`
+      : '';
+
     const summaryHtml = `
       <div style="font-size:12px;font-weight:600;margin-bottom:6px">
         ${suggestedTitle ? `📝 Title: <strong>${esc(suggestedTitle)}</strong> &nbsp;·&nbsp; ` : ''}
         🏷️ Category: <strong>${esc(category || '—')}</strong> &nbsp;·&nbsp;
         📊 Condition: <strong>${esc(condition || '—')}</strong>
-      </div>`;
+      </div>${brandModelLine}`;
 
     const tagsHtml = labels.length > 0
       ? `<div class="ai-tags">${labels.slice(0,10).map(l => `<span class="ai-tag">${l}</span>`).join('')}</div>`
