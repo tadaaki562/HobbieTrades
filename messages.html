@@ -99,6 +99,9 @@
       display: flex;
       flex-direction: column;
       background: var(--bg);
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
     }
 
     .chat-header {
@@ -114,11 +117,14 @@
 
     .chat-messages {
       flex: 1;
+      min-height: 0;
       overflow-y: auto;
+      overflow-x: hidden;
       padding: 20px;
       display: flex;
       flex-direction: column;
       gap: 10px;
+      overscroll-behavior: contain;
     }
 
     /* Message rows */
@@ -269,12 +275,18 @@
 
     /* ── INPUT BAR ───────────────────────────────────────── */
     .chat-input-bar {
+      flex-shrink: 0;
       background: var(--white);
       border-top: 1px solid var(--border);
       padding: 12px 16px;
+      padding-bottom: max(12px, env(safe-area-inset-bottom));
       display: flex;
       gap: 10px;
       align-items: center;
+      position: sticky;
+      bottom: 0;
+      z-index: 20;
+      box-shadow: 0 -4px 16px rgba(26, 16, 64, 0.06);
     }
     .chat-input {
       flex: 1;
@@ -806,7 +818,8 @@
 
         <div class="chat-input-bar">
           <input class="chat-input" type="text" placeholder="Type a message..."
-                 id="msg-input" onkeypress="if(event.key==='Enter') sendMessage()"/>
+                 id="msg-input" onkeydown="if(event.key==='Enter'){event.preventDefault();sendMessage();}"
+                 onfocus="this.scrollIntoView({block:'nearest',behavior:'instant'})"/>
           <button class="send-btn" onclick="sendMessage()">↑</button>
         </div>
       `;
@@ -926,9 +939,15 @@
               <div class="msg-time ${isMe ? 'msg-time-right' : ''}">${formatRelativeTime(msg.sentAt)}</div>`;
             msgs.appendChild(div);
           });
-          msgs.scrollTop = msgs.scrollHeight;
+          scrollMessagesToEnd(false);
         })
         .catch(() => {});
+    }
+
+    function scrollMessagesToEnd(smooth) {
+      const msgs = document.getElementById('chat-messages');
+      if (!msgs) return;
+      msgs.scrollTo({ top: msgs.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
     }
 
     function sendMessage() {
@@ -945,8 +964,9 @@
         <div class="msg-bubble msg-out">${text}</div>
         <div class="msg-time msg-time-right">Just now</div>`;
       msgs.appendChild(div);
-      msgs.scrollTop = msgs.scrollHeight;
+      scrollMessagesToEnd(true);
       input.value = '';
+      input.focus({ preventScroll: true });
 
       fetch(`${API}/api/messages`, {
         method:  'POST',

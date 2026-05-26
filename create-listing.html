@@ -177,7 +177,7 @@
   </div>
 </nav>
 
-<div class="create-wrap">
+<div class="create-wrap page-enter">
   <div class="page-header">
     <div class="page-title">List an item for trade</div>
     <div class="page-sub">Share what you have, find what you need — no money involved</div>
@@ -407,11 +407,11 @@
         btn.disabled = false;
         btn.textContent = '↻ Refresh from marketplace scrape';
         if (data.success) {
-          setFormFeedback('ok', 'Market prices updated from web scrape. Re-checking estimate…');
+          const src = data.source ? ` (${data.source})` : '';
+          setFormFeedback('ok', (data.message || 'Prices updated.') + src);
           checkEstimate();
         } else {
-          setFormFeedback('err', data.message || 'Scrape did not return prices (site may block automated requests). Using cached references.');
-          checkEstimate();
+          setFormFeedback('err', data.message || 'Could not extract prices. Try again in a moment.');
         }
       })
       .catch(() => {

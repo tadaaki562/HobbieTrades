@@ -309,6 +309,7 @@
         <div class="form-group">
           <label class="form-label">Password</label>
           <input type="password" class="form-control" placeholder="••••••••" id="reg-password" autocomplete="new-password"/>
+          <div class="form-hint">At least 8 characters, one capital letter (A–Z), and one special symbol (! @ # $ …).</div>
         </div>
         <button type="submit" class="btn btn-primary btn-full btn-lg">Create account</button>
         </form>
@@ -380,6 +381,19 @@
       });
     }
 
+    function validatePassword(password) {
+      if (!password || password.length < 8) {
+        return 'Password must be at least 8 characters.';
+      }
+      if (!/[A-Z]/.test(password)) {
+        return 'Password must include at least one capital letter.';
+      }
+      if (!/[^A-Za-z0-9]/.test(password)) {
+        return 'Password must include at least one special symbol (e.g. ! @ # $).';
+      }
+      return null;
+    }
+
     function handleRegister() {
       clearAuthBanner();
       const name = document.getElementById('reg-name').value.trim();
@@ -388,6 +402,11 @@
       const password = document.getElementById('reg-password').value;
       if (!name || !email || !password) {
         setAuthBanner('err', 'Please fill in your name, email, and password.');
+        return;
+      }
+      const pwErr = validatePassword(password);
+      if (pwErr) {
+        setAuthBanner('err', pwErr);
         return;
       }
 
