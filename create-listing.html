@@ -47,13 +47,17 @@
 
     .hobby-photo-note {
       font-size: 12px;
-      color: var(--brand-dark);
-      background: var(--brand-light);
-      border: 1px solid var(--brand-mid);
-      border-radius: var(--radius-md);
-      padding: 12px 14px;
-      margin-bottom: 14px;
-      line-height: 1.5;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+    .main-preview-img {
+      width: 100%;
+      max-height: 280px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      display: none;
+      margin-top: 12px;
+      border: 1px solid var(--border);
     }
     .photo-grid {
       display: grid;
@@ -63,11 +67,11 @@
     .photo-slot {
       border: 2px dashed var(--border);
       border-radius: var(--radius-md);
-      padding: 10px 8px;
+      padding: 12px 8px;
       text-align: center;
       background: var(--bg);
       cursor: pointer;
-      min-height: 120px;
+      min-height: 72px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -76,12 +80,10 @@
     }
     .photo-slot:hover { border-color: var(--brand-mid); background: var(--brand-light); }
     .photo-slot.filled { border-style: solid; border-color: #97C459; padding: 4px; }
-    .photo-slot-num { font-size: 10px; font-weight: 700; color: var(--brand); margin-bottom: 4px; }
-    .photo-slot-label { font-size: 9px; color: var(--text-secondary); line-height: 1.25; margin-bottom: 6px; }
-    .photo-slot-icon { font-size: 20px; }
-    .preview-img {
+    .photo-slot-num { font-size: 11px; font-weight: 600; color: var(--brand); }
+    .hobby-preview-img {
       width: 100%;
-      height: 88px;
+      height: 56px;
       border-radius: var(--radius-sm);
       object-fit: cover;
       border: 1px solid var(--border);
@@ -213,28 +215,28 @@
 <div class="create-wrap page-enter">
   <div class="page-header">
     <div class="page-title">List your hobby for trade</div>
-    <div class="page-sub">Prove it's your hobby with 5 photos — then trade cameras or instruments with zero cash</div>
+    <div class="page-sub">Upload your item, then add 5 quick photos of you using your hobby</div>
   </div>
 
   <div class="form-grid">
 
-    <!-- ── HOBBY PHOTOS (5 required) ── -->
+    <!-- ── MAIN ITEM PHOTO (large upload + AI) ── -->
     <div class="full">
       <div class="form-group">
         <label class="form-label">
-          Hobby authentication photos *
+          Item photo *
           <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-tertiary)">
-            — all 5 required before listing
+            — upload first; AI detects cameras or instruments
           </span>
         </label>
-        <div class="hobby-photo-note">
-          HobbieTrades is for <strong>hobby trading</strong>, not anonymous barter. Upload 5 photos:
-          your item (photo 1 — AI analyzes this), you using your hobby, your setup, plus two proof shots.
+        <div class="upload-box" id="upload-box" onclick="document.getElementById('item-photo-input').click()">
+          <div class="upload-icon">📤</div>
+          <div class="upload-text">Click to upload your item photo</div>
+          <div class="upload-sub">PNG or JPG up to 10MB</div>
         </div>
-        <div class="photo-grid" id="photo-grid"></div>
-        <div id="photo-progress" style="font-size:12px;color:var(--text-secondary);margin-top:10px">0 / 5 photos added</div>
+        <input type="file" id="item-photo-input" accept="image/*" style="display:none" onchange="onItemPhotoSelected(this)"/>
+        <img id="item-photo-preview" class="main-preview-img" alt="Item preview"/>
 
-        <!-- AI result panel (from photo 1) -->
         <div class="ai-box" id="ai-box">
           <div class="ai-box-title" id="ai-box-title"></div>
           <div id="ai-box-body"></div>
@@ -328,6 +330,15 @@
       </div>
     </div>
 
+    <!-- ── HOBBY PROOF PHOTOS (bottom) ── -->
+    <div class="full" style="margin-top:8px">
+      <div class="form-group">
+        <label class="form-label">Hobby photos * <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-tertiary)">— 5 photos of you using your hobby</span></label>
+        <div class="photo-grid" id="hobby-photo-grid"></div>
+        <div id="hobby-photo-progress" style="font-size:12px;color:var(--text-secondary);margin-top:10px">0 / 5 hobby photos</div>
+      </div>
+    </div>
+
   </div><!-- end form-grid -->
 
   <div class="btn-row">
@@ -352,38 +363,31 @@
   document.getElementById('nav-avatar').textContent =
     (localStorage.getItem('userName') || '?').charAt(0).toUpperCase();
 
-  const REQUIRED_PHOTOS = 5;
-  const PHOTO_SLOT_LABELS = [
-    'Item photo (AI)',
-    'You with your hobby',
-    'Your setup / gear',
-    'Detail close-up',
-    'Extra proof shot'
-  ];
+  const HOBBY_PHOTOS_REQUIRED = 5;
 
   let selectedCondition = '';
-  let pendingPhotoFiles = new Array(REQUIRED_PHOTOS).fill(null);
+  let pendingItemPhoto = null;
+  let pendingHobbyPhotos = new Array(HOBBY_PHOTOS_REQUIRED).fill(null);
   let aiLocked = false;
 
-  function buildPhotoGrid() {
-    const grid = document.getElementById('photo-grid');
-    grid.innerHTML = PHOTO_SLOT_LABELS.map((label, i) => `
-      <div class="photo-slot" id="photo-slot-${i}" onclick="document.getElementById('photo-input-${i}').click()">
-        <div class="photo-slot-num">Photo ${i + 1}</div>
-        <div class="photo-slot-label">${label}</div>
-        <div class="photo-slot-icon" id="photo-icon-${i}">📷</div>
-        <img id="photo-preview-${i}" class="preview-img" alt="" style="display:none"/>
-        <input type="file" id="photo-input-${i}" accept="image/*" style="display:none"
-               onchange="onPhotoSlotSelected(this, ${i})"/>
+  function buildHobbyPhotoGrid() {
+    const grid = document.getElementById('hobby-photo-grid');
+    grid.innerHTML = Array.from({ length: HOBBY_PHOTOS_REQUIRED }, (_, i) => `
+      <div class="photo-slot" id="hobby-slot-${i}" onclick="document.getElementById('hobby-input-${i}').click()">
+        <div class="photo-slot-num">${i + 1}</div>
+        <span id="hobby-icon-${i}" style="font-size:18px">📷</span>
+        <img id="hobby-preview-${i}" class="hobby-preview-img" alt="" style="display:none"/>
+        <input type="file" id="hobby-input-${i}" accept="image/*" style="display:none"
+               onchange="onHobbyPhotoSelected(this, ${i})"/>
       </div>
     `).join('');
   }
-  buildPhotoGrid();
+  buildHobbyPhotoGrid();
 
-  function updatePhotoProgress() {
-    const count = pendingPhotoFiles.filter(Boolean).length;
-    document.getElementById('photo-progress').textContent =
-      `${count} / ${REQUIRED_PHOTOS} photos added` + (count < REQUIRED_PHOTOS ? ' — all 5 required' : ' ✓');
+  function updateHobbyPhotoProgress() {
+    const count = pendingHobbyPhotos.filter(Boolean).length;
+    document.getElementById('hobby-photo-progress').textContent =
+      `${count} / ${HOBBY_PHOTOS_REQUIRED} hobby photos` + (count < HOBBY_PHOTOS_REQUIRED ? ' — all 5 required' : ' ✓');
   }
 
   function setFormFeedback(kind, text) {
@@ -513,50 +517,62 @@
     document.getElementById('ai-box-body').innerHTML    = bodyHtml;
   }
 
-  // ─── Photo slot selected ─────────────────────────────────────────────────────
-  function onPhotoSlotSelected(input, slot) {
+  // ─── Main item photo (AI) ────────────────────────────────────────────────────
+  function onItemPhotoSelected(input) {
     if (!input.files || !input.files[0]) return;
-    pendingPhotoFiles[slot] = input.files[0];
+    pendingItemPhoto = input.files[0];
+    releaseAiLocks();
     clearFormFeedback();
 
     const reader = new FileReader();
     reader.onload = e => {
-      const prev = document.getElementById('photo-preview-' + slot);
-      const icon = document.getElementById('photo-icon-' + slot);
-      const slotEl = document.getElementById('photo-slot-' + slot);
+      const prev = document.getElementById('item-photo-preview');
+      prev.src = e.target.result;
+      prev.style.display = 'block';
+    };
+    reader.readAsDataURL(pendingItemPhoto);
+
+    showAiBox('loading', '🤖 Analyzing item photo…',
+      '<span class="spinner"></span> Detecting item type — this may take a few seconds…');
+
+    const formData = new FormData();
+    formData.append('photo', pendingItemPhoto);
+
+    fetch(`${API}/api/items/analyze`, { method: 'POST', body: formData })
+      .then(r => r.json())
+      .then(result => {
+        if (!result.success) {
+          showAiBox('error', '⚠️ Analysis unavailable',
+            result.message || 'Could not analyze photo. Fill in category &amp; condition manually.');
+          return;
+        }
+        applyAiResult(result);
+        aiLocked = true;
+        applyAiLocks();
+      })
+      .catch(() => {
+        showAiBox('error', '⚠️ Could not connect',
+          'Make sure Spring Boot is running. Fill in category &amp; condition manually.');
+      });
+  }
+
+  function onHobbyPhotoSelected(input, slot) {
+    if (!input.files || !input.files[0]) return;
+    pendingHobbyPhotos[slot] = input.files[0];
+    clearFormFeedback();
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      const prev = document.getElementById('hobby-preview-' + slot);
+      const icon = document.getElementById('hobby-icon-' + slot);
+      const slotEl = document.getElementById('hobby-slot-' + slot);
       prev.src = e.target.result;
       prev.style.display = 'block';
       if (icon) icon.style.display = 'none';
       slotEl.classList.add('filled');
     };
     reader.readAsDataURL(input.files[0]);
-    updatePhotoProgress();
-
-    if (slot === 0) {
-      releaseAiLocks();
-      showAiBox('loading', '🤖 Analyzing item photo…',
-        '<span class="spinner"></span> Detecting item type, brand, and model — this may take a few seconds…');
-
-      const formData = new FormData();
-      formData.append('photo', input.files[0]);
-
-      fetch(`${API}/api/items/analyze`, { method: 'POST', body: formData })
-        .then(r => r.json())
-        .then(result => {
-          if (!result.success) {
-            showAiBox('error', '⚠️ Analysis unavailable',
-              result.message || 'Could not analyze photo. Fill in category &amp; condition manually.');
-            return;
-          }
-          applyAiResult(result);
-          aiLocked = true;
-          applyAiLocks();
-        })
-        .catch(() => {
-          showAiBox('error', '⚠️ Could not connect',
-            'Make sure Spring Boot is running. Fill in category &amp; condition manually.');
-        });
-    }
+    updateHobbyPhotoProgress();
   }
 
   // ─── Apply AI result to form ──────────────────────────────────────────────────
@@ -629,8 +645,13 @@
       ? `<div style="font-size:12px;margin-top:8px">✅ Auto-filled: ${applied.join(' · ')}</div>`
       : `<div style="font-size:12px;margin-top:8px;color:#888">Could not detect — please select manually.</div>`;
 
+    const detectionSrc = result.detectionSource || '';
+    const srcNote = detectionSrc.startsWith('roboflow')
+      ? `<div style="font-size:11px;margin-top:6px;opacity:0.85">🧠 Detected with your Roboflow model</div>`
+      : '';
+
     showAiBox('success', '🤖 AI Image Analysis',
-      captionHtml + summaryHtml + tagsHtml + appliedHtml);
+      captionHtml + summaryHtml + tagsHtml + appliedHtml + srcNote);
   }
 
   // ─── Submit listing ───────────────────────────────────────────────────────────
@@ -643,9 +664,14 @@
     const location   = document.getElementById('item-location').value.trim();
     const lookingFor = document.getElementById('item-looking').value.trim();
 
-    const photoCount = pendingPhotoFiles.filter(Boolean).length;
-    if (photoCount < REQUIRED_PHOTOS) {
-      setFormFeedback('err', `Please upload all ${REQUIRED_PHOTOS} hobby authentication photos before listing.`);
+    if (!pendingItemPhoto) {
+      setFormFeedback('err', 'Please upload an item photo first.');
+      return;
+    }
+
+    const hobbyCount = pendingHobbyPhotos.filter(Boolean).length;
+    if (hobbyCount < HOBBY_PHOTOS_REQUIRED) {
+      setFormFeedback('err', `Please add all ${HOBBY_PHOTOS_REQUIRED} hobby photos (you using your hobby).`);
       return;
     }
 
@@ -697,18 +723,15 @@
       const itemId = data.itemId;
 
       // Step 2 — upload main item photo (slot 1)
-      if (itemId && pendingPhotoFiles[0]) {
+      if (itemId && pendingItemPhoto) {
         btn.textContent = '⏳ Uploading photos…';
         const fd = new FormData();
-        fd.append('photo', pendingPhotoFiles[0]);
+        fd.append('photo', pendingItemPhoto);
 
         fetch(`${API}/api/items/${itemId}/upload`, { method: 'POST', body: fd })
           .then(() => {
-            // Step 3 — hobby authentication photos (slots 2–5)
             const galleryFd = new FormData();
-            for (let i = 1; i < REQUIRED_PHOTOS; i++) {
-              galleryFd.append('photos', pendingPhotoFiles[i]);
-            }
+            pendingHobbyPhotos.forEach(f => galleryFd.append('photos', f));
             return fetch(`${API}/api/items/${itemId}/upload-gallery`, { method: 'POST', body: galleryFd });
           })
           .then(r => r ? r.json() : { success: true })
@@ -719,7 +742,7 @@
               btn.textContent = 'List for trade';
               return;
             }
-            setFormFeedback('ok', `"${title}" was listed with 5 hobby photos. Taking you to Browse…`);
+            setFormFeedback('ok', `"${title}" was listed with item + hobby photos. Taking you to Browse…`);
             setTimeout(() => { window.location.href = 'browse.html'; }, 900);
           })
           .catch(() => {
