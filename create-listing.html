@@ -45,13 +45,45 @@
     .upload-text { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
     .upload-sub  { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
 
+    .hobby-photo-note {
+      font-size: 12px;
+      color: var(--brand-dark);
+      background: var(--brand-light);
+      border: 1px solid var(--brand-mid);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+    .photo-slot {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px 8px;
+      text-align: center;
+      background: var(--bg);
+      cursor: pointer;
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .photo-slot:hover { border-color: var(--brand-mid); background: var(--brand-light); }
+    .photo-slot.filled { border-style: solid; border-color: #97C459; padding: 4px; }
+    .photo-slot-num { font-size: 10px; font-weight: 700; color: var(--brand); margin-bottom: 4px; }
+    .photo-slot-label { font-size: 9px; color: var(--text-secondary); line-height: 1.25; margin-bottom: 6px; }
+    .photo-slot-icon { font-size: 20px; }
     .preview-img {
       width: 100%;
-      max-height: 200px;
+      height: 88px;
       border-radius: var(--radius-sm);
       object-fit: cover;
-      display: none;
-      margin-top: 10px;
       border: 1px solid var(--border);
     }
 
@@ -156,6 +188,7 @@
       .btn-row .btn { width: 100%; text-align: center; }
       .page-title { font-size: 19px; }
       .upload-box { padding: 20px 16px; }
+      .photo-grid { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
@@ -179,30 +212,29 @@
 
 <div class="create-wrap page-enter">
   <div class="page-header">
-    <div class="page-title">List an item for trade</div>
-    <div class="page-sub">Share what you have, find what you need — no money involved</div>
+    <div class="page-title">List your hobby for trade</div>
+    <div class="page-sub">Prove it's your hobby with 5 photos — then trade cameras or instruments with zero cash</div>
   </div>
 
   <div class="form-grid">
 
-    <!-- ── PHOTO UPLOAD (top so AI fills fields below) ── -->
+    <!-- ── HOBBY PHOTOS (5 required) ── -->
     <div class="full">
       <div class="form-group">
         <label class="form-label">
-          Photo
+          Hobby authentication photos *
           <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-tertiary)">
-            — upload first and AI will suggest title, category &amp; condition
+            — all 5 required before listing
           </span>
         </label>
-        <div class="upload-box" id="upload-box" onclick="document.getElementById('photo-input').click()">
-          <div class="upload-icon">📤</div>
-          <div class="upload-text">Click to upload a photo</div>
-          <div class="upload-sub">PNG, JPG up to 10MB · AI-powered item detection</div>
+        <div class="hobby-photo-note">
+          HobbieTrades is for <strong>hobby trading</strong>, not anonymous barter. Upload 5 photos:
+          your item (photo 1 — AI analyzes this), you using your hobby, your setup, plus two proof shots.
         </div>
-        <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="onPhotoSelected(this)"/>
-        <img id="photo-preview" class="preview-img" alt="Preview"/>
+        <div class="photo-grid" id="photo-grid"></div>
+        <div id="photo-progress" style="font-size:12px;color:var(--text-secondary);margin-top:10px">0 / 5 photos added</div>
 
-        <!-- AI result panel -->
+        <!-- AI result panel (from photo 1) -->
         <div class="ai-box" id="ai-box">
           <div class="ai-box-title" id="ai-box-title"></div>
           <div id="ai-box-body"></div>
@@ -237,13 +269,8 @@
         <label class="form-label">Category * <span id="cat-lock-hint" style="display:none;font-weight:400;color:var(--text-tertiary)">(set by AI)</span></label>
         <select class="form-control" id="item-category" onchange="checkEstimate()">
           <option value="">Select category</option>
-          <option value="Cameras">Cameras</option>
-          <option value="Instruments">Instruments</option>
-          <option value="Sports">Sports gear</option>
-          <option value="Art">Art supplies</option>
-          <option value="Gaming">Gaming</option>
-          <option value="Craft">Craft</option>
-          <option value="Other">Other</option>
+          <option value="Cameras">📷 Cameras</option>
+          <option value="Instruments">🎸 Instruments</option>
         </select>
       </div>
     </div>
@@ -269,7 +296,7 @@
         <div class="est-range"  id="est-range">Based on current market data</div>
         <div class="est-source" id="est-source">Source: price reference</div>
         <button type="button" class="btn btn-outline btn-sm" style="margin-top:8px" id="scrape-price-btn" onclick="refreshMarketPrice()">
-          ↻ Refresh from marketplace scrape
+          ↻ Refresh from Facebook public pages
         </button>
       </div>
     </div>
@@ -296,7 +323,7 @@
       <div class="form-group">
         <label class="form-label">I'm looking to trade for</label>
         <input type="text" class="form-control"
-               placeholder="e.g. DSLR camera, acoustic guitar, gaming console..."
+               placeholder="e.g. mirrorless camera, electric guitar, violin..."
                id="item-looking"/>
       </div>
     </div>
@@ -325,9 +352,39 @@
   document.getElementById('nav-avatar').textContent =
     (localStorage.getItem('userName') || '?').charAt(0).toUpperCase();
 
+  const REQUIRED_PHOTOS = 5;
+  const PHOTO_SLOT_LABELS = [
+    'Item photo (AI)',
+    'You with your hobby',
+    'Your setup / gear',
+    'Detail close-up',
+    'Extra proof shot'
+  ];
+
   let selectedCondition = '';
-  let pendingPhotoFile  = null;
+  let pendingPhotoFiles = new Array(REQUIRED_PHOTOS).fill(null);
   let aiLocked = false;
+
+  function buildPhotoGrid() {
+    const grid = document.getElementById('photo-grid');
+    grid.innerHTML = PHOTO_SLOT_LABELS.map((label, i) => `
+      <div class="photo-slot" id="photo-slot-${i}" onclick="document.getElementById('photo-input-${i}').click()">
+        <div class="photo-slot-num">Photo ${i + 1}</div>
+        <div class="photo-slot-label">${label}</div>
+        <div class="photo-slot-icon" id="photo-icon-${i}">📷</div>
+        <img id="photo-preview-${i}" class="preview-img" alt="" style="display:none"/>
+        <input type="file" id="photo-input-${i}" accept="image/*" style="display:none"
+               onchange="onPhotoSlotSelected(this, ${i})"/>
+      </div>
+    `).join('');
+  }
+  buildPhotoGrid();
+
+  function updatePhotoProgress() {
+    const count = pendingPhotoFiles.filter(Boolean).length;
+    document.getElementById('photo-progress').textContent =
+      `${count} / ${REQUIRED_PHOTOS} photos added` + (count < REQUIRED_PHOTOS ? ' — all 5 required' : ' ✓');
+  }
 
   function setFormFeedback(kind, text) {
     const el = document.getElementById('form-feedback');
@@ -400,13 +457,13 @@
     }
     const btn = document.getElementById('scrape-price-btn');
     btn.disabled = true;
-    btn.textContent = '⏳ Scraping marketplace…';
+    btn.textContent = '⏳ Scraping Facebook pages…';
     const kw = title.split(/\s+/).slice(0, 3).join(' ');
     fetch(`${API}/api/prices/scrape?keyword=${encodeURIComponent(kw)}&category=${encodeURIComponent(category)}`, { method: 'POST' })
       .then(r => r.json())
       .then(data => {
         btn.disabled = false;
-        btn.textContent = '↻ Refresh from marketplace scrape';
+        btn.textContent = '↻ Refresh from Facebook public pages';
         if (data.success) {
           const src = data.source ? ` (${data.source})` : '';
           setFormFeedback('ok', (data.message || 'Prices updated.') + src);
@@ -417,7 +474,7 @@
       })
       .catch(() => {
         btn.disabled = false;
-        btn.textContent = '↻ Refresh from marketplace scrape';
+        btn.textContent = '↻ Refresh from Facebook public pages';
         setFormFeedback('err', 'Could not reach scrape API. Try again after the backend wakes up.');
       });
   }
@@ -456,49 +513,50 @@
     document.getElementById('ai-box-body').innerHTML    = bodyHtml;
   }
 
-  // ─── Photo selected — show preview + call AI immediately ─────────────────────
-  function onPhotoSelected(input) {
+  // ─── Photo slot selected ─────────────────────────────────────────────────────
+  function onPhotoSlotSelected(input, slot) {
     if (!input.files || !input.files[0]) return;
-    pendingPhotoFile = input.files[0];
-    releaseAiLocks();
+    pendingPhotoFiles[slot] = input.files[0];
     clearFormFeedback();
 
-    // Local preview
     const reader = new FileReader();
     reader.onload = e => {
-      const prev = document.getElementById('photo-preview');
-      prev.src          = e.target.result;
+      const prev = document.getElementById('photo-preview-' + slot);
+      const icon = document.getElementById('photo-icon-' + slot);
+      const slotEl = document.getElementById('photo-slot-' + slot);
+      prev.src = e.target.result;
       prev.style.display = 'block';
+      if (icon) icon.style.display = 'none';
+      slotEl.classList.add('filled');
     };
-    reader.readAsDataURL(pendingPhotoFile);
+    reader.readAsDataURL(input.files[0]);
+    updatePhotoProgress();
 
-    // Show loading immediately
-    showAiBox('loading', '🤖 Analyzing photo…',
-      '<span class="spinner"></span> Detecting item type, brand, and model — this may take a few seconds…');
+    if (slot === 0) {
+      releaseAiLocks();
+      showAiBox('loading', '🤖 Analyzing item photo…',
+        '<span class="spinner"></span> Detecting item type, brand, and model — this may take a few seconds…');
 
-    // Call analyze endpoint
-    const formData = new FormData();
-    formData.append('photo', pendingPhotoFile);
+      const formData = new FormData();
+      formData.append('photo', input.files[0]);
 
-    fetch(`${API}/api/items/analyze`, {
-      method: 'POST',
-      body:   formData
-    })
-    .then(r => r.json())
-    .then(result => {
-      if (!result.success) {
-        showAiBox('error', '⚠️ Analysis unavailable',
-          result.message || 'Could not analyze photo. Fill in category &amp; condition manually.');
-        return;
-      }
-      applyAiResult(result);
-      aiLocked = true;
-      applyAiLocks();
-    })
-    .catch(() => {
-      showAiBox('error', '⚠️ Could not connect',
-        'Make sure Spring Boot is running. Fill in category &amp; condition manually.');
-    });
+      fetch(`${API}/api/items/analyze`, { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(result => {
+          if (!result.success) {
+            showAiBox('error', '⚠️ Analysis unavailable',
+              result.message || 'Could not analyze photo. Fill in category &amp; condition manually.');
+            return;
+          }
+          applyAiResult(result);
+          aiLocked = true;
+          applyAiLocks();
+        })
+        .catch(() => {
+          showAiBox('error', '⚠️ Could not connect',
+            'Make sure Spring Boot is running. Fill in category &amp; condition manually.');
+        });
+    }
   }
 
   // ─── Apply AI result to form ──────────────────────────────────────────────────
@@ -522,10 +580,10 @@
       applied.push(`Title → ${suggestedTitle}`);
     }
     if (brand) applied.push(`Brand → ${brand}`);
-    if (model) applied.push(`Model → ${model}`);
+    if (model && model !== suggestedTitle) applied.push(`Type → ${model}`);
 
     // Auto-fill category
-    if (category && category !== 'Other') {
+    if (category && (category === 'Cameras' || category === 'Instruments')) {
       const sel = document.getElementById('item-category');
       sel.value = category;
       applied.push(`Category → ${category}`);
@@ -553,7 +611,7 @@
 
     const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
     const brandModelLine = (brand || model)
-      ? `<div style="font-size:12px;margin-bottom:6px">🎸 ${brand ? `Brand: <strong>${esc(brand)}</strong>` : ''}${brand && model ? ' · ' : ''}${model ? `Model: <strong>${esc(model)}</strong>` : ''}</div>`
+      ? `<div style="font-size:12px;margin-bottom:6px">🎸 ${brand ? `Brand: <strong>${esc(brand)}</strong>` : ''}${brand && model ? ' · ' : ''}${model ? `Type: <strong>${esc(model)}</strong>` : ''}</div>`
       : '';
 
     const summaryHtml = `
@@ -585,8 +643,19 @@
     const location   = document.getElementById('item-location').value.trim();
     const lookingFor = document.getElementById('item-looking').value.trim();
 
+    const photoCount = pendingPhotoFiles.filter(Boolean).length;
+    if (photoCount < REQUIRED_PHOTOS) {
+      setFormFeedback('err', `Please upload all ${REQUIRED_PHOTOS} hobby authentication photos before listing.`);
+      return;
+    }
+
     if (!title || !desc || !category || !selectedCondition || !value) {
       setFormFeedback('err', 'Please fill in all required fields marked with *.');
+      return;
+    }
+
+    if (category !== 'Cameras' && category !== 'Instruments') {
+      setFormFeedback('err', 'Only Cameras and Instruments categories are supported.');
       return;
     }
 
@@ -627,19 +696,34 @@
 
       const itemId = data.itemId;
 
-      // Step 2 — upload photo if selected
-      if (pendingPhotoFile && itemId) {
-        btn.textContent = '⏳ Uploading photo…';
+      // Step 2 — upload main item photo (slot 1)
+      if (itemId && pendingPhotoFiles[0]) {
+        btn.textContent = '⏳ Uploading photos…';
         const fd = new FormData();
-        fd.append('photo', pendingPhotoFile);
+        fd.append('photo', pendingPhotoFiles[0]);
 
-        fetch(`${API}/api/items/${itemId}/upload`, { method:'POST', body: fd })
+        fetch(`${API}/api/items/${itemId}/upload`, { method: 'POST', body: fd })
           .then(() => {
-            setFormFeedback('ok', `"${title}" was listed successfully. Taking you to Browse…`);
+            // Step 3 — hobby authentication photos (slots 2–5)
+            const galleryFd = new FormData();
+            for (let i = 1; i < REQUIRED_PHOTOS; i++) {
+              galleryFd.append('photos', pendingPhotoFiles[i]);
+            }
+            return fetch(`${API}/api/items/${itemId}/upload-gallery`, { method: 'POST', body: galleryFd });
+          })
+          .then(r => r ? r.json() : { success: true })
+          .then(galleryData => {
+            if (galleryData && !galleryData.success) {
+              setFormFeedback('err', galleryData.message || 'Hobby photos failed to upload.');
+              btn.disabled = false;
+              btn.textContent = 'List for trade';
+              return;
+            }
+            setFormFeedback('ok', `"${title}" was listed with 5 hobby photos. Taking you to Browse…`);
             setTimeout(() => { window.location.href = 'browse.html'; }, 900);
           })
           .catch(() => {
-            setFormFeedback('ok', `"${title}" was saved, but the photo upload failed. You can add a photo later from your profile. Redirecting…`);
+            setFormFeedback('ok', `"${title}" was saved, but photo upload failed. Try again from your profile.`);
             setTimeout(() => { window.location.href = 'browse.html'; }, 2000);
           });
       } else {

@@ -542,11 +542,6 @@
     <div class="cat-tab active" data-cat="all"         onclick="selectCatTab(this,'all')">         <span class="ct-emoji">🌐</span><span class="ct-name">All</span></div>
     <div class="cat-tab"        data-cat="Cameras"      onclick="selectCatTab(this,'Cameras')">      <span class="ct-emoji">📷</span><span class="ct-name">Cameras</span></div>
     <div class="cat-tab"        data-cat="Instruments"  onclick="selectCatTab(this,'Instruments')">  <span class="ct-emoji">🎸</span><span class="ct-name">Instruments</span></div>
-    <div class="cat-tab"        data-cat="Gaming"       onclick="selectCatTab(this,'Gaming')">       <span class="ct-emoji">🎮</span><span class="ct-name">Gaming</span></div>
-    <div class="cat-tab"        data-cat="Sports"       onclick="selectCatTab(this,'Sports')">       <span class="ct-emoji">🛹</span><span class="ct-name">Sports</span></div>
-    <div class="cat-tab"        data-cat="Art"          onclick="selectCatTab(this,'Art')">          <span class="ct-emoji">🎨</span><span class="ct-name">Art</span></div>
-    <div class="cat-tab"        data-cat="Craft"        onclick="selectCatTab(this,'Craft')">        <span class="ct-emoji">🧵</span><span class="ct-name">Craft</span></div>
-    <div class="cat-tab"        data-cat="Other"        onclick="selectCatTab(this,'Other')">        <span class="ct-emoji">📦</span><span class="ct-name">Other</span></div>
   </div>
 </div>
 
@@ -570,26 +565,6 @@
       <div class="sb-cat" data-cat="Instruments" onclick="selectSbCat(this,'Instruments')">
         <span class="sc-dot" style="background:#D85A30"></span> Instruments
         <span class="sc-count" id="cnt-Instruments">0</span>
-      </div>
-      <div class="sb-cat" data-cat="Gaming"      onclick="selectSbCat(this,'Gaming')">
-        <span class="sc-dot" style="background:#BA7517"></span> Gaming
-        <span class="sc-count" id="cnt-Gaming">0</span>
-      </div>
-      <div class="sb-cat" data-cat="Sports"      onclick="selectSbCat(this,'Sports')">
-        <span class="sc-dot" style="background:#378ADD"></span> Sports
-        <span class="sc-count" id="cnt-Sports">0</span>
-      </div>
-      <div class="sb-cat" data-cat="Art"         onclick="selectSbCat(this,'Art')">
-        <span class="sc-dot" style="background:#D4537E"></span> Art
-        <span class="sc-count" id="cnt-Art">0</span>
-      </div>
-      <div class="sb-cat" data-cat="Craft"       onclick="selectSbCat(this,'Craft')">
-        <span class="sc-dot" style="background:#888780"></span> Craft
-        <span class="sc-count" id="cnt-Craft">0</span>
-      </div>
-      <div class="sb-cat" data-cat="Other"       onclick="selectSbCat(this,'Other')">
-        <span class="sc-dot" style="background:#7F77DD"></span> Other
-        <span class="sc-count" id="cnt-Other">0</span>
       </div>
     </div>
 
@@ -764,7 +739,7 @@
   }
 
   function updateCounts() {
-    const cats = ['Cameras','Instruments','Gaming','Sports','Art','Craft','Other'];
+    const cats = ['Cameras','Instruments'];
     cats.forEach(c => {
       const el = document.getElementById('cnt-' + c);
       if (el) el.textContent = allItems.filter(i => i.category === c).length;
