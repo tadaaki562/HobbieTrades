@@ -829,7 +829,11 @@
 
     // ─── Trade actions ────────────────────────────────────────────────────────
     function acceptTrade(tradeId) {
-      fetch(`${API}/api/trades/${tradeId}/accept`, { method: 'PUT' })
+      fetch(`${API}/api/trades/${tradeId}/accept`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: loggedInUserId })
+      })
         .then(res => res.json())
         .then(data => {
           if (data.success) {
@@ -853,7 +857,11 @@
 
     function confirmDeclineTrade(tradeId) {
       clearChatNotice();
-      fetch(`${API}/api/trades/${tradeId}/decline`, { method: 'PUT' })
+      fetch(`${API}/api/trades/${tradeId}/decline`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: loggedInUserId })
+      })
         .then(res => res.json())
         .then(data => {
           if (data.success) {
