@@ -549,11 +549,14 @@
 
 </div>
 
+<script src="js/api.js"></script>
 <script>
-  // ── Constants ──────────────────────────────────────────────────────────────
-  const API = window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:8080'
-    : 'https://hobbietrades-backend.onrender.com';
+  const API = window.HobbieAPI ? window.HobbieAPI.baseUrl : (
+    window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:8080'
+      : 'https://hobbietrades-backend.onrender.com'
+  );
+  if (window.HobbieAPI) window.HobbieAPI.wakeBackend();
 
   const CAT_EMOJI = {
     Cameras:'📷', Instruments:'🎸', Gaming:'🎮',
@@ -635,7 +638,9 @@
     // Image or emoji placeholder
     const imgSrc = window.HobbieAPI
       ? window.HobbieAPI.resolveImageUrl(item.photoUrl, item.id)
-      : (item.photoUrl ? `${API}${item.photoUrl}` : null);
+      : (item.photoUrl
+          ? `${API}${item.photoUrl}`
+          : (item.id ? `${API}/api/items/${item.id}/photo` : null));
     const imgHtml = imgSrc
       ? `<img src="${imgSrc}" alt="${item.title}" loading="lazy"
              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
@@ -649,7 +654,7 @@
 
     return `
       <a class="item-card fade-in" href="item-detail.html?id=${item.id}">
-        <div class="card-img">
+        <div class="card-img" style="${imgSrc ? '' : `background:${bg}`}">
           ${imgHtml}
           <div class="card-trade-badge">TRADE</div>
           ${matchBadgeHtml}

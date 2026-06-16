@@ -37,6 +37,17 @@
       if (photoUrl.startsWith('/api/') || photoUrl.startsWith('/uploads/')) return API + photoUrl;
       return API + (photoUrl.startsWith('/') ? photoUrl : '/' + photoUrl);
     },
+    resolveGalleryUrls(item) {
+      if (!item || !item.id) return [];
+      if (item.galleryUrls) {
+        return item.galleryUrls.split('|').filter(Boolean).map((u) => {
+          if (u.startsWith('http://') || u.startsWith('https://')) return u;
+          if (u.startsWith('/api/') || u.startsWith('/uploads/')) return API + u;
+          return API + (u.startsWith('/') ? u : '/' + u);
+        });
+      }
+      return [1, 2, 3, 4, 5].map((slot) => `${API}/api/items/${item.id}/gallery/${slot}`);
+    },
   };
 
   wakeBackend();

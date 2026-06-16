@@ -505,10 +505,14 @@
     </div>
   </div>
 
+  <script src="js/api.js"></script>
   <script>
-    const API = window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
-      ? 'http://localhost:8080'
-      : 'https://hobbietrades-backend.onrender.com';
+    const API = window.HobbieAPI ? window.HobbieAPI.baseUrl : (
+      window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:8080'
+        : 'https://hobbietrades-backend.onrender.com'
+    );
+    if (window.HobbieAPI) window.HobbieAPI.wakeBackend();
 
     // ─── State ────────────────────────────────────────────────────────────────
     const loggedInUserId   = parseInt(localStorage.getItem('userId')) || null;

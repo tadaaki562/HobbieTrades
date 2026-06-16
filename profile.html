@@ -428,10 +428,14 @@
   </div>
 </div>
 
+<script src="js/api.js"></script>
 <script>
-  const API = window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:8080'
-    : 'https://hobbietrades-backend.onrender.com';
+  const API = window.HobbieAPI ? window.HobbieAPI.baseUrl : (
+    window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:8080'
+      : 'https://hobbietrades-backend.onrender.com'
+  );
+  if (window.HobbieAPI) window.HobbieAPI.wakeBackend();
   const AVATAR_COLORS = ['#AFA9EC','#9FE1CB','#F5C4B3','#85B7EB','#F7D08A','#B5EAD7','#C7CEEA'];
 
   const loggedInUserId = parseInt(localStorage.getItem('userId')) || null;
@@ -595,7 +599,7 @@
           // Emoji fallback
           const emojiSpan = document.createElement('span');
           emojiSpan.textContent = CAT_EMOJI[item.category] || '📦';
-          if (item.photoUrl) emojiSpan.style.display = 'none';
+          if (item.photoUrl || item.id) emojiSpan.style.display = 'none';
           imgDiv.appendChild(emojiSpan);
 
           // Condition badge — FIX: use exact conditionLabel string as key

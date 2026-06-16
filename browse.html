@@ -813,7 +813,9 @@
 
       const imgSrc = window.HobbieAPI
         ? window.HobbieAPI.resolveImageUrl(item.photoUrl, item.id)
-        : (item.photoUrl ? `${API}${item.photoUrl}` : null);
+        : (item.photoUrl
+            ? `${API}${item.photoUrl}`
+            : (item.id ? `${API}/api/items/${item.id}/photo` : null));
 
       const imgHtml = imgSrc
         ? `<img src="${imgSrc}" alt="${escapeHtml(item.title)}"
@@ -836,7 +838,7 @@
 
       return `
         <a class="item-card fade-in" href="item-detail.html?id=${item.id}">
-          <div class="card-img" style="${item.photoUrl ? '' : `background:${bg}`}">
+          <div class="card-img" style="${imgSrc ? '' : `background:${bg}`}">
             ${imgHtml}
             <div class="card-trade-badge">TRADE</div>
             ${cond ? `<div class="card-cond-badge ${condBadgeClass(cond)}">${cond}</div>` : ''}
