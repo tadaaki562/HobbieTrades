@@ -811,8 +811,12 @@
       const initials= getInitials(seller);
       const color   = avatarColor(item.user ? item.user.id : 0);
 
-      const imgHtml = item.photoUrl
-        ? `<img src="${API}${item.photoUrl}" alt="${escapeHtml(item.title)}"
+      const imgSrc = window.HobbieAPI
+        ? window.HobbieAPI.resolveImageUrl(item.photoUrl, item.id)
+        : (item.photoUrl ? `${API}${item.photoUrl}` : null);
+
+      const imgHtml = imgSrc
+        ? `<img src="${imgSrc}" alt="${escapeHtml(item.title)}"
                loading="lazy"
                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
            />

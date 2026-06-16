@@ -29,6 +29,14 @@
     baseUrl: API,
     wakeBackend,
     getAuthHeaders,
+    resolveImageUrl(photoUrl, itemId) {
+      if (!photoUrl) {
+        return itemId ? `${API}/api/items/${itemId}/photo` : null;
+      }
+      if (photoUrl.startsWith('http://') || photoUrl.startsWith('https://')) return photoUrl;
+      if (photoUrl.startsWith('/api/') || photoUrl.startsWith('/uploads/')) return API + photoUrl;
+      return API + (photoUrl.startsWith('/') ? photoUrl : '/' + photoUrl);
+    },
   };
 
   wakeBackend();

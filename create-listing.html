@@ -80,6 +80,7 @@
     }
     .photo-slot:hover { border-color: var(--brand-mid); background: var(--brand-light); }
     .photo-slot.filled { border-style: solid; border-color: #97C459; padding: 4px; }
+    .photo-slot.invalid { border-color: #e74c3c; background: #fff5f5; }
     .photo-slot-num { font-size: 11px; font-weight: 600; color: var(--brand); }
     .hobby-preview-img {
       width: 100%;
@@ -333,7 +334,7 @@
     <!-- ── HOBBY PROOF PHOTOS (bottom) ── -->
     <div class="full" style="margin-top:8px">
       <div class="form-group">
-        <label class="form-label">Hobby photos * <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-tertiary)">— 5 photos of you using your hobby</span></label>
+        <label class="form-label">Hobby photos * <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-tertiary)">— 5 photos showing you with a camera or instrument (AI verified)</span></label>
         <div class="photo-grid" id="hobby-photo-grid"></div>
         <div id="hobby-photo-progress" style="font-size:12px;color:var(--text-secondary);margin-top:10px">0 / 5 hobby photos</div>
       </div>
@@ -368,6 +369,8 @@
   let selectedCondition = '';
   let pendingItemPhoto = null;
   let pendingHobbyPhotos = new Array(HOBBY_PHOTOS_REQUIRED).fill(null);
+  let hobbyPhotosValidated = new Array(HOBBY_PHOTOS_REQUIRED).fill(false);
+  let itemPhotoAccepted = false;
   let aiLocked = false;
 
   function buildHobbyPhotoGrid() {
@@ -385,9 +388,10 @@
   buildHobbyPhotoGrid();
 
   function updateHobbyPhotoProgress() {
-    const count = pendingHobbyPhotos.filter(Boolean).length;
+    const validated = hobbyPhotosValidated.filter(Boolean).length;
     document.getElementById('hobby-photo-progress').textContent =
-      `${count} / ${HOBBY_PHOTOS_REQUIRED} hobby photos` + (count < HOBBY_PHOTOS_REQUIRED ? ' — all 5 required' : ' ✓');
+      `${validated} / ${HOBBY_PHOTOS_REQUIRED} hobby photos validated` +
+      (validated < HOBBY_PHOTOS_REQUIRED ? ' — all 5 required' : ' ✓');
   }
 
   function setFormFeedback(kind, text) {
@@ -521,6 +525,7 @@
   function onItemPhotoSelected(input) {
     if (!input.files || !input.files[0]) return;
     pendingItemPhoto = input.files[0];
+    itemPhotoAccepted = false;
     releaseAiLocks();
     clearFormFeedback();
 
@@ -533,7 +538,7 @@
     reader.readAsDataURL(pendingItemPhoto);
 
     showAiBox('loading', '🤖 Analyzing item photo…',
-      '<span class="spinner"></span> Detecting item type — this may take a few seconds…');
+      '<span class="spinner"></span> Checking for a camera or musical instrument…');
 
     const formData = new FormData();
     formData.append('photo', pendingItemPhoto);
@@ -541,38 +546,80 @@
     fetch(`${API}/api/items/analyze`, { method: 'POST', body: formData })
       .then(r => r.json())
       .then(result => {
-        if (!result.success) {
-          showAiBox('error', '⚠️ Analysis unavailable',
-            result.message || 'Could not analyze photo. Fill in category &amp; condition manually.');
+        if (!result.success || !result.accepted) {
+          pendingItemPhoto = null;
+          input.value = '';
+          document.getElementById('item-photo-preview').style.display = 'none';
+          showAiBox('error', '❌ Photo not accepted',
+            (result.message || 'Only cameras and musical instruments are allowed on HobbieTrades.') +
+            '<div style="margin-top:8px;font-size:12px">Please upload a clear photo of the item itself.</div>');
           return;
         }
         applyAiResult(result);
+        itemPhotoAccepted = true;
         aiLocked = true;
         applyAiLocks();
       })
       .catch(() => {
+        pendingItemPhoto = null;
+        input.value = '';
+        itemPhotoAccepted = false;
         showAiBox('error', '⚠️ Could not connect',
-          'Make sure Spring Boot is running. Fill in category &amp; condition manually.');
+          'Make sure the backend is running and try again.');
       });
   }
 
   function onHobbyPhotoSelected(input, slot) {
     if (!input.files || !input.files[0]) return;
-    pendingHobbyPhotos[slot] = input.files[0];
+    const file = input.files[0];
+    pendingHobbyPhotos[slot] = null;
+    hobbyPhotosValidated[slot] = false;
     clearFormFeedback();
 
-    const reader = new FileReader();
-    reader.onload = e => {
-      const prev = document.getElementById('hobby-preview-' + slot);
-      const icon = document.getElementById('hobby-icon-' + slot);
-      const slotEl = document.getElementById('hobby-slot-' + slot);
-      prev.src = e.target.result;
-      prev.style.display = 'block';
-      if (icon) icon.style.display = 'none';
-      slotEl.classList.add('filled');
-    };
-    reader.readAsDataURL(input.files[0]);
-    updateHobbyPhotoProgress();
+    const slotEl = document.getElementById('hobby-slot-' + slot);
+    slotEl.classList.remove('filled', 'invalid');
+
+    showAiBox('loading', `🤖 Checking hobby photo ${slot + 1}…`,
+      '<span class="spinner"></span> Verifying a camera or instrument appears in this photo…');
+
+    const formData = new FormData();
+    formData.append('photo', file);
+    formData.append('slot', String(slot + 1));
+
+    fetch(`${API}/api/items/validate-photo`, { method: 'POST', body: formData })
+      .then(r => r.json())
+      .then(result => {
+        if (!result.success || !result.accepted) {
+          input.value = '';
+          slotEl.classList.add('invalid');
+          showAiBox('error', `❌ Hobby photo ${slot + 1} rejected`,
+            result.message || 'Each hobby photo must show a camera or musical instrument.');
+          updateHobbyPhotoProgress();
+          return;
+        }
+        pendingHobbyPhotos[slot] = file;
+        hobbyPhotosValidated[slot] = true;
+
+        const reader = new FileReader();
+        reader.onload = e => {
+          const prev = document.getElementById('hobby-preview-' + slot);
+          const icon = document.getElementById('hobby-icon-' + slot);
+          prev.src = e.target.result;
+          prev.style.display = 'block';
+          if (icon) icon.style.display = 'none';
+          slotEl.classList.add('filled');
+        };
+        reader.readAsDataURL(file);
+        updateHobbyPhotoProgress();
+        showAiBox('success', `✅ Hobby photo ${slot + 1} accepted`,
+          `${result.detectedCategory || 'Item'} detected (${result.confidence || 'OK'}).`);
+      })
+      .catch(() => {
+        input.value = '';
+        showAiBox('error', '⚠️ Could not validate hobby photo',
+          'Check your connection and try again.');
+        updateHobbyPhotoProgress();
+      });
   }
 
   // ─── Apply AI result to form ──────────────────────────────────────────────────
@@ -664,14 +711,14 @@
     const location   = document.getElementById('item-location').value.trim();
     const lookingFor = document.getElementById('item-looking').value.trim();
 
-    if (!pendingItemPhoto) {
-      setFormFeedback('err', 'Please upload an item photo first.');
+    if (!pendingItemPhoto || !itemPhotoAccepted) {
+      setFormFeedback('err', 'Upload a valid item photo — only cameras and instruments are accepted.');
       return;
     }
 
-    const hobbyCount = pendingHobbyPhotos.filter(Boolean).length;
+    const hobbyCount = hobbyPhotosValidated.filter(Boolean).length;
     if (hobbyCount < HOBBY_PHOTOS_REQUIRED) {
-      setFormFeedback('err', `Please add all ${HOBBY_PHOTOS_REQUIRED} hobby photos (you using your hobby).`);
+      setFormFeedback('err', `All ${HOBBY_PHOTOS_REQUIRED} hobby photos must pass AI validation (camera or instrument visible).`);
       return;
     }
 
@@ -729,15 +776,19 @@
         fd.append('photo', pendingItemPhoto);
 
         fetch(`${API}/api/items/${itemId}/upload`, { method: 'POST', body: fd })
-          .then(() => {
+          .then(r => r.json())
+          .then(uploadData => {
+            if (!uploadData.success) {
+              throw new Error(uploadData.message || 'Item photo upload failed.');
+            }
             const galleryFd = new FormData();
             pendingHobbyPhotos.forEach(f => galleryFd.append('photos', f));
             return fetch(`${API}/api/items/${itemId}/upload-gallery`, { method: 'POST', body: galleryFd });
           })
-          .then(r => r ? r.json() : { success: true })
+          .then(r => r ? r.json() : { success: false })
           .then(galleryData => {
-            if (galleryData && !galleryData.success) {
-              setFormFeedback('err', galleryData.message || 'Hobby photos failed to upload.');
+            if (!galleryData || !galleryData.success) {
+              setFormFeedback('err', galleryData?.message || 'Hobby photos failed validation or upload.');
               btn.disabled = false;
               btn.textContent = 'List for trade';
               return;
@@ -745,9 +796,10 @@
             setFormFeedback('ok', `"${title}" was listed with item + hobby photos. Taking you to Browse…`);
             setTimeout(() => { window.location.href = 'browse.html'; }, 900);
           })
-          .catch(() => {
-            setFormFeedback('ok', `"${title}" was saved, but photo upload failed. Try again from your profile.`);
-            setTimeout(() => { window.location.href = 'browse.html'; }, 2000);
+          .catch(err => {
+            setFormFeedback('err', err.message || 'Photo upload failed. Please try again.');
+            btn.disabled = false;
+            btn.textContent = 'List for trade';
           });
       } else {
         setFormFeedback('ok', `"${title}" was listed successfully. Taking you to Browse…`);

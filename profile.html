@@ -582,9 +582,11 @@
           imgDiv.style.background = CAT_BG[item.category] || '#F5F5F5';
 
           // FIX: photo URL — use API base directly, same pattern as all other pages
-          if (item.photoUrl) {
+          if (item.photoUrl || item.id) {
             const img = document.createElement('img');
-            img.src   = `${API}${item.photoUrl}`;
+            img.src   = window.HobbieAPI
+              ? window.HobbieAPI.resolveImageUrl(item.photoUrl, item.id)
+              : `${API}${item.photoUrl || '/api/items/' + item.id + '/photo'}`;
             img.alt   = item.title;
             img.onerror = () => { img.style.display = 'none'; };
             imgDiv.appendChild(img);

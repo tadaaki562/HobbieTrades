@@ -584,10 +584,12 @@
     const imgBox = document.getElementById('item-img-box');
     imgBox.style.background = item.photoUrl ? '#fff' : bg;
 
-    if (item.photoUrl) {
+    if (item.photoUrl || item.id) {
       document.getElementById('item-emoji').style.display = 'none';
       const img = document.createElement('img');
-      img.src = `${API}${item.photoUrl}`;
+      img.src = window.HobbieAPI
+        ? window.HobbieAPI.resolveImageUrl(item.photoUrl, item.id)
+        : `${API}${item.photoUrl || '/api/items/' + item.id + '/photo'}`;
       img.alt = item.title;
       img.onerror = () => {
         img.remove();

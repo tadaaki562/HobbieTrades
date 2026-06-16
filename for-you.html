@@ -633,8 +633,11 @@
       : '';
 
     // Image or emoji placeholder
-    const imgHtml = item.photoUrl
-      ? `<img src="${API}${item.photoUrl}" alt="${item.title}" loading="lazy"
+    const imgSrc = window.HobbieAPI
+      ? window.HobbieAPI.resolveImageUrl(item.photoUrl, item.id)
+      : (item.photoUrl ? `${API}${item.photoUrl}` : null);
+    const imgHtml = imgSrc
+      ? `<img src="${imgSrc}" alt="${item.title}" loading="lazy"
              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
          <div class="card-emoji-placeholder" style="display:none;background:${bg}">${emoji}</div>`
       : `<div class="card-emoji-placeholder" style="background:${bg}">${emoji}</div>`;
