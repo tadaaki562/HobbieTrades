@@ -86,6 +86,61 @@
       border: 1px solid var(--brand-mid);
     }
 
+    .detection-picker {
+      margin: 12px 0;
+      padding: 12px;
+      background: #fff;
+      border: 1px solid #d4cfc0;
+      border-radius: var(--radius-md);
+    }
+    .detection-picker-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #5c4d1f;
+      margin-bottom: 10px;
+    }
+    .detection-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 560px) {
+      .detection-options { grid-template-columns: 1fr; }
+    }
+    .detection-option {
+      text-align: left;
+      padding: 12px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .detection-option:hover { border-color: var(--brand-mid); background: var(--brand-light); }
+    .detection-option.selected {
+      border-color: var(--brand);
+      background: #eef8e3;
+      box-shadow: 0 0 0 1px var(--brand);
+    }
+    .detection-option-cat {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-tertiary);
+      margin-bottom: 4px;
+    }
+    .detection-option-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .detection-option-meta {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
     .hobby-photo-note {
       font-size: 12px;
       color: var(--text-secondary);
@@ -423,6 +478,8 @@
   let itemPhotoAccepted = false;
   let aiLocked = false;
   let espPollTimer = null;
+  let lastAiResult = null;
+  let selectedDetectionIndex = 0;
 
   function stopEspPoll() {
     if (espPollTimer) {
@@ -444,6 +501,7 @@
     stopEspPoll();
     pendingItemPhoto = null;
     itemPhotoAccepted = false;
+    lastAiResult = null;
     releaseAiLocks();
     clearFormFeedback();
     document.getElementById('item-photo-input').value = '';
@@ -651,6 +709,7 @@
     if (!input.files || !input.files[0]) return;
     pendingItemPhoto = input.files[0];
     itemPhotoAccepted = false;
+    lastAiResult = null;
     releaseAiLocks();
     clearFormFeedback();
 
@@ -748,58 +807,111 @@
   }
 
   // ─── Apply AI result to form ──────────────────────────────────────────────────
-  function applyAiResult(result) {
-    const category  = result.detectedCategory  || '';
-    const condition = result.detectedCondition || '';
-    const caption   = result.caption           || '';
-    const rawLabels = result.rawLabels         || '';
-    const suggestedTitle = (result.suggestedTitle || '').trim();
-    const brand          = (result.detectedBrand || '').trim();
-    const model          = (result.detectedModel || '').trim();
-    const estimateKw     = (result.estimateKeyword || '').trim();
-    const applied   = [];
+  function categoryEmoji(cat) {
+    return cat === 'Cameras' ? '📷' : cat === 'Instruments' ? '🎸' : '📦';
+  }
+
+  function applyDetectionFields(option) {
+    const category  = option.detectedCategory || '';
+    const condition = option.detectedCondition || '';
+    const suggestedTitle = (option.suggestedTitle || '').trim();
+    const brand = (option.detectedBrand || '').trim();
+    const model = (option.detectedModel || '').trim();
+    const estimateKw = (option.estimateKeyword || '').trim();
 
     if (estimateKw) {
       document.getElementById('estimate-keyword').value = estimateKw;
+    } else {
+      document.getElementById('estimate-keyword').value = '';
     }
 
     if (suggestedTitle) {
       document.getElementById('item-title').value = suggestedTitle;
-      applied.push(`Title → ${suggestedTitle}`);
     }
-    if (brand) applied.push(`Brand → ${brand}`);
-    if (model && model !== suggestedTitle) applied.push(`Type → ${model}`);
 
-    // Auto-fill category
-    if (category && (category === 'Cameras' || category === 'Instruments')) {
-      const sel = document.getElementById('item-category');
-      sel.value = category;
-      applied.push(`Category → ${category}`);
+    if (category === 'Cameras' || category === 'Instruments') {
+      document.getElementById('item-category').value = category;
       checkEstimate();
     }
 
-    // Auto-fill condition
     if (condition) {
       const pill = [...document.querySelectorAll('.cond-pill')]
         .find(p => p.textContent.trim() === condition);
-      if (pill) { selectCondition(pill, condition); applied.push(`Condition → ${condition}`); }
+      if (pill) selectCondition(pill, condition);
     }
 
-    // Build tags list (skip meta strings)
+    return { category, condition, suggestedTitle, brand, model, caption: option.caption || option.className || '' };
+  }
+
+  function buildDetectionPickerHtml(options, selectedIndex) {
+    const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+    const cards = options.map((opt, idx) => {
+      const cat = opt.detectedCategory || 'Item';
+      const title = opt.suggestedTitle || opt.className || cat;
+      const conf = opt.confidence || '';
+      const type = opt.detectedModel || opt.caption || '';
+      return `
+        <button type="button" class="detection-option${idx === selectedIndex ? ' selected' : ''}"
+                onclick="selectDetectionOption(${idx})">
+          <div class="detection-option-cat">${categoryEmoji(cat)} ${esc(cat)}</div>
+          <div class="detection-option-title">${esc(title)}</div>
+          <div class="detection-option-meta">${esc(type)}${conf ? ` · ${esc(conf)}` : ''}</div>
+        </button>`;
+    }).join('');
+
+    return `
+      <div class="detection-picker">
+        <div class="detection-picker-title">We found more than one item — which are you trading?</div>
+        <div class="detection-options">${cards}</div>
+      </div>`;
+  }
+
+  function selectDetectionOption(index) {
+    if (!lastAiResult || !lastAiResult.detectionOptions || !lastAiResult.detectionOptions[index]) return;
+    selectedDetectionIndex = index;
+    renderAiResultBox(lastAiResult, index);
+  }
+
+  function renderAiResultBox(result, selectedIndex) {
+    const options = result.detectionOptions;
+    const hasPicker = result.hasMultipleDetections && options && options.length >= 2;
+    const active = hasPicker ? options[selectedIndex] : result;
+    const fields = applyDetectionFields(active);
+
+    const category  = fields.category;
+    const condition = fields.condition;
+    const caption   = active.caption || active.className || result.caption || '';
+    const rawLabels = result.rawLabels || '';
+    const suggestedTitle = fields.suggestedTitle;
+    const brand = fields.brand;
+    const model = fields.model;
+    const applied = [];
+
+    if (suggestedTitle) applied.push(`Title → ${suggestedTitle}`);
+    if (brand) applied.push(`Brand → ${brand}`);
+    if (model && model !== suggestedTitle) applied.push(`Type → ${model}`);
+    if (category) applied.push(`Category → ${category}`);
+    if (condition) applied.push(`Condition → ${condition}`);
+
     const labels = rawLabels.split(',').map(l => l.trim()).filter(l =>
       l && l !== 'MODEL_LOADING' && !l.startsWith('EXCEPTION') && !l.startsWith('API_ERROR')
     );
 
+    const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+    const pickerHtml = hasPicker ? buildDetectionPickerHtml(options, selectedIndex) : '';
+    const pickerNote = hasPicker
+      ? `<div style="font-size:12px;margin-bottom:8px;color:#5c4d1f">Tap the item you want to list for trade.</div>`
+      : '';
+
     const captionHtml = caption
       ? `<div style="font-style:italic;margin-bottom:8px;background:white;border-radius:6px;
                      padding:7px 10px;border:1px solid #97C459;font-size:12px">
-           💬 "${caption}"
+           💬 "${esc(caption)}"
          </div>`
       : '';
 
-    const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
     const brandModelLine = (brand || model)
-      ? `<div style="font-size:12px;margin-bottom:6px">🎸 ${brand ? `Brand: <strong>${esc(brand)}</strong>` : ''}${brand && model ? ' · ' : ''}${model ? `Type: <strong>${esc(model)}</strong>` : ''}</div>`
+      ? `<div style="font-size:12px;margin-bottom:6px">${categoryEmoji(category)} ${brand ? `Brand: <strong>${esc(brand)}</strong>` : ''}${brand && model ? ' · ' : ''}${model ? `Type: <strong>${esc(model)}</strong>` : ''}</div>`
       : '';
 
     const summaryHtml = `
@@ -814,7 +926,7 @@
       : '';
 
     const appliedHtml = applied.length > 0
-      ? `<div style="font-size:12px;margin-top:8px">✅ Auto-filled: ${applied.join(' · ')}</div>`
+      ? `<div style="font-size:12px;margin-top:8px">✅ Using: ${applied.join(' · ')}</div>`
       : `<div style="font-size:12px;margin-top:8px;color:#888">Could not detect — please select manually.</div>`;
 
     const detectionSrc = result.detectionSource || '';
@@ -822,8 +934,14 @@
       ? `<div style="font-size:11px;margin-top:6px;opacity:0.85">🧠 Detected with your Roboflow model</div>`
       : '';
 
-    showAiBox('success', '🤖 AI Image Analysis',
-      captionHtml + summaryHtml + tagsHtml + appliedHtml + srcNote);
+    showAiBox('success', hasPicker ? '🤖 Multiple items detected' : '🤖 AI Image Analysis',
+      pickerNote + pickerHtml + captionHtml + summaryHtml + tagsHtml + appliedHtml + srcNote);
+  }
+
+  function applyAiResult(result) {
+    lastAiResult = result;
+    selectedDetectionIndex = 0;
+    renderAiResultBox(result, 0);
   }
 
   // ─── Submit listing ───────────────────────────────────────────────────────────
