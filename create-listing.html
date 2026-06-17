@@ -45,6 +45,47 @@
     .upload-text { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
     .upload-sub  { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
 
+    .upload-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: stretch;
+      margin-bottom: 12px;
+    }
+    .upload-actions .upload-box { flex: 1; min-width: 200px; margin-bottom: 0; }
+    .esp32-btn {
+      flex: 0 0 auto;
+      min-width: 180px;
+      align-self: stretch;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 16px 20px;
+      border: 2px solid var(--brand-mid);
+      border-radius: var(--radius-md);
+      background: var(--brand-light);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .esp32-btn:hover:not(:disabled) { background: #e8f4dc; border-color: var(--brand); }
+    .esp32-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .esp32-btn-icon { font-size: 24px; }
+    .esp32-wait {
+      font-size: 12px;
+      color: var(--brand);
+      font-weight: 600;
+      margin-bottom: 10px;
+      padding: 10px 12px;
+      background: var(--brand-light);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--brand-mid);
+    }
+
     .hobby-photo-note {
       font-size: 12px;
       color: var(--text-secondary);
@@ -227,13 +268,22 @@
         <label class="form-label">
           Item photo *
           <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-tertiary)">
-            — upload first; AI detects cameras or instruments
+            — upload or use ESP32-CAM; AI detects cameras or instruments
           </span>
         </label>
-        <div class="upload-box" id="upload-box" onclick="document.getElementById('item-photo-input').click()">
-          <div class="upload-icon">📤</div>
-          <div class="upload-text">Click to upload your item photo</div>
-          <div class="upload-sub">PNG or JPG up to 10MB</div>
+        <div class="upload-actions">
+          <div class="upload-box" id="upload-box" onclick="document.getElementById('item-photo-input').click()">
+            <div class="upload-icon">📤</div>
+            <div class="upload-text">Click to upload your item photo</div>
+            <div class="upload-sub">PNG or JPG up to 10MB</div>
+          </div>
+          <button type="button" class="esp32-btn" id="esp32-btn" onclick="startEsp32Capture()">
+            <span class="esp32-btn-icon">📷</span>
+            <span>Use ESP32 Camera</span>
+          </button>
+        </div>
+        <div class="esp32-wait" id="esp32-wait" style="display:none">
+          Waiting for ESP32… Press capture on the camera now.
         </div>
         <input type="file" id="item-photo-input" accept="image/*" style="display:none" onchange="onItemPhotoSelected(this)"/>
         <img id="item-photo-preview" class="main-preview-img" alt="Item preview"/>
@@ -372,6 +422,81 @@
   let hobbyPhotosValidated = new Array(HOBBY_PHOTOS_REQUIRED).fill(false);
   let itemPhotoAccepted = false;
   let aiLocked = false;
+  let espPollTimer = null;
+
+  function stopEspPoll() {
+    if (espPollTimer) {
+      clearInterval(espPollTimer);
+      espPollTimer = null;
+    }
+    document.getElementById('esp32-btn').disabled = false;
+    document.getElementById('esp32-wait').style.display = 'none';
+  }
+
+  function base64ToFile(base64, mime, filename) {
+    const bin = atob(base64);
+    const arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return new File([arr], filename, { type: mime || 'image/jpeg' });
+  }
+
+  function startEsp32Capture() {
+    stopEspPoll();
+    pendingItemPhoto = null;
+    itemPhotoAccepted = false;
+    releaseAiLocks();
+    clearFormFeedback();
+    document.getElementById('item-photo-input').value = '';
+    document.getElementById('item-photo-preview').style.display = 'none';
+
+    const since = Date.now();
+    const deadline = since + 120000;
+    const espBtn = document.getElementById('esp32-btn');
+    espBtn.disabled = true;
+    document.getElementById('esp32-wait').style.display = 'block';
+
+    showAiBox('loading', '📷 Waiting for ESP32…',
+      '<span class="spinner"></span> Press the capture button on the ESP32-CAM now. Roboflow will analyze the photo when it arrives.');
+
+    espPollTimer = setInterval(() => {
+      if (Date.now() > deadline) {
+        stopEspPoll();
+        showAiBox('error', '⏱️ Timed out',
+          'No photo received from the ESP32 in 2 minutes. Check WiFi and try again.');
+        return;
+      }
+
+      fetch(`${API}/api/esp32/latest?since=${since}`)
+        .then(r => r.json())
+        .then(data => {
+          if (!data.available) return;
+          stopEspPoll();
+          onEsp32PhotoReceived(data);
+        })
+        .catch(() => {});
+    }, 2000);
+  }
+
+  function onEsp32PhotoReceived(data) {
+    if (!data.success || !data.accepted) {
+      showAiBox('error', '❌ ESP32 photo not accepted',
+        (data.message || 'Only cameras and musical instruments are allowed.') +
+        '<div style="margin-top:8px;font-size:12px">Point the ESP32 at the item and capture again.</div>');
+      return;
+    }
+
+    const mime = data.mimeType || 'image/jpeg';
+    pendingItemPhoto = base64ToFile(data.imageBase64, mime, 'esp32-item.jpg');
+    itemPhotoAccepted = true;
+
+    const prev = document.getElementById('item-photo-preview');
+    prev.src = `data:${mime};base64,${data.imageBase64}`;
+    prev.style.display = 'block';
+
+    applyAiResult(data);
+    aiLocked = true;
+    applyAiLocks();
+  }
 
   function buildHobbyPhotoGrid() {
     const grid = document.getElementById('hobby-photo-grid');
