@@ -521,8 +521,8 @@
     espPollTimer = setInterval(() => {
       if (Date.now() > deadline) {
         stopEspPoll();
-        showAiBox('error', '⏱️ Timed out',
-          'No photo received from the ESP32 in 2 minutes. Check WiFi and try again.');
+        showAiBox('error', 'Timed out',
+          'No photo received from the ESP32 in 2 minutes. Check WiFi, re-flash firmware, and try again.');
         return;
       }
 
@@ -531,17 +531,21 @@
         .then(data => {
           if (!data.available) return;
           stopEspPoll();
-          onEsp32PhotoReceived(data);
+          onEsp32PhotoReceived(data, since);
         })
         .catch(() => {});
     }, 2000);
   }
 
-  function onEsp32PhotoReceived(data) {
+  function onEsp32PhotoReceived(data, sinceMs) {
     if (!data.success || !data.accepted) {
-      showAiBox('error', '❌ ESP32 photo not accepted',
+      showAiBox('error', 'ESP32 photo not accepted',
         (data.message || 'Only cameras and musical instruments are allowed.') +
-        '<div style="margin-top:8px;font-size:12px">Point the ESP32 at the item and capture again.</div>');
+        '<div style="margin-top:8px;font-size:12px">Point the ESP32 at the item and click Use ESP32 Camera again.</div>');
+      return;
+    }
+
+    if (data.capturedAt && sinceMs && data.capturedAt <= sinceMs) {
       return;
     }
 
