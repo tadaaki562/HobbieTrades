@@ -944,6 +944,31 @@
     renderAiResultBox(result, 0);
   }
 
+  function parseApiJson(r) {
+    return r.text().then(text => {
+      let data = {};
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          data = { success: false, message: text.slice(0, 200) || `Server error (${r.status})` };
+        }
+      }
+      if (data.success === undefined) {
+        data.success = r.ok;
+      }
+      if (!data.message && data.error) {
+        data.message = data.error;
+      }
+      if (!data.message && !r.ok) {
+        data.message = r.status === 413
+          ? 'Photo is too large (max 10MB per image).'
+          : `Upload failed (HTTP ${r.status}). Try again.`;
+      }
+      return data;
+    });
+  }
+
   // ─── Submit listing ───────────────────────────────────────────────────────────
   function submitListing() {
     clearFormFeedback();
@@ -959,8 +984,13 @@
       return;
     }
 
-    const hobbyCount = hobbyPhotosValidated.filter(Boolean).length;
-    if (hobbyCount < HOBBY_PHOTOS_REQUIRED) {
+    if (!pendingItemPhoto.size || pendingItemPhoto.size <= 0) {
+      setFormFeedback('err', 'Item photo file is empty. Please upload the photo again.');
+      return;
+    }
+
+    const hobbyFiles = pendingHobbyPhotos.filter(Boolean);
+    if (hobbyFiles.length < HOBBY_PHOTOS_REQUIRED) {
       setFormFeedback('err', `All ${HOBBY_PHOTOS_REQUIRED} hobby photos must pass AI validation (camera or instrument visible).`);
       return;
     }
@@ -1016,22 +1046,23 @@
       if (itemId && pendingItemPhoto) {
         btn.textContent = '⏳ Uploading photos…';
         const fd = new FormData();
-        fd.append('photo', pendingItemPhoto);
+        const photoName = pendingItemPhoto.name || 'item.jpg';
+        fd.append('photo', pendingItemPhoto, photoName);
 
         fetch(`${API}/api/items/${itemId}/upload`, { method: 'POST', body: fd })
-          .then(r => r.json())
+          .then(parseApiJson)
           .then(uploadData => {
             if (!uploadData.success) {
               throw new Error(uploadData.message || 'Item photo upload failed.');
             }
             const galleryFd = new FormData();
-            pendingHobbyPhotos.forEach(f => galleryFd.append('photos', f));
+            hobbyFiles.forEach(f => galleryFd.append('photos', f, f.name || 'hobby.jpg'));
             return fetch(`${API}/api/items/${itemId}/upload-gallery`, { method: 'POST', body: galleryFd });
           })
-          .then(r => r ? r.json() : { success: false })
+          .then(r => r ? parseApiJson(r) : { success: false, message: 'Gallery upload failed.' })
           .then(galleryData => {
             if (!galleryData || !galleryData.success) {
-              setFormFeedback('err', galleryData?.message || 'Hobby photos failed validation or upload.');
+              setFormFeedback('err', galleryData?.message || 'Hobby photos failed to upload. Make sure all 5 are added.');
               btn.disabled = false;
               btn.textContent = 'List for trade';
               return;
