@@ -561,6 +561,7 @@
   let aiLocked = false;
   let espPollTimer = null;
   let espPreviewTimer = null;
+  let espHealthTimer = null;
   let espLatestPreviewAt = 0;
   let espPreviewSession = 0;
   let lastAiResult = null;
@@ -579,6 +580,10 @@
     if (espPreviewTimer) {
       clearInterval(espPreviewTimer);
       espPreviewTimer = null;
+    }
+    if (espHealthTimer) {
+      clearInterval(espHealthTimer);
+      espHealthTimer = null;
     }
   }
 
@@ -604,6 +609,35 @@
     document.getElementById('esp32-shutter-btn').disabled = false;
     espLatestPreviewAt = data.updatedAt || Date.now();
     setEsp32ModalStatus('Live feed connected. Click Take Photo when ready.');
+  }
+
+  function pollEsp32Health() {
+    fetch(`${API}/api/esp32/preview/health`)
+      .then(r => r.json())
+      .then(health => {
+        if (!health.deviceConfigured) {
+          setEsp32ModalStatus('Server missing ESP32_DEVICE_KEY. Add it on Render, then redeploy.');
+          return;
+        }
+        if (health.feedLive) {
+          setEsp32ModalStatus('Live feed connected. Click Take Photo when ready.');
+          return;
+        }
+        if (health.esp32Online && health.previewActive) {
+          setEsp32ModalStatus('ESP32 is online but the live feed is still starting…');
+          return;
+        }
+        if (health.previewActive) {
+          setEsp32ModalStatus(
+            'Preview started, but the ESP32 has not connected yet. ' +
+            'Check: ESP32 powered on, on WiFi, flashed with latest HobbieTrades firmware, then reopen this camera.');
+          document.getElementById('esp32-live-placeholder').textContent =
+            'Waiting for ESP32…';
+          return;
+        }
+        setEsp32ModalStatus('Camera session is not active.');
+      })
+      .catch(() => {});
   }
 
   function pollEsp32PreviewFrame() {
@@ -642,7 +676,15 @@
     modal.setAttribute('aria-hidden', 'false');
 
     fetch(`${API}/api/esp32/preview/start`, { method: 'POST' })
-      .then(r => r.json())
+      .then(r => {
+        if (r.status === 404) {
+          throw new Error('404');
+        }
+        if (!r.ok) {
+          throw new Error(`Server error (${r.status})`);
+        }
+        return r.json();
+      })
       .then(data => {
         if (!data.success) {
           throw new Error(data.message || 'Could not start ESP32 preview.');
@@ -650,10 +692,15 @@
         espPreviewSession = data.session || 0;
         setEsp32ModalStatus('Preview started. Waiting for the ESP32 feed…');
         espPreviewTimer = setInterval(pollEsp32PreviewFrame, 400);
+        espHealthTimer = setInterval(pollEsp32Health, 1500);
+        pollEsp32Health();
         pollEsp32PreviewFrame();
       })
       .catch(err => {
-        setEsp32ModalStatus(err.message || 'Could not start ESP32 preview.');
+        const msg = err.message || 'Could not start ESP32 preview.';
+        setEsp32ModalStatus(msg.includes('404')
+          ? 'Backend is missing the ESP32 preview endpoints. Redeploy the HobbieTrades backend on Render.'
+          : msg);
         placeholder.textContent = 'Could not connect to ESP32 preview.';
       });
   }
