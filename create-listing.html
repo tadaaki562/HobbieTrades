@@ -721,20 +721,20 @@
     };
     reader.readAsDataURL(pendingItemPhoto);
 
-    showAiBox('loading', '🤖 Analyzing item photo…',
+    showAiBox('loading', 'Analyzing item photo…',
       '<span class="spinner"></span> Checking for a camera or musical instrument…');
 
     const formData = new FormData();
     formData.append('photo', pendingItemPhoto);
 
     fetch(`${API}/api/items/analyze`, { method: 'POST', body: formData })
-      .then(r => r.json())
+      .then(parseApiJson)
       .then(result => {
         if (!result.success || !result.accepted) {
           pendingItemPhoto = null;
           input.value = '';
           document.getElementById('item-photo-preview').style.display = 'none';
-          showAiBox('error', '❌ Photo not accepted',
+          showAiBox('error', 'Photo not accepted',
             (result.message || 'Only cameras and musical instruments are allowed on HobbieTrades.') +
             '<div style="margin-top:8px;font-size:12px">Please upload a clear photo of the item itself.</div>');
           return;
@@ -748,7 +748,7 @@
         pendingItemPhoto = null;
         input.value = '';
         itemPhotoAccepted = false;
-        showAiBox('error', '⚠️ Could not connect',
+        showAiBox('error', 'Could not connect',
           'Make sure the backend is running and try again.');
       });
   }
@@ -771,7 +771,7 @@
     formData.append('slot', String(slot + 1));
 
     fetch(`${API}/api/items/validate-photo`, { method: 'POST', body: formData })
-      .then(r => r.json())
+      .then(parseApiJson)
       .then(result => {
         if (!result.success || !result.accepted) {
           input.value = '';
@@ -807,10 +807,6 @@
   }
 
   // ─── Apply AI result to form ──────────────────────────────────────────────────
-  function categoryEmoji(cat) {
-    return cat === 'Cameras' ? '📷' : cat === 'Instruments' ? '🎸' : '📦';
-  }
-
   function applyDetectionFields(option) {
     const category  = option.detectedCategory || '';
     const condition = option.detectedCondition || '';
@@ -853,7 +849,7 @@
       return `
         <button type="button" class="detection-option${idx === selectedIndex ? ' selected' : ''}"
                 onclick="selectDetectionOption(${idx})">
-          <div class="detection-option-cat">${categoryEmoji(cat)} ${esc(cat)}</div>
+          <div class="detection-option-cat">${esc(cat)}</div>
           <div class="detection-option-title">${esc(title)}</div>
           <div class="detection-option-meta">${esc(type)}${conf ? ` · ${esc(conf)}` : ''}</div>
         </button>`;
@@ -906,19 +902,19 @@
     const captionHtml = caption
       ? `<div style="font-style:italic;margin-bottom:8px;background:white;border-radius:6px;
                      padding:7px 10px;border:1px solid #97C459;font-size:12px">
-           💬 "${esc(caption)}"
+           "${esc(caption)}"
          </div>`
       : '';
 
     const brandModelLine = (brand || model)
-      ? `<div style="font-size:12px;margin-bottom:6px">${categoryEmoji(category)} ${brand ? `Brand: <strong>${esc(brand)}</strong>` : ''}${brand && model ? ' · ' : ''}${model ? `Type: <strong>${esc(model)}</strong>` : ''}</div>`
+      ? `<div style="font-size:12px;margin-bottom:6px">${brand ? `Brand: <strong>${esc(brand)}</strong>` : ''}${brand && model ? ' · ' : ''}${model ? `Type: <strong>${esc(model)}</strong>` : ''}</div>`
       : '';
 
     const summaryHtml = `
       <div style="font-size:12px;font-weight:600;margin-bottom:6px">
-        ${suggestedTitle ? `📝 Title: <strong>${esc(suggestedTitle)}</strong> &nbsp;·&nbsp; ` : ''}
-        🏷️ Category: <strong>${esc(category || '—')}</strong> &nbsp;·&nbsp;
-        📊 Condition: <strong>${esc(condition || '—')}</strong>
+        ${suggestedTitle ? `Title: <strong>${esc(suggestedTitle)}</strong> &nbsp;·&nbsp; ` : ''}
+        Category: <strong>${esc(category || '—')}</strong> &nbsp;·&nbsp;
+        Condition: <strong>${esc(condition || '—')}</strong>
       </div>${brandModelLine}`;
 
     const tagsHtml = labels.length > 0
@@ -926,15 +922,15 @@
       : '';
 
     const appliedHtml = applied.length > 0
-      ? `<div style="font-size:12px;margin-top:8px">✅ Using: ${applied.join(' · ')}</div>`
+      ? `<div style="font-size:12px;margin-top:8px">Using: ${applied.join(' · ')}</div>`
       : `<div style="font-size:12px;margin-top:8px;color:#888">Could not detect — please select manually.</div>`;
 
     const detectionSrc = result.detectionSource || '';
     const srcNote = detectionSrc.startsWith('roboflow')
-      ? `<div style="font-size:11px;margin-top:6px;opacity:0.85">🧠 Detected with your Roboflow model</div>`
+      ? `<div style="font-size:11px;margin-top:6px;opacity:0.85">Detected with your Roboflow model</div>`
       : '';
 
-    showAiBox('success', hasPicker ? '🤖 Multiple items detected' : '🤖 AI Image Analysis',
+    showAiBox('success', hasPicker ? 'Multiple items detected' : 'AI Image Analysis',
       pickerNote + pickerHtml + captionHtml + summaryHtml + tagsHtml + appliedHtml + srcNote);
   }
 
