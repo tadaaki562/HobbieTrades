@@ -661,10 +661,9 @@
         }
         if (health.previewActive) {
           setEsp32ModalStatus(
-            'Preview started, but the ESP32 has not connected yet. ' +
-            'Check: ESP32 powered on, on WiFi, flashed with latest HobbieTrades firmware, then reopen this camera.');
+            'ESP32 not responding. Unplug USB for 10 seconds, press RST, then click Cancel and open the camera again.');
           document.getElementById('esp32-live-placeholder').textContent =
-            'Waiting for ESP32…';
+            'ESP32 not connected — try power reset';
           return;
         }
         setEsp32ModalStatus('Camera session is not active.');
@@ -699,43 +698,55 @@
     img.style.display = 'none';
     img.removeAttribute('src');
     placeholder.style.display = 'flex';
-    placeholder.textContent = 'Connecting to ESP32 camera…';
-    setEsp32ModalStatus('Waiting for live feed from ESP32…');
+    placeholder.textContent = 'Waking server and connecting to ESP32…';
+    setEsp32ModalStatus('Waking HobbieTrades server…');
     document.getElementById('esp32-btn').disabled = true;
     document.getElementById('esp32-shutter-btn').disabled = true;
 
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
 
-    fetch(`${API}/api/esp32/preview/start`, { method: 'POST' })
-      .then(r => {
-        if (r.status === 404) {
-          throw new Error('404');
-        }
-        if (!r.ok) {
-          throw new Error(`Server error (${r.status})`);
-        }
-        return r.json();
-      })
-      .then(data => {
-        if (!data.success) {
-          throw new Error(data.message || 'Could not start ESP32 preview.');
-        }
-        espPreviewSession = data.session || 0;
-        setEsp32ModalStatus('Preview started. Waiting for the ESP32 feed…');
-        espPreviewTimer = setInterval(pollEsp32PreviewFrame, 400);
-        espHealthTimer = setInterval(pollEsp32Health, 1500);
-        pollEsp32Health();
-        pollEsp32PreviewFrame();
-      })
-      .catch(err => {
-        const msg = err.message || 'Could not start ESP32 preview.';
-        setEsp32ModalStatus(msg.includes('404')
-          ? 'Backend is missing the ESP32 preview endpoints. Redeploy the HobbieTrades backend on Render.'
-          : msg);
-        placeholder.textContent = 'Could not connect to ESP32 preview.';
-      });
+    const startPreviewFlow = () => {
+      setEsp32ModalStatus('Starting ESP32 camera session…');
+      fetch(`${API}/api/esp32/preview/start`, { method: 'POST' })
+        .then(r => {
+          if (r.status === 404) {
+            throw new Error('404');
+          }
+          if (!r.ok) {
+            throw new Error(`Server error (${r.status})`);
+          }
+          return r.json();
+        })
+        .then(data => {
+          if (!data.success) {
+            throw new Error(data.message || 'Could not start ESP32 preview.');
+          }
+          espPreviewSession = data.session || 0;
+          setEsp32ModalStatus('Session started. Waiting for ESP32 feed…');
+          espPreviewTimer = setInterval(pollEsp32PreviewFrame, 500);
+          espHealthTimer = setInterval(pollEsp32Health, 2000);
+          pollEsp32Health();
+          pollEsp32PreviewFrame();
+        })
+        .catch(err => {
+          const msg = err.message || 'Could not start ESP32 preview.';
+          setEsp32ModalStatus(msg.includes('404')
+            ? 'Backend is missing the ESP32 preview endpoints. Redeploy the HobbieTrades backend on Render.'
+            : msg);
+          placeholder.textContent = 'Could not connect to ESP32 preview.';
+        });
+    };
+
+    const wake = window.HobbieAPI ? window.HobbieAPI.wakeBackend() : fetch(`${API}/api/health`).then(r => r.ok);
+    Promise.resolve(wake)
+      .then(() => startPreviewFlow())
+      .catch(() => startPreviewFlow());
   }
+
+  window.addEventListener('beforeunload', () => {
+    fetch(`${API}/api/esp32/preview/stop`, { method: 'POST', keepalive: true }).catch(() => {});
+  });
 
   function takeEsp32Photo() {
     const shutter = document.getElementById('esp32-shutter-btn');
