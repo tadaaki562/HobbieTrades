@@ -87,7 +87,13 @@
       padding: 20px;
     }
     .esp32-modal-overlay.open { display: flex; }
+    .esp32-modal-overlay.open .esp32-modal {
+      pointer-events: auto;
+    }
     .esp32-modal {
+      position: relative;
+      z-index: 1001;
+      pointer-events: auto;
       width: min(720px, 100%);
       background: var(--surface);
       border-radius: var(--radius-lg);
@@ -538,6 +544,30 @@
   <div id="form-feedback" class="form-feedback" role="status"></div>
 </div>
 
+<div class="esp32-modal-overlay" id="esp32-modal" aria-hidden="true" onclick="closeEsp32Camera()">
+  <div class="esp32-modal" role="dialog" aria-labelledby="esp32-modal-title" onclick="event.stopPropagation()">
+    <div class="esp32-modal-header">
+      <div class="esp32-modal-title" id="esp32-modal-title">ESP32 Camera</div>
+      <button type="button" class="esp32-modal-close" id="esp32-modal-close" aria-label="Close" onclick="closeEsp32Camera()">&times;</button>
+    </div>
+    <div class="esp32-modal-body">
+      <div class="esp32-live-view">
+        <img id="esp32-live-img" alt="ESP32 live preview" style="display:none"/>
+        <div class="esp32-live-placeholder" id="esp32-live-placeholder">
+          Connecting to ESP32 camera…
+        </div>
+      </div>
+      <div class="esp32-modal-status" id="esp32-modal-status">
+        Point the camera at your item in good light. The live preview is lower quality; Take Photo uses full resolution.
+      </div>
+      <div class="esp32-modal-actions">
+        <button type="button" class="btn btn-outline" id="esp32-cancel-btn" onclick="closeEsp32Camera()">Cancel</button>
+        <button type="button" class="btn btn-primary" id="esp32-shutter-btn" disabled onclick="takeEsp32Photo()">Take Photo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="js/api.js"></script>
 <script>
   const API = window.HobbieAPI ? window.HobbieAPI.baseUrl : (
@@ -621,10 +651,12 @@
         }
         if (health.feedLive) {
           setEsp32ModalStatus('Live feed connected. Click Take Photo when ready.');
+          document.getElementById('esp32-shutter-btn').disabled = false;
           return;
         }
         if (health.esp32Online && health.previewActive) {
-          setEsp32ModalStatus('ESP32 is online but the live feed is still starting…');
+          setEsp32ModalStatus('ESP32 connected. Waiting for live feed… You can still click Take Photo.');
+          document.getElementById('esp32-shutter-btn').disabled = false;
           return;
         }
         if (health.previewActive) {
@@ -707,6 +739,7 @@
 
   function takeEsp32Photo() {
     const shutter = document.getElementById('esp32-shutter-btn');
+    if (!shutter || shutter.disabled) return;
     shutter.disabled = true;
     setEsp32ModalStatus('Taking photo…');
 
@@ -745,13 +778,6 @@
         setEsp32ModalStatus(err.message || 'Could not request capture.');
       });
   }
-
-  document.getElementById('esp32-modal-close').addEventListener('click', closeEsp32Camera);
-  document.getElementById('esp32-cancel-btn').addEventListener('click', closeEsp32Camera);
-  document.getElementById('esp32-shutter-btn').addEventListener('click', takeEsp32Photo);
-  document.getElementById('esp32-modal').addEventListener('click', (event) => {
-    if (event.target.id === 'esp32-modal') closeEsp32Camera();
-  });
 
   function base64ToFile(base64, mime, filename) {
     const bin = atob(base64);
@@ -1312,29 +1338,5 @@
     });
   }
 </script>
-
-<div class="esp32-modal-overlay" id="esp32-modal" aria-hidden="true">
-  <div class="esp32-modal" role="dialog" aria-labelledby="esp32-modal-title">
-    <div class="esp32-modal-header">
-      <div class="esp32-modal-title" id="esp32-modal-title">ESP32 Camera</div>
-      <button type="button" class="esp32-modal-close" id="esp32-modal-close" aria-label="Close">&times;</button>
-    </div>
-    <div class="esp32-modal-body">
-      <div class="esp32-live-view">
-        <img id="esp32-live-img" alt="ESP32 live preview" style="display:none"/>
-        <div class="esp32-live-placeholder" id="esp32-live-placeholder">
-          Connecting to ESP32 camera…
-        </div>
-      </div>
-      <div class="esp32-modal-status" id="esp32-modal-status">
-        Point the camera at your item. The live feed will appear here.
-      </div>
-      <div class="esp32-modal-actions">
-        <button type="button" class="btn btn-outline" id="esp32-cancel-btn">Cancel</button>
-        <button type="button" class="btn btn-primary" id="esp32-shutter-btn" disabled>Take Photo</button>
-      </div>
-    </div>
-  </div>
-</div>
 </body>
 </html>
