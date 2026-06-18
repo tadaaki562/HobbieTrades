@@ -338,7 +338,7 @@
           </button>
         </div>
         <div class="esp32-wait" id="esp32-wait" style="display:none">
-          Waiting for ESP32… Press capture on the camera now.
+          Waiting for ESP32… Point the camera at your item. It will capture automatically.
         </div>
         <input type="file" id="item-photo-input" accept="image/*" style="display:none" onchange="onItemPhotoSelected(this)"/>
         <img id="item-photo-preview" class="main-preview-img" alt="Item preview"/>
@@ -513,8 +513,10 @@
     espBtn.disabled = true;
     document.getElementById('esp32-wait').style.display = 'block';
 
-    showAiBox('loading', '📷 Waiting for ESP32…',
-      '<span class="spinner"></span> Press the capture button on the ESP32-CAM now. Roboflow will analyze the photo when it arrives.');
+    showAiBox('loading', 'Waiting for ESP32…',
+      '<span class="spinner"></span> Point the ESP32-CAM at your camera or instrument. It will take a photo automatically within a few seconds.');
+
+    fetch(`${API}/api/esp32/arm`, { method: 'POST' }).catch(() => {});
 
     espPollTimer = setInterval(() => {
       if (Date.now() > deadline) {
