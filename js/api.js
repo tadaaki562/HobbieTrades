@@ -29,6 +29,26 @@
     baseUrl: API,
     wakeBackend,
     getAuthHeaders,
+    async deleteListing(itemId) {
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        window.location.href = 'index.html';
+        return { success: false };
+      }
+      if (!confirm('Remove this listing? It will no longer appear in browse.')) {
+        return { success: false, cancelled: true };
+      }
+      const res = await fetch(`${API}/api/items/${itemId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: parseInt(userId, 10) }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Could not remove listing.');
+      }
+      return data;
+    },
     resolveImageUrl(photoUrl, itemId) {
       if (!photoUrl) {
         return itemId ? `${API}/api/items/${itemId}/photo` : null;

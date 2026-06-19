@@ -4,10 +4,22 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>HobbieTrades — Browse</title>
+  <script src="js/theme.js"></script>
   <link rel="stylesheet" href="style.css"/>
   <!-- Feather Icons for clean minimal SVGs -->
   <script src="https://unpkg.com/feather-icons"></script>
   <style>
+    body.browse-page { background: var(--bg); }
+    body.browse-page::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      background:
+        radial-gradient(ellipse 42% 28% at 6% 18%, var(--brand-glow), transparent 70%),
+        radial-gradient(ellipse 38% 24% at 94% 72%, rgba(5, 150, 105, 0.08), transparent 70%);
+    }
     /* ── HERO ── */
     .browse-hero {
       background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand) 100%);
@@ -33,7 +45,7 @@
       border-radius: 50%;
     }
     .hero-inner {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
       position: relative;
       z-index: 1;
@@ -49,7 +61,7 @@
 
     /* ── SEARCH FLOAT ── */
     .search-float-wrap {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: -28px auto 0;
       padding: 0 40px;
       position: relative;
@@ -79,7 +91,7 @@
 
     /* ── CATEGORY SCROLL ── */
     .cat-scroll-wrap {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
       padding: 24px 40px 0;
     }
@@ -122,14 +134,116 @@
       box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
     }
 
+    /* ── FULL-WIDTH SHELL + SIDE RAILS ── */
+    .browse-shell {
+      display: grid;
+      grid-template-columns: minmax(200px, 1fr) minmax(0, 1400px) minmax(200px, 1fr);
+      gap: 24px;
+      align-items: start;
+      padding: 0 16px;
+    }
+    .browse-rail {
+      position: sticky;
+      top: 88px;
+      padding: 32px 0 40px;
+    }
+    .rail-panel {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .rail-panel-accent {
+      background: linear-gradient(160deg, var(--brand-light) 0%, var(--white) 100%);
+      border-color: var(--brand-mid);
+    }
+    .rail-kicker {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--brand-dark);
+      margin-bottom: 8px;
+    }
+    .rail-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 12px;
+      line-height: 1.35;
+    }
+    .rail-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+    .rail-steps { display: flex; flex-direction: column; gap: 14px; margin-top: 4px; }
+    .rail-step {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .rail-step-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--brand);
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .rail-step-body { font-size: 13px; color: var(--text-secondary); line-height: 1.45; }
+    .rail-step-body strong { display: block; color: var(--text); font-size: 13px; margin-bottom: 2px; }
+    .rail-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .rail-stat {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      text-align: center;
+    }
+    .rail-stat-val { font-size: 20px; font-weight: 700; color: var(--text); line-height: 1.2; }
+    .rail-stat-lbl { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
+    .rail-tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .rail-tag {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+    .rail-deco {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      border-radius: var(--radius-lg);
+    }
+    .rail-deco::before {
+      content: '';
+      position: absolute;
+      top: -30px; right: -30px;
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      background: var(--brand-glow);
+    }
+
     /* ── PAGE LAYOUT ── */
     .browse-layout {
-      max-width: 1200px;
-      margin: 32px auto;
-      padding: 0 40px 40px;
+      max-width: none;
+      width: 100%;
+      margin: 32px 0;
+      padding: 0 0 40px;
       display: grid;
-      grid-template-columns: 240px 1fr;
-      gap: 32px;
+      grid-template-columns: 260px 1fr;
+      gap: 28px;
       align-items: start;
     }
 
@@ -274,7 +388,7 @@
     /* ── ITEM GRID ── */
     .item-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 24px;
     }
 
@@ -497,7 +611,38 @@
       display: flex; align-items: center; justify-content: center;
     }
     .page-btn:hover { border-color: var(--text-tertiary); color: var(--text); background: var(--bg); }
+    .trade-btn-sm:hover { background: var(--brand-dark); }
+
+    .card-delete-btn {
+      background: var(--red-light) !important;
+      color: var(--red) !important;
+      border: 1px solid transparent;
+    }
+    .card-delete-btn:hover {
+      background: var(--red) !important;
+      color: white !important;
+    }
+    .card-owner-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: var(--orange-light);
+      color: var(--orange);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.04em;
+      box-shadow: var(--shadow-sm);
+    }
+
     .page-btn.active { background: var(--brand); border-color: var(--brand); color: white; font-weight: 600; }
+
+    @media (max-width: 1280px) {
+      .browse-shell { grid-template-columns: 1fr; padding: 0 24px; }
+      .browse-rail { display: none; }
+      .browse-layout { margin-top: 24px; }
+    }
 
     @media (max-width: 960px) {
       .browse-layout {
@@ -526,7 +671,7 @@
     }
   </style>
 </head>
-<body>
+<body class="browse-page">
 
 <!-- NAV -->
 <nav class="navbar">
@@ -548,7 +693,7 @@
 <div class="browse-hero">
   <div class="hero-inner">
     <h1>Browse Listings</h1>
-    <p>Zero cash. Pure barter. Find your perfect hobby swap.</p>
+    <p>Zero cash. Real trades. Find your perfect hobby swap.</p>
   </div>
 </div>
 
@@ -577,7 +722,34 @@
 </div>
 
 <!-- LAYOUT -->
-<div class="browse-layout page-enter">
+<div class="browse-shell page-enter">
+  <aside class="browse-rail rail-left">
+    <div class="rail-panel rail-panel-accent" style="position:relative;overflow:hidden">
+      <div class="rail-kicker">How it works</div>
+      <div class="rail-title">Trade gear, not cash</div>
+      <div class="rail-steps">
+        <div class="rail-step">
+          <div class="rail-step-num">1</div>
+          <div class="rail-step-body"><strong>List your item</strong>AI verifies photos and sets a fair value estimate.</div>
+        </div>
+        <div class="rail-step">
+          <div class="rail-step-num">2</div>
+          <div class="rail-step-body"><strong>Propose a swap</strong>Pick something you want and offer one of yours.</div>
+        </div>
+        <div class="rail-step">
+          <div class="rail-step-num">3</div>
+          <div class="rail-step-body"><strong>Meet & confirm</strong>Coordinate in chat, then both confirm the trade.</div>
+        </div>
+      </div>
+    </div>
+    <div class="rail-panel">
+      <div class="rail-kicker">Platform</div>
+      <div class="rail-title">Cameras & instruments only</div>
+      <p class="rail-text">Every listing is verified with hobby proof photos so trades stay authentic.</p>
+    </div>
+  </aside>
+
+  <div class="browse-layout">
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
@@ -640,6 +812,47 @@
 
     <div class="pagination" id="pagination"></div>
   </main>
+  </div>
+
+  <aside class="browse-rail rail-right">
+    <div class="rail-panel">
+      <div class="rail-kicker">Live marketplace</div>
+      <div class="rail-title">Browse activity</div>
+      <div class="rail-stat-grid">
+        <div class="rail-stat">
+          <div class="rail-stat-val" id="rail-stat-all">0</div>
+          <div class="rail-stat-lbl">Open trades</div>
+        </div>
+        <div class="rail-stat">
+          <div class="rail-stat-val" id="rail-stat-cameras">0</div>
+          <div class="rail-stat-lbl">Cameras</div>
+        </div>
+        <div class="rail-stat">
+          <div class="rail-stat-val" id="rail-stat-instruments">0</div>
+          <div class="rail-stat-lbl">Instruments</div>
+        </div>
+        <div class="rail-stat">
+          <div class="rail-stat-val"><i data-feather="shield" style="width:18px;height:18px"></i></div>
+          <div class="rail-stat-lbl">Verified listings</div>
+        </div>
+      </div>
+    </div>
+    <div class="rail-panel">
+      <div class="rail-kicker">Fair value</div>
+      <div class="rail-title">Matched by estimate</div>
+      <p class="rail-text">Listings use AI + market data so both sides know what a swap is worth before they meet.</p>
+      <div class="rail-tag-list">
+        <span class="rail-tag">Cameras</span>
+        <span class="rail-tag">Guitars</span>
+        <span class="rail-tag">Keys & drums</span>
+      </div>
+    </div>
+    <div class="rail-panel">
+      <div class="rail-kicker">Your listings</div>
+      <div class="rail-title">Manage from browse</div>
+      <p class="rail-text">Items you listed show a <strong style="color:var(--text)">Yours</strong> badge — use Remove to take them down anytime.</p>
+    </div>
+  </aside>
 </div>
 
 <script src="js/api.js"></script>
@@ -741,10 +954,15 @@
     const cats = ['Cameras','Instruments'];
     cats.forEach(c => {
       const el = document.getElementById('cnt-' + c);
-      if (el) el.textContent = allItems.filter(i => i.category === c).length;
+      const rail = document.getElementById('rail-stat-' + c.toLowerCase());
+      const n = allItems.filter(i => i.category === c).length;
+      if (el) el.textContent = n;
+      if (rail) rail.textContent = n;
     });
     const allEl = document.getElementById('cnt-all');
+    const railAll = document.getElementById('rail-stat-all');
     if (allEl) allEl.textContent = allItems.length;
+    if (railAll) railAll.textContent = allItems.length;
   }
 
   // ─── Filter + sort ────────────────────────────────────────────────────────────
@@ -830,12 +1048,14 @@
         : '';
 
       const staggerClass = index < 10 ? `animate-slide-up stagger-${(index % 5) + 1}` : 'animate-slide-up';
+      const isOwner = loggedInUserId && item.user && Number(item.user.id) === loggedInUserId;
 
       return `
         <a class="item-card ${staggerClass}" href="item-detail.html?id=${item.id}">
           <div class="card-img">
             ${imgHtml}
             <div class="card-trade-badge">TRADE</div>
+            ${isOwner ? '<div class="card-owner-badge">YOURS</div>' : ''}
             ${cond ? `<div class="card-cond-badge">${cond}</div>` : ''}
             ${matchBadgeHtml}
           </div>
@@ -851,7 +1071,9 @@
           </div>
           <div class="card-footer">
             <div class="card-value">${formatPeso(val)} <span>Value</span></div>
-            <button class="trade-btn-sm" onclick="event.preventDefault();goTrade(${item.id})">Trade</button>
+            ${isOwner
+              ? `<button class="trade-btn-sm card-delete-btn" onclick="event.preventDefault();event.stopPropagation();deleteListing(${item.id})"><i data-feather="trash-2"></i> Remove</button>`
+              : `<button class="trade-btn-sm" onclick="event.preventDefault();goTrade(${item.id})">Trade</button>`}
           </div>
         </a>`;
     }).join('');
@@ -920,6 +1142,19 @@
   }
 
   // ─── Trade shortcut ───────────────────────────────────────────────────────────
+  async function deleteListing(itemId) {
+    try {
+      if (!window.HobbieAPI) throw new Error('API helper not loaded');
+      const result = await window.HobbieAPI.deleteListing(itemId);
+      if (result.cancelled) return;
+      allItems = allItems.filter(i => i.id !== itemId);
+      updateCounts();
+      applyFilters();
+    } catch (err) {
+      alert(err.message || 'Could not remove listing.');
+    }
+  }
+
   function goTrade(id) {
     const userId = localStorage.getItem('userId');
     if (!userId) { window.location.href = 'index.html'; return; }

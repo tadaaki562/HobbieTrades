@@ -4,6 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>HobbieTrades — Profile</title>
+  <script src="js/theme.js"></script>
   <link rel="stylesheet" href="style.css"/>
   <script src="https://unpkg.com/feather-icons"></script>
   <style>
@@ -144,6 +145,25 @@
     .lc-body { padding: 12px 16px; flex: 1; }
     .lc-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; line-height: 1.4; color: var(--text); }
     .lc-meta { font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center; }
+    .list-card-wrap { display: flex; flex-direction: column; gap: 8px; }
+    .lc-delete-btn {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--red-light);
+      color: var(--red);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .lc-delete-btn:hover { background: var(--red); color: white; border-color: var(--red); }
 
     /* Reviews */
     .rev-card { padding: 16px 0; border-bottom: 1px solid var(--border-light); }
@@ -301,6 +321,16 @@
     return 'Joined ' + d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
   }
 
+  async function removeListing(itemId) {
+    try {
+      await window.HobbieAPI.deleteListing(itemId);
+      profileListings = profileListings.filter(i => i.id !== itemId);
+      render();
+    } catch (err) {
+      alert(err.message || 'Could not remove listing.');
+    }
+  }
+
   async function loadProfile() {
     if (!profileId || Number.isNaN(profileId)) {
       window.location.href = 'index.html';
@@ -418,22 +448,25 @@
         const staggerClass = idx < 10 ? `animate-slide-up stagger-${(idx % 5) + 1}` : 'animate-slide-up';
 
         return `
-          <a href="item-detail.html?id=${item.id}" class="list-card ${staggerClass}">
-            <div class="lc-img">
-              ${imgSrc 
-                ? `<img src="${imgSrc}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
-                   <div class="lc-placeholder" style="display:none"><i data-feather="${icon}"></i></div>` 
-                : `<div class="lc-placeholder"><i data-feather="${icon}"></i></div>`}
-              <div class="lc-status">TRADE</div>
-            </div>
-            <div class="lc-body">
-              <div class="lc-title">${escapeHtml(item.title)}</div>
-              <div class="lc-meta">
-                <span>${item.conditionLabel || 'Unknown'}</span>
-                <span style="font-weight:600;color:var(--text)">${formatPeso(item.estimatedValue)}</span>
+          <div class="list-card-wrap ${staggerClass}">
+            <a href="item-detail.html?id=${item.id}" class="list-card">
+              <div class="lc-img">
+                ${imgSrc 
+                  ? `<img src="${imgSrc}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+                     <div class="lc-placeholder" style="display:none"><i data-feather="${icon}"></i></div>` 
+                  : `<div class="lc-placeholder"><i data-feather="${icon}"></i></div>`}
+                <div class="lc-status">TRADE</div>
               </div>
-            </div>
-          </a>`;
+              <div class="lc-body">
+                <div class="lc-title">${escapeHtml(item.title)}</div>
+                <div class="lc-meta">
+                  <span>${item.conditionLabel || 'Unknown'}</span>
+                  <span style="font-weight:600;color:var(--text)">${formatPeso(item.estimatedValue)}</span>
+                </div>
+              </div>
+            </a>
+            ${isOwnProfile ? `<button type="button" class="lc-delete-btn" onclick="removeListing(${item.id})"><i data-feather="trash-2"></i> Remove listing</button>` : ''}
+          </div>`;
       }).join('');
     }
 

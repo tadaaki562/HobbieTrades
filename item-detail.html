@@ -4,6 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>HobbieTrades — Item Detail</title>
+  <script src="js/theme.js"></script>
   <link rel="stylesheet" href="style.css"/>
   <script src="https://unpkg.com/feather-icons"></script>
   <style>
@@ -420,6 +421,15 @@
   const AVATAR_COLORS = ['#AFA9EC','#9FE1CB','#F5C4B3','#85B7EB','#F7D08A','#B5EAD7','#C7CEEA'];
   function avatarColor(id) { return AVATAR_COLORS[(id||0) % AVATAR_COLORS.length]; }
 
+  async function removeThisListing(id) {
+    try {
+      await window.HobbieAPI.deleteListing(id);
+      window.location.href = 'profile.html';
+    } catch (err) {
+      alert(err.message || 'Could not remove listing.');
+    }
+  }
+
   async function loadItem() {
     if (!itemId) {
       document.getElementById('main-content').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text-secondary)">Item not found.</div>';
@@ -477,7 +487,9 @@
       if (!loggedInUserId) {
         actionRow = `<a href="index.html" class="btn btn-primary btn-full btn-lg" style="margin-top:16px">Log in to propose a trade</a>`;
       } else if (sId === loggedInUserId) {
-        actionRow = `<a href="profile.html" class="btn btn-outline btn-full btn-lg" style="margin-top:16px">View your profile</a>`;
+        actionRow = `
+          <a href="profile.html" class="btn btn-outline btn-full btn-lg">View your profile</a>
+          <button type="button" class="btn btn-danger btn-full btn-lg" style="margin-top:12px" onclick="removeThisListing(${item.id})"><i data-feather="trash-2"></i> Remove listing</button>`;
       } else {
         actionRow = `
           <div class="action-row" style="margin-top:16px">
