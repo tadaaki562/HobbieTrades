@@ -1034,13 +1034,14 @@
     try {
       // 1. Create item
       const itemData = {
-        title, category,
+        title,
+        category,
         conditionLabel: condition,
         estimatedValue: parseFloat(estVal),
-        description: desc,
-        location: location,
-        lookingFor: looking,
-        user: { id: parseInt(loggedInUserId) }
+        description: desc || '',
+        location: location || '',
+        lookingFor: looking || '',
+        userId: parseInt(loggedInUserId, 10)
       };
 
       const res = await fetch(`${API}/api/items`, {
@@ -1048,29 +1049,36 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(itemData)
       });
-      if (!res.ok) throw new Error('Failed to create item');
-      const createdItem = await res.json();
-      const itemId = createdItem.id;
+      const created = await res.json().catch(() => ({}));
+      if (!res.ok || !created.success) {
+        throw new Error(created.message || `Failed to create item (${res.status})`);
+      }
+      const itemId = created.itemId;
+      if (!itemId) throw new Error('Server did not return an item ID.');
 
       btn.innerHTML = '<span class="spinner" style="margin-right:8px"></span> Uploading photos…';
 
-      // 2. Upload main photo (slot 1)
+      // 2. Upload main item photo
       const fdMain = new FormData();
       fdMain.append('photo', mainPhotoFile);
-      fdMain.append('slot', 1);
       const uRes1 = await fetch(`${API}/api/items/${itemId}/upload`, { method: 'POST', body: fdMain });
-      if (!uRes1.ok) throw new Error('Failed to upload main photo');
+      const uMain = await uRes1.json().catch(() => ({}));
+      if (!uRes1.ok || uMain.success === false) {
+        throw new Error(uMain.message || 'Failed to upload main photo');
+      }
 
-      // 3. Upload hobby photos
-      let uploadCount = 0;
+      // 3. Upload all 5 hobby proof photos in one request
+      const fdGallery = new FormData();
       for (let i = 0; i < HOBBY_PHOTOS_REQUIRED; i++) {
-        if (hobbyPhotoFiles[i] && hobbyPhotoValid[i]) {
-          const fdH = new FormData();
-          fdH.append('photo', hobbyPhotoFiles[i]);
-          fdH.append('slot', i + 2); // slots 2,3,4,5,6
-          await fetch(`${API}/api/items/${itemId}/upload`, { method: 'POST', body: fdH });
-          uploadCount++;
+        if (!hobbyPhotoFiles[i] || !hobbyPhotoValid[i]) {
+          throw new Error(`Hobby photo ${i + 1} is missing or not verified.`);
         }
+        fdGallery.append('photos', hobbyPhotoFiles[i]);
+      }
+      const gRes = await fetch(`${API}/api/items/${itemId}/upload-gallery`, { method: 'POST', body: fdGallery });
+      const gData = await gRes.json().catch(() => ({}));
+      if (!gRes.ok || gData.success === false) {
+        throw new Error(gData.message || 'Failed to upload hobby photos');
       }
 
       setFormFeedback('ok', `"${title}" was listed successfully. Taking you to Browse…`);
