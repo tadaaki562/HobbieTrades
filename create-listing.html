@@ -223,9 +223,9 @@
       align-items: flex-start;
       gap: 12px;
     }
-    .ai-result.loading { display: flex; background: var(--brand-light); border: 1px solid var(--brand-mid); color: var(--brand-dark); }
-    .ai-result.success { display: flex; background: var(--green-light); border: 1px solid #A7F3D0; color: #065F46; }
-    .ai-result.error   { display: flex; background: var(--red-light); border: 1px solid #FECACA; color: #991B1B; }
+    .ai-result.loading { display: flex; background: var(--brand-light); border: 1px solid var(--border-brand); color: var(--on-brand); }
+    .ai-result.success { display: flex; background: var(--green-light); border: 1px solid var(--border-green); color: var(--on-green); }
+    .ai-result.error   { display: flex; background: var(--red-light); border: 1px solid var(--border-red); color: var(--on-red); }
 
     .ai-icon i { width: 18px; height: 18px; margin-top: 2px; }
     .ai-text strong { display: block; font-size: 14px; margin-bottom: 4px; }
@@ -570,8 +570,8 @@
     box.style.display = 'flex';
     box.className = 'alert alert-' + (kind === 'ok' ? 'green' : 'err');
     box.innerHTML = kind === 'ok' 
-      ? `<i data-feather="check-circle" style="color:#065F46"></i> <span>${text}</span>`
-      : `<i data-feather="alert-circle" style="color:#991B1B"></i> <span>${text}</span>`;
+      ? `<i data-feather="check-circle" style="color:var(--on-green)"></i> <span>${text}</span>`
+      : `<i data-feather="alert-circle" style="color:var(--on-red)"></i> <span>${text}</span>`;
     feather.replace();
     box.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
