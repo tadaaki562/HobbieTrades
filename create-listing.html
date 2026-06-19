@@ -587,69 +587,67 @@
   function openEsp32Modal(mode = 'main') {
     esp32Mode = mode;
     document.getElementById('esp32-modal').classList.add('open');
-    document.getElementById('esp32-stream').style.display = 'none';
-    
+
+    const img = document.getElementById('esp32-stream');
+    img.style.display = 'none';
+    img.src = '';
+
     const placeholder = document.getElementById('esp32-placeholder');
     placeholder.style.display = 'flex';
-    
+
     const waitBox = document.getElementById('esp32-wait-msg');
     const waitText = document.getElementById('esp32-wait-text');
+    waitBox.style.display = 'flex';
+    waitText.textContent = 'Waking server and starting ESP32 preview…';
+    placeholder.innerHTML = `<i data-feather="loader" class="spinner" style="width:48px;height:48px;opacity:0.5;margin-bottom:12px;border:none"></i><br/>Connecting…`;
+    feather.replace();
+    setEsp32ModalStatus('Contacting HobbieTrades server…');
 
-    if (window.HobbieAPI) {
-      waitBox.style.display = 'none';
-      placeholder.innerHTML = `<i data-feather="video" style="width:48px;height:48px;opacity:0.5;margin-bottom:12px"></i><br/>Connecting via native SDK...`;
-      feather.replace();
-      window.HobbieAPI.startEsp32Session()
-        .then(url => {
-          document.getElementById('esp32-stream').src = url;
-          document.getElementById('esp32-stream').style.display = 'block';
-          placeholder.style.display = 'none';
-          setEsp32ModalStatus('ESP32 connected. Waiting for live feed… You can still click Take Photo.');
-        })
-        .catch(err => {
-          placeholder.innerHTML = `<i data-feather="video-off" style="width:48px;height:48px;opacity:0.5;margin-bottom:12px"></i><br/>Native ESP32 failed.`;
-          feather.replace();
-          setEsp32ModalStatus(err.message || 'ESP32 not connected — try power reset', true);
-        });
+    if (!window.HobbieAPI || typeof window.HobbieAPI.startEsp32Session !== 'function') {
+      setEsp32ModalStatus('ESP32 helpers failed to load. Hard-refresh the page (Ctrl+F5).', true);
       return;
     }
 
-    waitBox.style.display = 'flex';
-    waitText.textContent = 'Waking server and connecting to ESP32…';
-    placeholder.innerHTML = `<i data-feather="loader" class="spinner" style="width:48px;height:48px;opacity:0.5;margin-bottom:12px;border:none"></i><br/>Connecting...`;
-    feather.replace();
-    setEsp32ModalStatus('Waking HobbieTrades server…');
+    if (window.HobbieAPI._esp32State) {
+      window.HobbieAPI._esp32State.onHealth = (health, framesSeen) => {
+        if (framesSeen > 0) {
+          setEsp32ModalStatus('Live feed connected.');
+          return;
+        }
+        if (health.feedLive) {
+          setEsp32ModalStatus('Live feed connected.');
+        } else if (health.esp32Online) {
+          setEsp32ModalStatus('ESP32 online — waiting for preview frames…');
+        } else if (health.previewActive) {
+          setEsp32ModalStatus('Preview session open — waiting for ESP32 (check Serial Monitor)…');
+        }
+      };
+    }
 
-    fetch(`${API}/api/health`, { cache: 'no-store' })
-    .then(() => {
-      setEsp32ModalStatus('Starting ESP32 camera session…');
-      return fetch(`${API}/api/esp32/start-session`, { method: 'POST' });
-    })
-    .then(res => res.json())
-    .then(data => {
-      waitBox.style.display = 'none';
-      if (data.success && data.streamUrl) {
-        currentEsp32Session = data.session;
-        document.getElementById('esp32-stream').src = `${API}${data.streamUrl}`;
-        document.getElementById('esp32-stream').style.display = 'block';
+    window.HobbieAPI.startEsp32Session(img)
+      .then(() => {
+        waitBox.style.display = 'none';
+        img.style.display = 'block';
         placeholder.style.display = 'none';
-        setEsp32ModalStatus('Session started. Waiting for ESP32 feed…');
-      } else {
-        throw new Error(data.message || 'Failed to get stream URL');
-      }
-    })
-    .catch(err => {
-      waitBox.style.display = 'none';
-      placeholder.innerHTML = `<i data-feather="video-off" style="width:48px;height:48px;opacity:0.5;margin-bottom:12px"></i><br/>No connection.`;
-      feather.replace();
-      setEsp32ModalStatus(err.message || 'Server awake, but ESP32 not connected', true);
-    });
+        setEsp32ModalStatus('Preview started. Waiting for ESP32 frames…');
+      })
+      .catch(err => {
+        waitBox.style.display = 'none';
+        placeholder.innerHTML = `<i data-feather="video-off" style="width:48px;height:48px;opacity:0.5;margin-bottom:12px"></i><br/>Could not connect.`;
+        feather.replace();
+        setEsp32ModalStatus(err.message || 'ESP32 not connected — try power reset', true);
+      });
   }
 
   function closeEsp32Modal() {
     document.getElementById('esp32-modal').classList.remove('open');
     document.getElementById('esp32-stream').src = '';
-    if (window.HobbieAPI) window.HobbieAPI.stopEsp32Session();
+    if (window.HobbieAPI && typeof window.HobbieAPI.stopEsp32Session === 'function') {
+      window.HobbieAPI.stopEsp32Session();
+    }
+    if (window.HobbieAPI && window.HobbieAPI._esp32State) {
+      window.HobbieAPI._esp32State.onHealth = null;
+    }
   }
 
   function captureEsp32Photo() {
@@ -659,30 +657,18 @@
 
     setEsp32ModalStatus('Taking photo…');
 
-    if (window.HobbieAPI) {
-      window.HobbieAPI.captureEsp32Photo()
-        .then(blob => processCapturedBlob(blob))
-        .catch(err => {
-          setEsp32ModalStatus(err.message || 'Capture failed', true);
-          btn.disabled = false;
-          btn.innerHTML = '<i data-feather="aperture"></i> Take Photo';
-          feather.replace();
-        });
+    if (!window.HobbieAPI || typeof window.HobbieAPI.captureEsp32Photo !== 'function') {
+      setEsp32ModalStatus('ESP32 helpers failed to load. Hard-refresh the page (Ctrl+F5).', true);
+      btn.disabled = false;
+      btn.innerHTML = '<i data-feather="aperture"></i> Take Photo';
+      feather.replace();
       return;
     }
 
-    setEsp32ModalStatus('Photo requested. Waiting for ESP32…');
-    fetch(`${API}/api/esp32/capture`, { method: 'POST' })
-      .then(res => res.json())
-      .then(data => {
-        if (!data.success) throw new Error(data.message);
-        setEsp32ModalStatus('Photo taken! Downloading…');
-        return fetch(`${API}${data.photoUrl}?t=${Date.now()}`);
-      })
-      .then(res => res.blob())
+    window.HobbieAPI.captureEsp32Photo()
       .then(blob => processCapturedBlob(blob))
       .catch(err => {
-        setEsp32ModalStatus(err.message || 'Capture failed. ESP32 might be offline.', true);
+        setEsp32ModalStatus(err.message || 'Capture failed', true);
         btn.disabled = false;
         btn.innerHTML = '<i data-feather="aperture"></i> Take Photo';
         feather.replace();
