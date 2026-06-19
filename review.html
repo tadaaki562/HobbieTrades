@@ -208,15 +208,20 @@
 
   async function loadData() {
     try {
-      const res = await fetch(`${API}/api/trades/${tradeIdStr}`);
-      if (!res.ok) throw new Error();
-      trade = await res.json();
-
       const myId = parseInt(loggedInUserId, 10);
-      if (trade.proposingUser.id === myId) {
-        targetUser = trade.targetUser;
-      } else if (trade.targetUser.id === myId) {
-        targetUser = trade.proposingUser;
+      const res = await fetch(`${API}/api/trades/user/${myId}`);
+      if (!res.ok) throw new Error();
+      const trades = await res.json();
+      trade = trades.find(t => t.id === parseInt(tradeIdStr, 10));
+      if (!trade) throw new Error('Trade not found.');
+      if ((trade.status || '').toLowerCase() !== 'completed') {
+        throw new Error('You can only review completed trades.');
+      }
+
+      if (trade.proposer.id === myId) {
+        targetUser = trade.receiver;
+      } else if (trade.receiver.id === myId) {
+        targetUser = trade.proposer;
       } else {
         throw new Error('You are not part of this trade.');
       }
@@ -227,7 +232,7 @@
       document.getElementById('seller-ava').style.background = colorFor(targetUser.id);
       document.getElementById('seller-rating').textContent = (parseFloat(targetUser.rating)||0).toFixed(1);
       
-      document.getElementById('btn-cancel').href = `messages.html?userId=${targetUser.id}`;
+      document.getElementById('btn-cancel').href = `messages.html?tradeId=${trade.id}`;
       feather.replace();
 
     } catch(e) {
@@ -296,12 +301,12 @@
 
     try {
       const payload = {
-        trade: { id: parseInt(tradeIdStr, 10) },
-        reviewer: { id: parseInt(loggedInUserId, 10) },
-        reviewee: { id: targetUser.id },
-        rating: mainRating,
-        tags: tags,
-        comments: comments
+        reviewerId: parseInt(loggedInUserId, 10),
+        revieweeId: targetUser.id,
+        tradeId: parseInt(tradeIdStr, 10),
+        overallRating: mainRating,
+        reviewText: comments,
+        tags: tags
       };
 
       const res = await fetch(`${API}/api/reviews`, {
@@ -310,7 +315,8 @@
         body: JSON.stringify(payload)
       });
 
-      if (!res.ok) throw new Error();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error(data.message || 'Failed');
 
       const b = document.getElementById('alert-box');
       b.style.display = 'flex';

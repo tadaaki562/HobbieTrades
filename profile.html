@@ -396,7 +396,9 @@
     document.getElementById('p-badges').innerHTML = badgesHtml;
 
     // Tabs
+    const completedTrades = profileTrades.filter(t => (t.status || '').toLowerCase() === 'completed');
     document.getElementById('tab-active').textContent = `Active Listings (${activeItems.length})`;
+    document.getElementById('tab-trades').textContent = `Past Trades (${completedTrades.length})`;
     document.getElementById('tab-reviews').textContent = `Reviews (${profileReviews.length})`;
 
     // Feed
@@ -441,20 +443,16 @@
           <i data-feather="refresh-cw"></i>
           <div>No past trades.</div>
         </div>`;
+    } else if (completedTrades.length === 0) {
+      document.getElementById('grid-trades').innerHTML = `
+        <div class="p-empty" style="grid-column:1/-1">
+          <i data-feather="refresh-cw"></i>
+          <div>No completed trades yet.</div>
+        </div>`;
     } else {
-      // Show completed trades
-      const completedTrades = profileTrades.filter(t => t.status === 'COMPLETED');
-      if (completedTrades.length === 0) {
-        document.getElementById('grid-trades').innerHTML = `
-          <div class="p-empty" style="grid-column:1/-1">
-            <i data-feather="refresh-cw"></i>
-            <div>No completed trades yet.</div>
-          </div>`;
-      } else {
-        document.getElementById('grid-trades').innerHTML = completedTrades.map((t, idx) => {
-          // Identify the item that belongs to the other person, to show what was received/traded
-          const isProposer = t.proposingUser && t.proposingUser.id === profileId;
-          const tradedItem = isProposer ? t.targetItem : t.proposerItem;
+      document.getElementById('grid-trades').innerHTML = completedTrades.map((t, idx) => {
+          const isProposer = t.proposer && t.proposer.id === profileId;
+          const tradedItem = isProposer ? t.requestedItem : t.offeredItem;
           
           if (!tradedItem) return '';
           
@@ -464,7 +462,7 @@
             : (tradedItem.photoUrl ? `${API}${tradedItem.photoUrl}` : (tradedItem.id ? `${API}/api/items/${tradedItem.id}/photo` : null));
 
           const staggerClass = idx < 10 ? `animate-slide-up stagger-${(idx % 5) + 1}` : 'animate-slide-up';
-          const date = t.updatedAt ? new Date(t.updatedAt).toLocaleDateString() : 'Recently';
+          const date = t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'Recently';
 
           return `
             <a href="item-detail.html?id=${tradedItem.id}" class="list-card ${staggerClass}">
@@ -477,13 +475,10 @@
               </div>
               <div class="lc-body">
                 <div class="lc-title">Traded for: ${escapeHtml(tradedItem.title)}</div>
-                <div class="lc-meta">
-                  <span>${date}</span>
-                </div>
+                <div class="lc-meta"><span>${date}</span></div>
               </div>
             </a>`;
-        }).join('');
-      }
+      }).join('');
     }
 
     if (profileReviews.length === 0) {

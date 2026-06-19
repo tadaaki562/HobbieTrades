@@ -370,21 +370,56 @@
   function formatPeso(v) { return '₱' + Number(v||0).toLocaleString('en-PH'); }
   function escapeHtml(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
 
-  let threads = [];
-  let activeTargetId = null;
+  let allTrades = [];
   let activeTrade = null;
+  let pendingTargetItemId = null;
 
-  async function loadThreads() {
+  function getOtherUser(trade) {
+    return trade.proposer.id === loggedInUserId ? trade.receiver : trade.proposer;
+  }
+
+  function isProposer(trade) {
+    return trade.proposer.id === loggedInUserId;
+  }
+
+  function formatMsgTime(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    return d.toLocaleDateString() === new Date().toLocaleDateString()
+      ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : d.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  function statusClass(status) {
+    const s = (status || '').toLowerCase();
+    if (s === 'pending') return 'status-pending';
+    if (s === 'accepted') return 'status-accepted';
+    if (s === 'completed') return 'status-completed';
+    if (s === 'declined') return 'status-declined';
+    return 'status-accepted';
+  }
+
+  async function loadTrades() {
     try {
-      const res = await fetch(`${API}/api/messages/threads?userId=${loggedInUserId}`);
+      const res = await fetch(`${API}/api/trades/user/${loggedInUserId}`);
       if (!res.ok) throw new Error();
-      threads = await res.json();
+      allTrades = await res.json();
+      allTrades.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       renderSidebar();
-      
-      const urlParams = new URLSearchParams(window.location.search);
-      const preselect = urlParams.get('userId');
-      if (preselect) openChat(parseInt(preselect, 10));
 
+      const urlParams = new URLSearchParams(window.location.search);
+      const tradeId = urlParams.get('tradeId');
+      const userId = urlParams.get('userId');
+      pendingTargetItemId = urlParams.get('targetItemId');
+
+      if (tradeId) {
+        openTrade(parseInt(tradeId, 10));
+      } else if (userId) {
+        const uid = parseInt(userId, 10);
+        const match = allTrades.find(t => getOtherUser(t).id === uid);
+        if (match) openTrade(match.id);
+        else openUserWithoutTrade(uid);
+      }
     } catch (e) {
       document.getElementById('chat-list').innerHTML = `
         <div class="sidebar-empty">
@@ -397,56 +432,56 @@
 
   function renderSidebar() {
     const list = document.getElementById('chat-list');
-    if (threads.length === 0) {
+    if (allTrades.length === 0) {
       list.innerHTML = `
         <div class="sidebar-empty">
           <i data-feather="inbox"></i>
-          <div>No messages yet.</div>
+          <div>No trade conversations yet.<br/>Propose a trade to start messaging.</div>
         </div>`;
       feather.replace();
       return;
     }
 
-    list.innerHTML = threads.map(t => {
-      const other = t.otherUser;
-      const ini = getInitials(other.name);
-      const col = colorFor(other.id);
-      const isActive = other.id === activeTargetId;
-      const lm = t.lastMessage;
-      let prev = 'No messages';
-      let time = '';
-      if (lm) {
-        prev = lm.tradeId ? '[Trade Update]' : lm.content;
-        const d = new Date(lm.createdAt);
-        time = d.toLocaleDateString() === new Date().toLocaleDateString()
-          ? d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
-          : d.toLocaleDateString([],{month:'short',day:'numeric'});
-      }
-      
-      let statusHtml = '';
-      if (t.activeTrade) {
-        statusHtml = `<div class="status-pill status-${t.activeTrade.status.toLowerCase()}">${t.activeTrade.status}</div>`;
-      }
+    list.innerHTML = allTrades.map(t => {
+      const other = getOtherUser(t);
+      const isActive = activeTrade && activeTrade.id === t.id;
+      const preview = `${t.offeredItem?.title || 'Item'} ↔ ${t.requestedItem?.title || 'Item'}`;
+      const time = formatMsgTime(t.createdAt);
 
       return `
-        <div class="chat-item ${isActive ? 'active' : ''}" onclick="openChat(${other.id})">
-          <div class="chat-ava" style="background:${col}">${ini}</div>
+        <div class="chat-item ${isActive ? 'active' : ''}" onclick="openTrade(${t.id})">
+          <div class="chat-ava" style="background:${colorFor(other.id)}">${getInitials(other.name)}</div>
           <div class="chat-info">
             <div class="chat-header">
               <span class="chat-name">${escapeHtml(other.name)}</span>
               <span class="chat-time">${time}</span>
             </div>
-            <div class="chat-preview">${escapeHtml(prev)}</div>
-            ${statusHtml}
+            <div class="chat-preview">${escapeHtml(preview)}</div>
+            <div class="status-pill ${statusClass(t.status)}">${(t.status || '').toUpperCase()}</div>
           </div>
-        </div>
-      `;
+        </div>`;
     }).join('');
     feather.replace();
   }
 
-  async function openChat(targetId) {
-    activeTargetId = targetId;
+  function setChatInputEnabled(enabled) {
+    document.getElementById('msg-input').disabled = !enabled;
+    document.getElementById('msg-input').placeholder = enabled
+      ? 'Type a message...'
+      : 'Propose a trade first to start messaging';
+  }
+
+  function setTargetUserUI(user) {
+    if (!user) return;
+    document.getElementById('chat-target-link').href = `profile.html?id=${user.id}`;
+    document.getElementById('chat-target-name').textContent = escapeHtml(user.name);
+    document.getElementById('chat-target-ava').textContent = getInitials(user.name);
+    document.getElementById('chat-target-ava').style.background = colorFor(user.id);
+    document.getElementById('chat-target-rating').textContent = (parseFloat(user.rating) || 0).toFixed(1);
+  }
+
+  async function openUserWithoutTrade(userId) {
+    activeTrade = null;
     renderSidebar();
 
     document.getElementById('chat-empty').style.display = 'none';
@@ -455,213 +490,219 @@
       document.getElementById('chat-main').classList.add('active');
     }
 
-    let targetUser = threads.find(t => t.otherUser.id === targetId)?.otherUser;
-    if (!targetUser) {
-      try {
-        const res = await fetch(`${API}/api/users/${targetId}/profile`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success && data.user) targetUser = data.user;
-        }
-      } catch(e) {}
-    }
-    if(targetUser) {
-      document.getElementById('chat-target-link').href = `profile.html?id=${targetUser.id}`;
-      document.getElementById('chat-target-name').textContent = escapeHtml(targetUser.name);
-      document.getElementById('chat-target-ava').textContent = getInitials(targetUser.name);
-      document.getElementById('chat-target-ava').style.background = colorFor(targetUser.id);
-      document.getElementById('chat-target-rating').textContent = (parseFloat(targetUser.rating)||0).toFixed(1);
+    setChatInputEnabled(false);
+
+    let user = null;
+    try {
+      const res = await fetch(`${API}/api/users/${userId}/profile`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) user = data.user;
+      }
+    } catch (e) {}
+
+    if (user) setTargetUserUI(user);
+
+    const proposeUrl = pendingTargetItemId
+      ? `propose-trade.html?targetItemId=${pendingTargetItemId}`
+      : `propose-trade.html?targetUserId=${userId}`;
+
+    document.getElementById('chat-header-actions').innerHTML =
+      `<a href="${proposeUrl}" class="btn btn-primary btn-sm"><i data-feather="refresh-cw"></i> Propose Trade</a>`;
+
+    document.getElementById('chat-messages').innerHTML = `
+      <div style="text-align:center;padding:48px 24px;color:var(--text-secondary);max-width:420px;margin:0 auto">
+        <i data-feather="message-circle" style="width:40px;height:40px;margin-bottom:16px;color:var(--border)"></i>
+        <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px">No trade yet</div>
+        <div style="font-size:14px;line-height:1.6;margin-bottom:20px">
+          Messaging opens once a trade is proposed. Send a trade offer first, then coordinate meetup details here.
+        </div>
+        <a href="${proposeUrl}" class="btn btn-primary">Propose a Trade</a>
+      </div>`;
+    feather.replace();
+  }
+
+  async function openTrade(tradeId) {
+    activeTrade = allTrades.find(t => t.id === tradeId);
+    if (!activeTrade) return;
+
+    renderSidebar();
+
+    document.getElementById('chat-empty').style.display = 'none';
+    document.getElementById('chat-active').style.display = 'flex';
+    if (window.innerWidth <= 768) {
+      document.getElementById('chat-main').classList.add('active');
     }
 
-    activeTrade = threads.find(t => t.otherUser.id === targetId)?.activeTrade;
-    updateHeaderActions(targetId);
-
-    loadMessages();
+    setTargetUserUI(getOtherUser(activeTrade));
+    updateHeaderActions();
+    setChatInputEnabled(true);
+    await loadMessages();
   }
 
   function closeMobileChat() {
     document.getElementById('chat-main').classList.remove('active');
   }
 
-  function updateHeaderActions(targetId) {
+  function updateHeaderActions() {
     const act = document.getElementById('chat-header-actions');
-    if (!activeTrade) {
-      act.innerHTML = `<a href="propose-trade.html?targetUserId=${targetId}" class="btn btn-primary btn-sm"><i data-feather="refresh-cw"></i> Propose Trade</a>`;
-    } else if (activeTrade.status === 'COMPLETED') {
+    if (!activeTrade) return;
+
+    const st = (activeTrade.status || '').toLowerCase();
+    const other = getOtherUser(activeTrade);
+    const proposeUrl = activeTrade.requestedItem
+      ? `propose-trade.html?targetItemId=${activeTrade.requestedItem.id}`
+      : `propose-trade.html?targetUserId=${other.id}`;
+
+    if (st === 'completed') {
       act.innerHTML = `<a href="review.html?tradeId=${activeTrade.id}" class="btn btn-outline btn-sm"><i data-feather="star"></i> Leave Review</a>`;
+    } else if (st === 'declined') {
+      act.innerHTML = `<a href="${proposeUrl}" class="btn btn-outline btn-sm">Propose Again</a>`;
     } else {
-      act.innerHTML = `<a href="propose-trade.html?targetUserId=${targetId}" class="btn btn-outline btn-sm">View Trade Details</a>`;
+      act.innerHTML = `<a href="${proposeUrl}" class="btn btn-outline btn-sm">View Items</a>`;
     }
     feather.replace();
+  }
+
+  function renderItemThumb(item) {
+    if (!item) return `<div class="tb-item"><div class="tb-item-icon"><i data-feather="minus"></i></div><span>—</span></div>`;
+    const url = window.HobbieAPI
+      ? window.HobbieAPI.resolveImageUrl(item.photoUrl, item.id)
+      : (item.photoUrl ? `${API}${item.photoUrl}` : `${API}/api/items/${item.id}/photo`);
+    return `
+      <div class="tb-item">
+        ${url ? `<img src="${url}" alt="" onerror="this.style.display='none'"/>` : `<div class="tb-item-icon"><i data-feather="box"></i></div>`}
+        <span>${escapeHtml(item.title)}</span>
+      </div>`;
+  }
+
+  function renderTradePanel() {
+    if (!activeTrade) return '';
+
+    const proposer = isProposer(activeTrade);
+    const sendItem = proposer ? activeTrade.offeredItem : activeTrade.requestedItem;
+    const getItem = proposer ? activeTrade.requestedItem : activeTrade.offeredItem;
+    const st = (activeTrade.status || '').toLowerCase();
+
+    let actions = '';
+    if (st === 'pending') {
+      if (!proposer) {
+        actions = `
+          <button class="btn btn-outline btn-sm" onclick="promptAction('decline')">Decline</button>
+          <button class="btn btn-primary btn-sm" onclick="promptAction('accept')">Accept Trade</button>`;
+      } else {
+        actions = `<button class="btn btn-outline btn-sm" onclick="promptAction('decline')">Cancel Proposal</button>`;
+      }
+    } else if (st === 'accepted') {
+      const myConfirmed = proposer ? activeTrade.proposerConfirmed : activeTrade.receiverConfirmed;
+      if (!myConfirmed) {
+        actions = `<button class="btn btn-primary btn-sm" onclick="promptAction('confirm')">Confirm Meetup Complete</button>`;
+      } else {
+        actions = `<span style="font-size:13px;color:var(--text-secondary)">Waiting for the other trader to confirm.</span>`;
+      }
+    } else if (st === 'completed') {
+      actions = `<a href="review.html?tradeId=${activeTrade.id}" class="btn btn-outline btn-sm">Leave a Review</a>`;
+    }
+
+    return `
+      <div class="msg-sys">
+        <div class="sys-header"><i data-feather="refresh-cw"></i> Trade #${activeTrade.id} · ${(activeTrade.status || '').toUpperCase()}</div>
+        <div class="trade-box">
+          <div class="tb-row"><div class="tb-dir">Send</div>${renderItemThumb(sendItem)}</div>
+          <div class="tb-row"><div class="tb-dir">Get</div>${renderItemThumb(getItem)}</div>
+        </div>
+        ${actions ? `<div class="sys-actions">${actions}</div>` : ''}
+      </div>`;
   }
 
   async function loadMessages() {
     const box = document.getElementById('chat-messages');
     box.innerHTML = `<div style="text-align:center;padding:20px"><span class="spinner"></span></div>`;
-    
+
+    if (!activeTrade) return;
+
     try {
-      const res = await fetch(`${API}/api/messages?user1Id=${loggedInUserId}&user2Id=${activeTargetId}`);
+      const res = await fetch(`${API}/api/messages/trade/${activeTrade.id}`);
       if (!res.ok) throw new Error();
       const msgs = await res.json();
-      
+
+      let html = renderTradePanel();
+
       if (msgs.length === 0) {
-        box.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-tertiary)">Say hello to start the conversation!</div>`;
-        return;
+        html += `<div style="text-align:center;padding:24px;color:var(--text-tertiary);font-size:14px">Say hello and coordinate your meetup.</div>`;
+      } else {
+        html += msgs.map(m => {
+          const isMe = m.sender && m.sender.id === loggedInUserId;
+          return `
+            <div class="msg-row ${isMe ? 'me' : ''}">
+              <div class="msg-ava" style="background:${colorFor(m.sender.id)}">${getInitials(m.sender.name)}</div>
+              <div>
+                <div class="msg-bubble">${escapeHtml(m.content)}</div>
+                <div class="msg-time">${formatMsgTime(m.sentAt)}</div>
+              </div>
+            </div>`;
+        }).join('');
       }
 
-      box.innerHTML = msgs.map(m => {
-        const isMe = m.sender.id === loggedInUserId;
-        const d = new Date(m.createdAt);
-        const time = d.toLocaleDateString() === new Date().toLocaleDateString()
-          ? d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
-          : d.toLocaleDateString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
-
-        if (m.tradeId && !m.content) return renderSysMessage(m);
-
-        return `
-          <div class="msg-row ${isMe ? 'me' : ''}">
-            <div class="msg-ava" style="background:${colorFor(m.sender.id)}">${getInitials(m.sender.name)}</div>
-            <div>
-              <div class="msg-bubble">${escapeHtml(m.content)}</div>
-              <div class="msg-time">${time}</div>
-            </div>
-          </div>
-        `;
-      }).join('');
+      box.innerHTML = html;
       feather.replace();
       box.scrollTop = box.scrollHeight;
-    } catch(e) {
+    } catch (e) {
       box.innerHTML = `<div style="text-align:center;padding:20px;color:var(--red)">Failed to load messages</div>`;
     }
-  }
-
-  function renderSysMessage(m) {
-    if (!activeTrade) return '';
-    const isReceiver = activeTrade.targetUser.id === loggedInUserId;
-    const isProposer = activeTrade.proposingUser.id === loggedInUserId;
-    
-    let title = 'Trade Update';
-    let bodyHtml = '';
-    let actions = '';
-
-    const iAmSending = isProposer ? activeTrade.proposerItem : activeTrade.targetItem;
-    const iAmReceiving = isProposer ? activeTrade.targetItem : activeTrade.proposerItem;
-    const cashOffered = activeTrade.cashOffered || 0;
-
-    const renderItem = (item) => {
-      if(!item) return `<div class="tb-item"><div class="tb-item-icon"><i data-feather="minus"></i></div><span>Nothing</span></div>`;
-      const url = window.HobbieAPI ? window.HobbieAPI.resolveImageUrl(item.photoUrl, item.id) : (item.photoUrl ? `${API}${item.photoUrl}` : `${API}/api/items/${item.id}/photo`);
-      return `
-        <div class="tb-item">
-          ${url ? `<img src="${url}" onerror="this.style.display='none'"/>` : `<div class="tb-item-icon"><i data-feather="box"></i></div>`}
-          <span>${escapeHtml(item.title)}</span>
-        </div>`;
-    };
-
-    let cashHtml = '';
-    if (cashOffered > 0) {
-      cashHtml = `<div class="tb-row"><div class="tb-dir">Cash</div><div class="tb-item"><span class="tb-cash">+ ${formatPeso(cashOffered)}</span> (from Proposer)</div></div>`;
-    }
-
-    bodyHtml = `
-      <div class="trade-box">
-        <div class="tb-row">
-          <div class="tb-dir">Send</div>
-          ${renderItem(iAmSending)}
-        </div>
-        <div class="tb-row">
-          <div class="tb-dir">Get</div>
-          ${renderItem(iAmReceiving)}
-        </div>
-        ${cashHtml}
-      </div>
-      <div style="font-size:13px;color:var(--text-secondary)">Status: <strong>${activeTrade.status}</strong></div>
-    `;
-
-    if (activeTrade.status === 'PENDING') {
-      title = isProposer ? 'You proposed a trade' : 'New trade proposal';
-      if (isReceiver) {
-        actions = `
-          <button class="btn btn-outline btn-sm" onclick="promptStatusAction('DECLINED')">Decline</button>
-          <button class="btn btn-primary btn-sm" onclick="promptStatusAction('ACCEPTED')">Accept Trade</button>
-        `;
-      } else {
-        actions = `<button class="btn btn-outline btn-sm" onclick="promptStatusAction('DECLINED')">Cancel Proposal</button>`;
-      }
-    } else if (activeTrade.status === 'ACCEPTED') {
-      title = 'Trade Accepted! Time to meet up.';
-      actions = `<button class="btn btn-primary btn-sm" onclick="promptStatusAction('AWAITING_CONFIRM')">Mark as Completed</button>`;
-    } else if (activeTrade.status === 'AWAITING_CONFIRM') {
-      title = 'One party marked as completed';
-      actions = `<button class="btn btn-primary btn-sm" onclick="promptStatusAction('COMPLETED')">Confirm Completion</button>`;
-    } else if (activeTrade.status === 'COMPLETED') {
-      title = 'Trade Completed!';
-      actions = `<a href="review.html?tradeId=${activeTrade.id}" class="btn btn-outline btn-sm">Leave a Review</a>`;
-    } else if (activeTrade.status === 'DECLINED') {
-      title = 'Trade Declined';
-    }
-
-    return `
-      <div class="msg-sys">
-        <div class="sys-header"><i data-feather="refresh-cw"></i> ${title}</div>
-        ${bodyHtml}
-        ${actions ? `<div class="sys-actions">${actions}</div>` : ''}
-      </div>
-    `;
   }
 
   async function sendMessage() {
     const input = document.getElementById('msg-input');
     const txt = input.value.trim();
-    if (!txt || !activeTargetId) return;
+    if (!txt || !activeTrade) return;
 
     input.value = '';
-    
+
     try {
-      await fetch(`${API}/api/messages`, {
+      const res = await fetch(`${API}/api/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          sender: { id: loggedInUserId },
-          receiver: { id: activeTargetId },
+          tradeId: activeTrade.id,
+          senderId: loggedInUserId,
           content: txt
         })
       });
-      loadMessages();
-      loadThreads();
-    } catch(e) {}
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error();
+      await loadMessages();
+    } catch (e) {
+      input.value = txt;
+    }
   }
 
   let pendingAction = null;
-  function promptStatusAction(newStatus) {
-    pendingAction = newStatus;
+
+  function promptAction(action) {
+    pendingAction = action;
     const modal = document.getElementById('status-modal');
     const title = document.getElementById('sm-title');
     const desc = document.getElementById('sm-desc');
     const btn = document.getElementById('sm-btn');
 
-    if (newStatus === 'ACCEPTED') {
+    if (action === 'accept') {
       title.textContent = 'Accept Trade?';
-      desc.textContent = 'You agree to swap items. You can coordinate meetup details in the chat.';
+      desc.textContent = 'You agree to swap items. Coordinate meetup details in the chat.';
       btn.textContent = 'Accept Trade';
       btn.className = 'btn btn-primary';
-    } else if (newStatus === 'DECLINED') {
+    } else if (action === 'decline') {
       title.textContent = 'Decline Trade?';
-      desc.textContent = 'This will cancel the proposal. You can still chat and propose a different trade later.';
+      desc.textContent = 'This will cancel the proposal. You can propose a different trade later.';
       btn.textContent = 'Decline Trade';
       btn.className = 'btn btn-danger';
-    } else if (newStatus === 'AWAITING_CONFIRM') {
-      title.textContent = 'Mark as Completed?';
-      desc.textContent = 'Click this when you have successfully exchanged the items. The other person will need to confirm.';
-      btn.textContent = 'Mark Completed';
-      btn.className = 'btn btn-primary';
-    } else if (newStatus === 'COMPLETED') {
-      title.textContent = 'Confirm Completion?';
-      desc.textContent = 'This will finalize the trade and you will both be able to leave a review.';
-      btn.textContent = 'Finalize Trade';
+    } else if (action === 'confirm') {
+      title.textContent = 'Confirm Meetup Complete?';
+      desc.textContent = 'Only confirm after you have exchanged items in person. The other trader must confirm too.';
+      btn.textContent = 'Confirm Complete';
       btn.className = 'btn btn-primary';
     }
-    
+
     modal.classList.add('open');
   }
 
@@ -676,24 +717,31 @@
     btn.disabled = true;
 
     try {
-      await fetch(`${API}/api/trades/${activeTrade.id}/status`, {
+      let url = '';
+      if (pendingAction === 'accept') url = `${API}/api/trades/${activeTrade.id}/accept`;
+      else if (pendingAction === 'decline') url = `${API}/api/trades/${activeTrade.id}/decline`;
+      else if (pendingAction === 'confirm') url = `${API}/api/trades/${activeTrade.id}/confirm`;
+
+      const res = await fetch(url, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: pendingAction })
+        body: JSON.stringify({ userId: loggedInUserId })
       });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error(data.message || 'Failed');
+
       closeStatusModal();
-      await loadThreads();
-      if (activeTargetId) {
-        await openChat(activeTargetId);
-      }
-    } catch(e) {
-      alert('Failed to update status');
+      const tradeId = activeTrade.id;
+      await loadTrades();
+      await openTrade(tradeId);
+    } catch (e) {
+      alert(e.message || 'Action failed');
     } finally {
       btn.disabled = false;
     }
   }
 
-  loadThreads();
+  loadTrades();
 </script>
 </body>
 </html>

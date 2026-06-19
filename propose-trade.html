@@ -232,9 +232,14 @@
 
   async function loadData() {
     try {
-      const resMy = await fetch(`${API}/api/items?userId=${loggedInUserId}`);
+      const uid = parseInt(loggedInUserId, 10);
+      const resMy = await fetch(`${API}/api/items/user/${uid}`);
       if (resMy.ok) {
-        myItems = (await resMy.json()).filter(i => i.isAvailable);
+        myItems = (await resMy.json()).filter(i =>
+          i.isAvailable &&
+          i.user &&
+          i.user.id === uid
+        );
       }
 
       if (targetItemIdStr) {
@@ -245,10 +250,21 @@
         }
       }
 
+      if (targetUserId && targetUserId === uid) {
+        window.location.href = 'browse.html';
+        return;
+      }
+
+      if (!targetItem && targetItemIdStr) {
+        throw new Error('Target item not found');
+      }
+
       if (targetUserId) {
-        document.getElementById('cancel-link').href = `messages.html?userId=${targetUserId}`;
+        document.getElementById('cancel-link').href = targetItem
+          ? `item-detail.html?id=${targetItem.id}`
+          : `messages.html?userId=${targetUserId}`;
       } else {
-        document.getElementById('cancel-link').href = `browse.html`;
+        document.getElementById('cancel-link').href = 'browse.html';
       }
 
       renderUI();
@@ -263,9 +279,20 @@
 
   function renderUI() {
     const pGrid = document.getElementById('picker-grid');
+    const submitBtn = document.getElementById('btn-submit');
+    const changeLink = document.querySelector('.change-link');
+
     if (myItems.length === 0) {
-      pGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--text-tertiary);font-size:13px">You don't have any active listings to offer. <br/><a href="create-listing.html" style="color:var(--brand)">List an item first</a>.</div>`;
+      pGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--text-secondary);font-size:14px">
+        You don't have any active listings to offer.<br/>
+        <a href="create-listing.html" class="btn btn-primary btn-sm" style="margin-top:16px;display:inline-flex">List an item first</a>
+      </div>`;
+      submitBtn.disabled = true;
+      if (changeLink) changeLink.style.display = 'none';
+      document.getElementById('offer-title').textContent = 'No items to offer';
+      document.getElementById('offer-val').textContent = '—';
     } else {
+      if (changeLink) changeLink.style.display = 'block';
       pGrid.innerHTML = myItems.map(item => {
         const icon = CAT_ICON[item.category] || 'box';
         return `
@@ -278,23 +305,30 @@
       }).join('');
     }
 
-    if (targetItem) {
-      const icon = CAT_ICON[targetItem.category] || 'box';
-      document.getElementById('receive-title').textContent = targetItem.title;
-      document.getElementById('receive-val').textContent = formatPeso(targetItem.estimatedValue);
-      document.getElementById('box-receive').querySelector('.trade-item-icon').innerHTML = `<i data-feather="${icon}"></i>`;
-    } else {
-      document.getElementById('receive-title').textContent = "Any Item (Open Proposal)";
-      document.getElementById('receive-val').textContent = "";
-      document.getElementById('box-receive').querySelector('.trade-item-icon').innerHTML = `<i data-feather="target"></i>`;
+    if (!targetItem) {
+      const b = document.getElementById('alert-box');
+      b.style.display = 'flex';
+      b.className = 'alert alert-err';
+      b.innerHTML = `<i data-feather="alert-circle"></i> Select an item from Browse to propose a trade against.`;
+      submitBtn.disabled = true;
+      document.getElementById('receive-title').textContent = 'No target item';
+      document.getElementById('receive-val').textContent = '—';
+      feather.replace();
+      return;
     }
+
+    const icon = CAT_ICON[targetItem.category] || 'box';
+    document.getElementById('receive-title').textContent = targetItem.title;
+    document.getElementById('receive-val').textContent = formatPeso(targetItem.estimatedValue);
+    document.getElementById('box-receive').querySelector('.trade-item-icon').innerHTML = `<i data-feather="${icon}"></i>`;
 
     if (myItems.length === 1 && !selectedItemId) {
       selectItem(myItems[0].id);
     } else if (selectedItemId) {
       selectItem(selectedItemId);
-    } else {
+    } else if (myItems.length > 0) {
       togglePicker(true);
+      submitBtn.disabled = true;
     }
 
     feather.replace();
@@ -361,21 +395,19 @@
   }
 
   async function submitTrade() {
-    if (!selectedItemId || !targetUserId) return;
+    if (!selectedItemId || !targetUserId || !targetItem) return;
+    if (myItems.length === 0) return;
     
     const btn = document.getElementById('btn-submit');
     btn.disabled = true;
     btn.innerHTML = 'Sending...';
 
-    const msg = document.getElementById('f-message').value.trim();
-
     try {
       const payload = {
-        proposingUser: { id: parseInt(loggedInUserId, 10) },
-        targetUser: { id: targetUserId },
-        proposerItem: { id: selectedItemId },
-        targetItem: targetItem ? { id: targetItem.id } : null,
-        initialMessage: msg || null
+        proposerId: parseInt(loggedInUserId, 10),
+        receiverId: targetUserId,
+        offeredItemId: selectedItemId,
+        requestedItemId: targetItem.id
       };
 
       const res = await fetch(`${API}/api/trades`, {
@@ -383,7 +415,21 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      if (!res.ok) throw new Error();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error(data.message || 'Failed');
+
+      const msg = document.getElementById('f-message').value.trim();
+      if (msg && data.tradeId) {
+        await fetch(`${API}/api/messages`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tradeId: data.tradeId,
+            senderId: parseInt(loggedInUserId, 10),
+            content: msg
+          })
+        });
+      }
 
       const b = document.getElementById('alert-box');
       b.style.display = 'flex';
@@ -391,13 +437,13 @@
       b.innerHTML = `<i data-feather="check-circle" style="color:var(--green)"></i> Trade proposed!`;
       feather.replace();
 
-      setTimeout(() => { window.location.href = `messages.html?userId=${targetUserId}`; }, 1500);
+      setTimeout(() => { window.location.href = `messages.html?tradeId=${data.tradeId}`; }, 1200);
 
     } catch(e) {
       const b = document.getElementById('alert-box');
       b.style.display = 'flex';
       b.className = 'alert alert-err';
-      b.innerHTML = `<i data-feather="alert-circle"></i> Failed to send proposal.`;
+      b.innerHTML = `<i data-feather="alert-circle"></i> ${escapeHtml(e.message || 'Failed to send proposal.')}`;
       feather.replace();
       btn.disabled = false;
       btn.innerHTML = 'Send Proposal';
