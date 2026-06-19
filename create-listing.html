@@ -239,6 +239,14 @@
     }
     .cond-pill:hover { background: var(--bg); border-color: var(--text-tertiary); }
     .cond-pill.active { background: var(--brand); color: white; border-color: var(--brand); }
+    .cond-pill.locked { opacity: 0.85; cursor: not-allowed; pointer-events: none; }
+
+    select.field-locked, input.field-locked {
+      background: var(--bg) !important;
+      color: var(--text-secondary);
+      cursor: not-allowed;
+      pointer-events: none;
+    }
 
     /* ── ESTIMATOR BOX ── */
     .est-box {
@@ -360,28 +368,24 @@
 
     <!-- ── TITLE ── -->
     <div class="form-group">
-      <label class="form-label">Title *</label>
-      <input type="text" class="form-control" id="f-title" placeholder="e.g. Fender Stratocaster" required/>
+      <label class="form-label">Title * <span id="title-lock-hint" style="display:none;font-weight:400;color:var(--text-tertiary);text-transform:none">(set by AI)</span></label>
+      <input type="text" class="form-control" id="f-title" placeholder="Upload a photo first — AI will suggest a title" required readonly/>
+      <input type="hidden" id="estimate-keyword" value=""/>
     </div>
 
     <!-- ── CATEGORY ── -->
     <div class="form-group">
-      <label class="form-label">Category *</label>
-      <select class="form-control" id="f-category" required>
-        <option value="" disabled selected>Select category</option>
+      <label class="form-label">Category * <span id="category-lock-hint" style="display:none;font-weight:400;color:var(--text-tertiary);text-transform:none">(set by AI)</span></label>
+      <select class="form-control" id="f-category" required disabled>
+        <option value="" disabled selected>Upload a photo first</option>
         <option value="Cameras">Cameras</option>
         <option value="Instruments">Instruments</option>
-        <option value="Gaming">Gaming</option>
-        <option value="Sports">Sports & Outdoors</option>
-        <option value="Art">Art Supplies</option>
-        <option value="Craft">Craft & Hobby</option>
-        <option value="Other">Other</option>
       </select>
     </div>
 
     <!-- ── CONDITION ── -->
     <div class="form-group full">
-      <label class="form-label">Condition *</label>
+      <label class="form-label">Condition * <span id="condition-lock-hint" style="display:none;font-weight:400;color:var(--text-tertiary);text-transform:none">(from AI)</span></label>
       <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap">
         <div class="cond-pill" data-val="Like New" onclick="setCondition('Like New')">Like New</div>
         <div class="cond-pill" data-val="Good"     onclick="setCondition('Good')">Good</div>
@@ -488,6 +492,7 @@
   // ─── State ───────────────────────────────────────────────────────────────────
   let mainPhotoFile = null;
   let detectedCondition = null;
+  let aiFieldsLocked = false;
   
   const HOBBY_PHOTOS_REQUIRED = 5;
   let hobbyPhotoFiles = new Array(HOBBY_PHOTOS_REQUIRED).fill(null);
@@ -692,25 +697,62 @@
   }
 
   // ─── Condition pills ──────────────────────────────────────────────────────────
-  function setCondition(val) {
+  function setCondition(val, force = false) {
+    if (aiFieldsLocked && !force) return;
     document.getElementById('f-condition').value = val;
     document.querySelectorAll('.cond-pill').forEach(p => p.classList.toggle('active', p.dataset.val === val));
-    estimateValue();
+  }
+
+  function lockAiFields() {
+    aiFieldsLocked = true;
+    const title = document.getElementById('f-title');
+    const category = document.getElementById('f-category');
+    title.readOnly = true;
+    title.classList.add('field-locked');
+    category.disabled = true;
+    category.classList.add('field-locked');
+    document.querySelectorAll('.cond-pill').forEach(p => p.classList.add('locked'));
+    document.getElementById('title-lock-hint').style.display = 'inline';
+    document.getElementById('category-lock-hint').style.display = 'inline';
+    document.getElementById('condition-lock-hint').style.display = 'inline';
+  }
+
+  function unlockAiFields() {
+    aiFieldsLocked = false;
+    const title = document.getElementById('f-title');
+    const category = document.getElementById('f-category');
+    title.readOnly = false;
+    title.classList.remove('field-locked');
+    title.value = '';
+    category.disabled = true;
+    category.classList.remove('field-locked');
+    category.selectedIndex = 0;
+    document.getElementById('f-condition').value = '';
+    document.querySelectorAll('.cond-pill').forEach(p => {
+      p.classList.remove('locked', 'active');
+    });
+    document.getElementById('estimate-keyword').value = '';
+    document.getElementById('title-lock-hint').style.display = 'none';
+    document.getElementById('category-lock-hint').style.display = 'none';
+    document.getElementById('condition-lock-hint').style.display = 'none';
+    document.getElementById('est-box').style.display = 'none';
+    document.getElementById('f-value').value = '';
+    document.getElementById('f-value').dataset.autoSet = 'false';
+    document.getElementById('val-lock-hint').style.display = 'none';
   }
 
   // ─── Estimator Box (Value) ────────────────────────────────────────────────────
   async function forceScrape() {
-    const cat  = document.getElementById('f-category').value;
-    const desc = document.getElementById('f-desc').value;
-    const title = document.getElementById('f-title').value;
-    if (!title || !cat) return;
-    
+    const cat = document.getElementById('f-category').value;
+    const keyword = document.getElementById('estimate-keyword').value || document.getElementById('f-title').value;
+    if (!keyword || !cat) return;
+
     const btn = document.getElementById('scrape-btn');
-    btn.innerHTML = '<span class="spinner" style="margin-right:6px"></span> Scraping Facebook pages…';
+    btn.innerHTML = '<span class="spinner" style="margin-right:6px"></span> Refreshing market data…';
     btn.disabled = true;
 
     try {
-      await fetch(`${API}/api/value/estimate?title=${encodeURIComponent(title)}&category=${encodeURIComponent(cat)}&description=${encodeURIComponent(desc)}&forceScrape=true`);
+      await fetch(`${API}/api/prices/scrape?keyword=${encodeURIComponent(keyword)}&category=${encodeURIComponent(cat)}`, { method: 'POST' });
       estimateValue();
     } finally {
       btn.innerHTML = '<i data-feather="refresh-cw"></i> Refresh market data';
@@ -720,39 +762,45 @@
   }
 
   function estimateValue() {
-    const title = document.getElementById('f-title').value;
-    const cat   = document.getElementById('f-category').value;
-    const desc  = document.getElementById('f-desc').value;
-    const cond  = document.getElementById('f-condition').value;
+    const cat = document.getElementById('f-category').value;
+    const cond = document.getElementById('f-condition').value || 'Good';
+    const keyword = document.getElementById('estimate-keyword').value || document.getElementById('f-title').value;
 
-    if (!title || !cat) return;
+    if (!keyword || !cat) return;
 
-    fetch(`${API}/api/value/estimate?title=${encodeURIComponent(title)}&category=${encodeURIComponent(cat)}&description=${encodeURIComponent(desc)}&condition=${encodeURIComponent(cond)}`)
+    document.getElementById('est-box').style.display = 'flex';
+    document.getElementById('est-value').textContent = '…';
+    document.getElementById('est-range').textContent = 'Calculating range…';
+    document.getElementById('est-source').textContent = 'Source: loading…';
+
+    fetch(`${API}/api/estimate?category=${encodeURIComponent(cat)}&condition=${encodeURIComponent(cond)}&keyword=${encodeURIComponent(keyword)}`)
       .then(res => res.json())
       .then(data => {
-        document.getElementById('est-box').style.display = 'flex';
-        document.getElementById('est-value').textContent  = `₱${data.estimatedValue.toLocaleString()}`;
-        
+        if (!data || data.estimatedValue == null) throw new Error('No estimate returned');
+
+        document.getElementById('est-value').textContent = `₱${Number(data.estimatedValue).toLocaleString()}`;
+
         let rangeText = `Range: ₱${Math.round(data.rangeLow).toLocaleString()} – ₱${Math.round(data.rangeHigh).toLocaleString()}`;
         if (cond) rangeText += ` for ${cond}`;
-        document.getElementById('est-range').textContent  = rangeText;
-        
-        let sourceText = `Source: ${data.source} • Confidence: ${data.confidence}`;
+        document.getElementById('est-range').textContent = rangeText;
+
+        let sourceText = `Source: ${data.source || '—'} • Confidence: ${data.confidence || '—'}`;
         if (data.matchedKeyword) sourceText += ` • Matched: ${data.matchedKeyword}`;
         document.getElementById('est-source').textContent = sourceText;
 
         const valInput = document.getElementById('f-value');
-        if (!valInput.value || valInput.dataset.autoSet === "true") {
+        if (!valInput.value || valInput.dataset.autoSet === 'true') {
           valInput.value = data.estimatedValue;
-          valInput.dataset.autoSet = "true";
+          valInput.dataset.autoSet = 'true';
           document.getElementById('val-lock-hint').style.display = 'inline';
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        document.getElementById('est-value').textContent = '—';
+        document.getElementById('est-range').textContent = 'Could not load estimate';
+        document.getElementById('est-source').textContent = 'Try “Refresh market data” or enter your value manually.';
+      });
   }
-
-  document.getElementById('f-title').addEventListener('blur', estimateValue);
-  document.getElementById('f-category').addEventListener('change', estimateValue);
   document.getElementById('f-value').addEventListener('input', function() {
     this.dataset.autoSet = "false";
     document.getElementById('val-lock-hint').style.display = 'none';
@@ -784,6 +832,7 @@
     if (!file) return;
 
     mainPhotoFile = file;
+    unlockAiFields();
     document.getElementById('upload-text-main').textContent = file.name;
     document.getElementById('upload-box-main').style.borderColor = 'var(--brand)';
 
@@ -913,8 +962,13 @@
     }
     if (condition) {
       detectedCondition = condition;
-      setCondition(condition);
+      setCondition(condition, true);
     }
+
+    const estimateKeyword = data.estimateKeyword || [brand, model, suggestedTitle].filter(Boolean).join(' ').trim();
+    document.getElementById('estimate-keyword').value = estimateKeyword;
+
+    lockAiFields();
     
     let aiHtml = `
       <div style="font-size:13px;margin-bottom:8px">
