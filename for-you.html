@@ -555,7 +555,7 @@
   document.getElementById('new-grid').innerHTML   = skeletonHTML(4);
 
   // ── Render one card ────────────────────────────────────────────────────────
-  function renderCard(item, matchPercent, matchReason) {
+  function renderCard(item, matchPercent, matchReason, index = 0) {
     const icon     = CAT_ICON[item.category]  || 'box';
     const cond     = item.conditionLabel || '';
     const val      = parseFloat(item.estimatedValue) || 0;
@@ -589,8 +589,10 @@
       ? `<div class="match-reason-chip"><i data-feather="target"></i> <span>${matchReason}</span></div>`
       : '';
 
+    const staggerClass = index < 10 ? `animate-slide-up stagger-${(index % 5) + 1}` : 'animate-slide-up';
+
     return `
-      <a class="item-card fade-in" href="item-detail.html?id=${item.id}">
+      <a class="item-card ${staggerClass}" href="item-detail.html?id=${item.id}">
         <div class="card-img">
           ${imgHtml}
           <div class="card-trade-badge">TRADE</div>
@@ -675,7 +677,7 @@
       feather.replace();
       return;
     }
-    grid.innerHTML = visible.map(m => renderCard(m.item, m.matchPercent, m.matchReason)).join('');
+    grid.innerHTML = visible.map((m, i) => renderCard(m.item, m.matchPercent, m.matchReason, i)).join('');
     feather.replace();
   }
 
@@ -697,7 +699,7 @@
                <h3>No items yet</h3>
                <p>Be the first to list something!</p>
              </div>`
-          : others.map(item => renderCard(item)).join('');
+          : others.map((item, i) => renderCard(item, undefined, null, i)).join('');
         feather.replace();
       })
       .catch(() => {

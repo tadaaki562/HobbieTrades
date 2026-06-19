@@ -55,15 +55,40 @@ h1, h2, h3, h4 {
   letter-spacing: -0.02em;
 }
 
-/* Page enter animation */
+/* Page enter animation & Keyframes */
 .page-enter {
-  animation: pageEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation: pageEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.animate-pop {
+  animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 
 @keyframes pageEnter {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(12px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Stagger utilities */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
 
 /* Display numbers */
 .display-num {
@@ -152,12 +177,34 @@ h1, h2, h3, h4 {
   font-weight: 500;
   color: var(--text-secondary);
   text-decoration: none;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
 }
 
-.nav-link:hover, .nav-link.active {
-  background: var(--brand-light);
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%; width: 0; height: 2px;
+  background: var(--brand);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateX(-50%);
+  border-radius: 2px 2px 0 0;
+  opacity: 0;
+}
+
+.nav-link:hover {
   color: var(--brand-dark);
+  background: rgba(37, 99, 235, 0.04);
+}
+
+.nav-link.active {
+  color: var(--brand-dark);
+  font-weight: 600;
+}
+
+.nav-link.active::after {
+  width: 24px;
+  opacity: 1;
 }
 
 .nav-avatar {
@@ -174,11 +221,13 @@ h1, h2, h3, h4 {
   cursor: pointer;
   margin-left: 12px;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
 }
 .nav-avatar:hover {
   background: var(--brand-dark);
-  transform: translateY(-1px);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
 }
 
 /* BUTTONS */
@@ -194,8 +243,22 @@ h1, h2, h3, h4 {
   font-weight: 500;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn i {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn:hover i {
+  transform: scale(1.1);
 }
 
 .btn-primary {
@@ -205,8 +268,8 @@ h1, h2, h3, h4 {
 }
 .btn-primary:hover {
   background: var(--brand-dark);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
 }
 
 .btn-secondary {
@@ -215,6 +278,7 @@ h1, h2, h3, h4 {
 }
 .btn-secondary:hover { 
   background: #DBEAFE; 
+  transform: translateY(-1px);
 }
 
 .btn-outline {
@@ -225,6 +289,7 @@ h1, h2, h3, h4 {
 .btn-outline:hover { 
   border-color: var(--text-secondary);
   background: var(--bg);
+  transform: translateY(-1px);
 }
 
 .btn-danger {
@@ -234,6 +299,8 @@ h1, h2, h3, h4 {
 .btn-danger:hover { 
   background: var(--red); 
   color: white; 
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
 }
 
 .btn-full { width: 100%; }
@@ -278,12 +345,23 @@ select.form-control { cursor: pointer; }
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
-  transition: all 0.2s ease;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
 }
 .card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--border-light);
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--brand-mid);
+}
+
+.card-img-wrap {
+  overflow: hidden;
+}
+.card .card-img-wrap img, .card .item-photo img {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card:hover .card-img-wrap img, .card:hover .item-photo img {
+  transform: scale(1.06);
 }
 
 .elevated-panel {
@@ -291,6 +369,10 @@ select.form-control { cursor: pointer; }
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.elevated-panel:hover {
+  box-shadow: var(--shadow-lg);
 }
 
 /* BADGES */

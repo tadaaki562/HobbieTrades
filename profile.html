@@ -134,11 +134,12 @@
     .list-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
     .list-card {
       background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden;
-      text-decoration: none; color: inherit; transition: all 0.2s; display: flex; flex-direction: column;
+      text-decoration: none; color: inherit; transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column;
     }
-    .list-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border-light); }
-    .lc-img { height: 160px; background: var(--bg); position: relative; }
-    .lc-img img { width: 100%; height: 100%; object-fit: cover; }
+    .list-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--brand-mid); }
+    .lc-img { height: 160px; background: var(--bg); position: relative; overflow: hidden; }
+    .lc-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+    .list-card:hover .lc-img img { transform: scale(1.06); }
     .lc-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--text-tertiary); }
     .lc-placeholder i { width: 32px; height: 32px; }
     .lc-status { position: absolute; top: 8px; left: 8px; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 6px; background: var(--white); color: var(--text); box-shadow: var(--shadow-sm); }
@@ -386,14 +387,16 @@
           <div>No active listings.</div>
         </div>`;
     } else {
-      document.getElementById('grid-active').innerHTML = activeItems.map(item => {
+      document.getElementById('grid-active').innerHTML = activeItems.map((item, idx) => {
         const icon = CAT_ICON[item.category] || 'box';
         const imgSrc = window.HobbieAPI
           ? window.HobbieAPI.resolveImageUrl(item.photoUrl, item.id)
           : (item.photoUrl ? `${API}${item.photoUrl}` : (item.id ? `${API}/api/items/${item.id}/photo` : null));
 
+        const staggerClass = idx < 10 ? `animate-slide-up stagger-${(idx % 5) + 1}` : 'animate-slide-up';
+
         return `
-          <a href="item-detail.html?id=${item.id}" class="list-card">
+          <a href="item-detail.html?id=${item.id}" class="list-card ${staggerClass}">
             <div class="lc-img">
               ${imgSrc 
                 ? `<img src="${imgSrc}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
@@ -419,15 +422,18 @@
           <div>No reviews yet.</div>
         </div>`;
     } else {
-      document.getElementById('list-reviews').innerHTML = profileReviews.map(r => {
+      document.getElementById('list-reviews').innerHTML = profileReviews.map((r, idx) => {
         const author = r.reviewer ? r.reviewer.name : 'Unknown';
         const date = r.createdAt ? new Date(r.createdAt).toLocaleDateString() : 'Recently';
         let st = '';
         for(let i=1; i<=5; i++) {
            st += `<i data-feather="star" style="${i <= r.rating ? 'fill:currentColor' : 'fill:transparent;color:var(--border)'}"></i>`;
         }
+        
+        const staggerClass = idx < 10 ? `animate-slide-up stagger-${(idx % 5) + 1}` : 'animate-slide-up';
+        
         return `
-          <div class="rev-card">
+          <div class="rev-card ${staggerClass}">
             <div class="rev-head">
               <div>
                 <div class="rev-author">${escapeHtml(author)}</div>

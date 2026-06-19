@@ -88,6 +88,10 @@
       justify-content: center;
       color: white;
       flex-shrink: 0;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .feature-item:hover .feature-icon {
+      transform: scale(1.1) rotate(5deg);
     }
     .feature-icon i {
       width: 20px;
@@ -234,10 +238,10 @@
       <div class="auth-logo">HobbieTrades</div>
       <div class="auth-tagline">Trade your hobby gear with people in your community. No cash needed.</div>
       <div class="feature-list">
-        <div class="feature-item"><div class="feature-icon"><i data-feather="refresh-cw"></i></div>Trade, don't sell</div>
-        <div class="feature-item"><div class="feature-icon"><i data-feather="leaf"></i></div>Reduce hobby waste</div>
-        <div class="feature-item"><div class="feature-icon"><i data-feather="shield"></i></div>Trusted community</div>
-        <div class="feature-item"><div class="feature-icon"><i data-feather="target"></i></div>Smart fair-value matching</div>
+        <div class="feature-item animate-slide-up stagger-1"><div class="feature-icon"><i data-feather="refresh-cw"></i></div>Trade, don't sell</div>
+        <div class="feature-item animate-slide-up stagger-2"><div class="feature-icon"><i data-feather="leaf"></i></div>Reduce hobby waste</div>
+        <div class="feature-item animate-slide-up stagger-3"><div class="feature-icon"><i data-feather="shield"></i></div>Trusted community</div>
+        <div class="feature-item animate-slide-up stagger-4"><div class="feature-icon"><i data-feather="target"></i></div>Smart fair-value matching</div>
       </div>
     </div>
 

@@ -19,6 +19,8 @@
       gap: 16px;
       align-items: center;
       margin-bottom: 32px;
+      animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+      animation-delay: 0.05s;
     }
 
     .trade-col {
@@ -77,6 +79,8 @@
       border-radius: var(--radius-md);
       padding: 24px;
       margin-bottom: 24px;
+      animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+      animation-delay: 0.1s;
     }
     .items-picker.open { display: block; }
     .picker-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--text); display: flex; align-items: center; gap: 8px; }
@@ -177,7 +181,7 @@
     <div id="fair-text"></div>
   </div>
 
-  <form onsubmit="event.preventDefault(); submitTrade();">
+  <form onsubmit="event.preventDefault(); submitTrade();" class="animate-slide-up stagger-3">
     <div class="form-group">
       <label class="note-label">Message (Optional)</label>
       <textarea class="form-control" id="f-message" placeholder="Hi! I'm interested in trading my item for yours..."></textarea>

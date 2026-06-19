@@ -98,18 +98,29 @@
       padding: 10px 16px;
       background: var(--white);
       border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius-xl);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       white-space: nowrap;
       flex-shrink: 0;
       color: var(--text-secondary);
       font-weight: 500;
       font-size: 14px;
     }
-    .cat-tab i { width: 16px; height: 16px; }
-    .cat-tab:hover { border-color: var(--text-tertiary); background: var(--bg); }
-    .cat-tab.active { background: var(--brand); border-color: var(--brand); color: white; }
+    .cat-tab i { width: 16px; height: 16px; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+    .cat-tab:hover { 
+      border-color: var(--brand-mid); 
+      color: var(--brand);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+    }
+    .cat-tab:hover i { transform: scale(1.15); }
+    .cat-tab.active { 
+      background: var(--brand); 
+      border-color: var(--brand); 
+      color: white; 
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
 
     /* ── PAGE LAYOUT ── */
     .browse-layout {
@@ -791,7 +802,7 @@
       return;
     }
 
-    grid.innerHTML = pageItems.map(item => {
+    grid.innerHTML = pageItems.map((item, index) => {
       const icon    = CAT_ICON[item.category] || 'box';
       const cond    = item.conditionLabel || '';
       const val     = parseFloat(item.estimatedValue) || 0;
@@ -818,8 +829,10 @@
         ? `<div class="card-match-reason"><i data-feather="target"></i> <span>${escapeHtml(mh.reason)}</span></div>`
         : '';
 
+      const staggerClass = index < 10 ? `animate-slide-up stagger-${(index % 5) + 1}` : 'animate-slide-up';
+
       return `
-        <a class="item-card fade-in" href="item-detail.html?id=${item.id}">
+        <a class="item-card ${staggerClass}" href="item-detail.html?id=${item.id}">
           <div class="card-img">
             ${imgHtml}
             <div class="card-trade-badge">TRADE</div>
