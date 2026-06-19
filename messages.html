@@ -458,8 +458,11 @@
     let targetUser = threads.find(t => t.otherUser.id === targetId)?.otherUser;
     if (!targetUser) {
       try {
-        const res = await fetch(`${API}/api/users/${targetId}`);
-        if(res.ok) targetUser = await res.json();
+        const res = await fetch(`${API}/api/users/${targetId}/profile`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.user) targetUser = data.user;
+        }
       } catch(e) {}
     }
     if(targetUser) {

@@ -220,7 +220,7 @@
         <div>
           <div class="sub-row"><div class="sub-lbl">Communication</div><div class="sub-track"><div class="sub-fill" id="bar-com" style="width:0%"></div></div><div class="sub-val" id="val-com">0.0</div></div>
           <div class="sub-row"><div class="sub-lbl">Item as Described</div><div class="sub-track"><div class="sub-fill" id="bar-item" style="width:0%"></div></div><div class="sub-val" id="val-item">0.0</div></div>
-          <div class="sub-row"><div class="sub-lbl">Punctuality</div><div class="sub-track"><div class="sub-fill" id="bar-pun" style="width:0%"></div></div><div class="sub-val" id="val-pun">0.0</div></div>
+          <div class="sub-row"><div class="sub-lbl">Meetup Reliability</div><div class="sub-track"><div class="sub-fill" id="bar-pun" style="width:0%"></div></div><div class="sub-val" id="val-pun">0.0</div></div>
         </div>
       </div>
 
@@ -282,23 +282,35 @@
   let profileUser = null;
   let profileListings = [];
   let profileReviews = [];
+  let subRatings = { communication: 0, itemAsDescribed: 0, meetupReliability: 0 };
 
   function escapeHtml(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
   function formatPeso(v) { return '₱' + Number(v||0).toLocaleString('en-PH'); }
   function getInitials(n) { return (n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
   function colorFor(id) { return AVATAR_COLORS[(id||0) % AVATAR_COLORS.length]; }
+  function formatJoined(iso) {
+    if (!iso) return 'Joined recently';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return 'Joined recently';
+    return 'Joined ' + d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+  }
 
   async function loadProfile() {
+    if (!profileId || Number.isNaN(profileId)) {
+      window.location.href = 'index.html';
+      return;
+    }
+
     try {
-      const resU = await fetch(`${API}/api/users/${profileId}`);
-      if (!resU.ok) throw new Error('User not found');
-      profileUser = await resU.json();
+      const res = await fetch(`${API}/api/users/${profileId}/profile`);
+      if (!res.ok) throw new Error('User not found');
+      const data = await res.json();
+      if (!data.success || !data.user) throw new Error('User not found');
 
-      const resI = await fetch(`${API}/api/items?userId=${profileId}`);
-      if (resI.ok) profileListings = await resI.json();
-
-      const resR = await fetch(`${API}/api/reviews/user/${profileId}`);
-      if (resR.ok) profileReviews = await resR.json();
+      profileUser = data.user;
+      profileListings = data.items || [];
+      profileReviews = data.reviews || [];
+      subRatings = data.subRatings || subRatings;
 
       render();
     } catch(e) {
@@ -323,6 +335,7 @@
     document.getElementById('p-ava').style.background = avaColor;
     document.getElementById('p-name').textContent = escapeHtml(profileUser.name);
     document.querySelector('#p-loc span').textContent = escapeHtml(profileUser.location || 'Philippines');
+    document.querySelector('#p-joined span').textContent = formatJoined(profileUser.createdAt);
 
     // Actions
     if (isOwnProfile) {
@@ -359,9 +372,9 @@
     document.getElementById('r-stars').innerHTML = starsHtml;
 
     // Subratings
-    const c = profileUser.ratingCommunication || 0;
-    const itemAs = profileUser.ratingItemAsDescribed || 0;
-    const p = profileUser.ratingPunctuality || 0;
+    const c = subRatings.communication || 0;
+    const itemAs = subRatings.itemAsDescribed || 0;
+    const p = subRatings.meetupReliability || 0;
     document.getElementById('val-com').textContent = c.toFixed(1);
     document.getElementById('bar-com').style.width = (c/5)*100 + '%';
     document.getElementById('val-item').textContent = itemAs.toFixed(1);
@@ -426,11 +439,13 @@
         const author = r.reviewer ? r.reviewer.name : 'Unknown';
         const date = r.createdAt ? new Date(r.createdAt).toLocaleDateString() : 'Recently';
         let st = '';
+        const rating = r.overallRating || 0;
         for(let i=1; i<=5; i++) {
-           st += `<i data-feather="star" style="${i <= r.rating ? 'fill:currentColor' : 'fill:transparent;color:var(--border)'}"></i>`;
+           st += `<i data-feather="star" style="${i <= rating ? 'fill:currentColor' : 'fill:transparent;color:var(--border)'}"></i>`;
         }
         
         const staggerClass = idx < 10 ? `animate-slide-up stagger-${(idx % 5) + 1}` : 'animate-slide-up';
+        const reviewText = r.reviewText || '';
         
         return `
           <div class="rev-card ${staggerClass}">
@@ -441,7 +456,7 @@
               </div>
               <div class="rev-date">${date}</div>
             </div>
-            <div class="rev-text">${escapeHtml(r.comment)}</div>
+            <div class="rev-text">${escapeHtml(reviewText)}</div>
           </div>`;
       }).join('');
     }
