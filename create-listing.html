@@ -5,98 +5,103 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>HobbieTrades — List an Item</title>
   <link rel="stylesheet" href="style.css"/>
+  <script src="https://unpkg.com/feather-icons"></script>
   <style>
     .create-wrap {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 32px;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 40px;
     }
 
     /* ── PAGE HEADER ── */
-    .page-header { margin-bottom: 28px; }
+    .page-header { margin-bottom: 32px; }
     .page-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 4px;
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
     }
-    .page-sub { font-size: 13px; color: var(--text-secondary); }
+    .page-sub { font-size: 15px; color: var(--text-secondary); }
 
     /* ── FORM GRID ── */
     .form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      gap: 24px;
     }
     .full { grid-column: 1 / -1; }
 
     /* ── PHOTO UPLOAD ── */
     .upload-box {
       border: 2px dashed var(--border);
-      border-radius: var(--radius-md);
-      padding: 28px;
+      border-radius: var(--radius-lg);
+      padding: 32px;
       text-align: center;
-      background: var(--bg);
+      background: var(--white);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-sm);
     }
-    .upload-box:hover { border-color: var(--brand-mid); background: var(--brand-light); }
-    .upload-icon { font-size: 26px; margin-bottom: 8px; }
-    .upload-text { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
-    .upload-sub  { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
+    .upload-box:hover { border-color: var(--brand); background: var(--bg); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .upload-icon { color: var(--text-tertiary); margin-bottom: 12px; }
+    .upload-icon i { width: 32px; height: 32px; }
+    .upload-text { font-size: 14px; color: var(--text); font-weight: 600; margin-bottom: 4px; }
+    .upload-sub  { font-size: 13px; color: var(--text-tertiary); }
 
     .upload-actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 16px;
       align-items: stretch;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
-    .upload-actions .upload-box { flex: 1; min-width: 200px; margin-bottom: 0; }
+    .upload-actions .upload-box { flex: 1; min-width: 220px; margin-bottom: 0; }
+    
     .esp32-btn {
       flex: 0 0 auto;
-      min-width: 180px;
+      min-width: 200px;
       align-self: stretch;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      padding: 16px 20px;
-      border: 2px solid var(--brand-mid);
-      border-radius: var(--radius-md);
+      gap: 8px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
       background: var(--brand-light);
-      color: var(--text-primary);
-      font-size: 13px;
+      color: var(--brand-dark);
+      font-family: inherit;
+      font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-sm);
     }
-    .esp32-btn:hover:not(:disabled) { background: #e8f4dc; border-color: var(--brand); }
-    .esp32-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .esp32-btn-icon { font-size: 24px; }
+    .esp32-btn:hover:not(:disabled) { border-color: var(--brand); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .esp32-btn:disabled { opacity: 0.6; cursor: not-allowed; background: var(--bg); color: var(--text-tertiary); border-color: var(--border); }
+    .esp32-btn-icon i { width: 32px; height: 32px; }
 
     .esp32-modal-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.55);
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
       z-index: 1000;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 24px;
     }
     .esp32-modal-overlay.open { display: flex; }
-    .esp32-modal-overlay.open .esp32-modal {
-      pointer-events: auto;
-    }
+    .esp32-modal-overlay.open .esp32-modal { pointer-events: auto; }
     .esp32-modal {
       position: relative;
       z-index: 1001;
       pointer-events: auto;
-      width: min(720px, 100%);
-      background: var(--surface);
-      border-radius: var(--radius-lg);
+      width: min(800px, 100%);
+      background: var(--white);
+      border-radius: var(--radius-xl);
       border: 1px solid var(--border);
       box-shadow: var(--shadow-lg);
       overflow: hidden;
@@ -105,464 +110,365 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px 18px;
+      padding: 20px 24px;
       border-bottom: 1px solid var(--border);
-      background: var(--brand-light);
+      background: var(--bg);
     }
-    .esp32-modal-title {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text-primary);
-    }
+    .esp32-modal-title { font-size: 16px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
     .esp32-modal-close {
       border: none;
       background: transparent;
-      font-size: 22px;
-      line-height: 1;
+      color: var(--text-tertiary);
       cursor: pointer;
-      color: var(--text-secondary);
-      padding: 4px 8px;
+      transition: color 0.2s;
     }
-    .esp32-modal-body { padding: 18px; }
+    .esp32-modal-close:hover { color: var(--text); }
+    .esp32-modal-body { padding: 24px; }
     .esp32-live-view {
       position: relative;
       width: 100%;
       aspect-ratio: 4 / 3;
-      background: #111;
-      border-radius: var(--radius-md);
+      background: #0F172A;
+      border-radius: var(--radius-lg);
       overflow: hidden;
-      border: 1px solid var(--border);
     }
     .esp32-live-view img {
       width: 100%;
       height: 100%;
       object-fit: contain;
       display: block;
-      background: #111;
     }
     .esp32-live-placeholder {
       position: absolute;
       inset: 0;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: #d0d0d0;
-      font-size: 13px;
-      text-align: center;
-      padding: 20px;
+      color: #94A3B8;
+      font-size: 14px;
+      gap: 12px;
     }
-    .esp32-modal-status {
-      margin-top: 12px;
-      font-size: 12px;
-      color: var(--text-secondary);
-      min-height: 18px;
-    }
+    .esp32-modal-status { margin-top: 16px; font-size: 13px; color: var(--text-secondary); min-height: 20px; display: flex; align-items: center; gap: 8px; }
     .esp32-modal-actions {
       display: flex;
-      gap: 10px;
-      margin-top: 16px;
+      gap: 12px;
+      margin-top: 24px;
       flex-wrap: wrap;
     }
-    .esp32-modal-actions .btn { flex: 1; min-width: 140px; }
-    .esp32-modal-actions .btn-primary { min-width: 180px; }
+    .esp32-modal-actions .btn { flex: 1; }
 
     .esp32-wait {
-      font-size: 12px;
-      color: var(--brand);
+      font-size: 13px;
+      color: var(--brand-dark);
       font-weight: 600;
-      margin-bottom: 10px;
-      padding: 10px 12px;
+      margin-bottom: 16px;
+      padding: 12px 16px;
       background: var(--brand-light);
       border-radius: var(--radius-sm);
       border: 1px solid var(--brand-mid);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .detection-picker {
-      margin: 12px 0;
-      padding: 12px;
-      background: #fff;
-      border: 1px solid #d4cfc0;
+      margin: 16px 0;
+      padding: 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
       border-radius: var(--radius-md);
     }
     .detection-picker-title {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
-      color: #5c4d1f;
-      margin-bottom: 10px;
+      color: var(--text);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
     .detection-options {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    @media (max-width: 560px) {
-      .detection-options { grid-template-columns: 1fr; }
+      gap: 12px;
     }
     .detection-option {
-      text-align: left;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
       padding: 12px;
-      border: 2px solid var(--border);
-      border-radius: var(--radius-sm);
-      background: var(--bg);
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all 0.2s;
     }
-    .detection-option:hover { border-color: var(--brand-mid); background: var(--brand-light); }
-    .detection-option.selected {
-      border-color: var(--brand);
-      background: #eef8e3;
-      box-shadow: 0 0 0 1px var(--brand);
-    }
-    .detection-option-cat {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: var(--text-tertiary);
-      margin-bottom: 4px;
-    }
-    .detection-option-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 4px;
-    }
-    .detection-option-meta {
-      font-size: 11px;
-      color: var(--text-secondary);
-    }
-
-    .hobby-photo-note {
-      font-size: 12px;
-      color: var(--text-secondary);
-      margin-bottom: 10px;
-    }
-    .main-preview-img {
-      width: 100%;
-      max-height: 280px;
-      border-radius: var(--radius-sm);
-      object-fit: cover;
-      display: none;
-      margin-top: 12px;
-      border: 1px solid var(--border);
-    }
-    .photo-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
-    }
-    .photo-slot {
-      border: 2px dashed var(--border);
-      border-radius: var(--radius-md);
-      padding: 12px 8px;
-      text-align: center;
-      background: var(--bg);
-      cursor: pointer;
-      min-height: 72px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      transition: border-color 0.2s, background 0.2s;
-    }
-    .photo-slot:hover { border-color: var(--brand-mid); background: var(--brand-light); }
-    .photo-slot.filled { border-style: solid; border-color: #97C459; padding: 4px; }
-    .photo-slot.invalid { border-color: #e74c3c; background: #fff5f5; }
-    .photo-slot-num { font-size: 11px; font-weight: 600; color: var(--brand); }
-    .hobby-preview-img {
-      width: 100%;
-      height: 56px;
-      border-radius: var(--radius-sm);
-      object-fit: cover;
-      border: 1px solid var(--border);
-    }
+    .detection-option:hover { border-color: var(--brand); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+    .detection-option-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .detection-option-meta { font-size: 12px; color: var(--text-secondary); }
 
     /* ── AI RESULT BOX ── */
-    .ai-box {
-      display: none;
+    .ai-result {
+      margin-top: 16px;
+      padding: 16px;
       border-radius: var(--radius-md);
-      padding: 14px 16px;
-      margin-top: 12px;
       font-size: 13px;
+      line-height: 1.5;
+      display: none;
+      align-items: flex-start;
+      gap: 12px;
     }
-    .ai-box.loading { display: block; background: var(--brand-light); border: 1.5px solid var(--brand-mid); color: var(--brand-dark); }
-    .ai-box.success { display: block; background: #EAF3DE; border: 1.5px solid #97C459; color: #3B6D11; }
-    .ai-box.error   { display: block; background: #FEF3E2; border: 1.5px solid #F5C459; color: #633806; }
+    .ai-result.loading { display: flex; background: var(--brand-light); border: 1px solid var(--brand-mid); color: var(--brand-dark); }
+    .ai-result.success { display: flex; background: var(--green-light); border: 1px solid #A7F3D0; color: #065F46; }
+    .ai-result.error   { display: flex; background: var(--red-light); border: 1px solid #FECACA; color: #991B1B; }
 
-    .ai-box-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
-    .ai-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-    .ai-tag {
-      background: white;
-      border: 1px solid #97C459;
-      border-radius: 20px;
-      padding: 2px 10px;
-      font-size: 11px;
-      font-weight: 500;
-      color: #3B6D11;
-    }
+    .ai-icon i { width: 18px; height: 18px; margin-top: 2px; }
+    .ai-text strong { display: block; font-size: 14px; margin-bottom: 4px; }
 
     /* ── CONDITION PILLS ── */
-    .cond-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
     .cond-pill {
-      border: 1.5px solid var(--border);
-      border-radius: 20px;
-      padding: 6px 16px;
-      font-size: 12px;
-      font-weight: 500;
+      flex: 1;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
       color: var(--text-secondary);
       cursor: pointer;
       transition: all 0.2s;
       background: var(--white);
     }
-    .cond-pill:hover { border-color: var(--brand-mid); color: var(--brand); }
-    .cond-pill.sel   { background: var(--brand-light); border-color: var(--brand-mid); color: var(--brand); font-weight: 600; }
+    .cond-pill:hover { background: var(--bg); border-color: var(--text-tertiary); }
+    .cond-pill.active { background: var(--brand); color: white; border-color: var(--brand); }
 
     /* ── ESTIMATOR BOX ── */
-    .estimator-box {
+    .est-box {
       background: var(--brand-light);
-      border: 1.5px solid var(--brand-mid);
-      border-radius: var(--radius-md);
-      padding: 16px;
-      display: none;
+      border: 1px solid var(--brand-mid);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
-    .estimator-box.show { display: block; }
-    .est-title  { font-size: 11px; font-weight: 700; color: var(--brand-dark); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
-    .est-value  { font-size: 22px; font-weight: 700; font-family: 'Syne', sans-serif; color: var(--brand); }
-    .est-range  { font-size: 12px; color: var(--brand-dark); margin-top: 2px; }
-    .est-source { font-size: 11px; color: var(--text-secondary); margin-top: 6px; }
+    .est-title { font-size: 13px; font-weight: 700; color: var(--brand-dark); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px; }
+    .est-value { font-size: 32px; font-weight: 800; color: var(--brand-dark); letter-spacing: -0.02em; }
+    .est-meta { font-size: 13px; color: var(--brand-dark); opacity: 0.8; }
+    
+    .scrape-btn {
+      align-self: flex-start;
+      margin-top: 8px;
+      background: var(--white);
+      border: 1px solid var(--brand-mid);
+      color: var(--brand-dark);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .scrape-btn:hover { background: var(--brand); color: white; border-color: var(--brand); }
 
     /* ── FOOTER BUTTONS ── */
-    .btn-row { display: flex; gap: 10px; margin-top: 28px; }
-    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    .form-feedback {
-      display: none;
-      border-radius: var(--radius-md);
-      padding: 12px 14px;
-      font-size: 13px;
-      margin-top: 16px;
-      line-height: 1.45;
+    .form-actions {
+      display: flex;
+      gap: 16px;
+      margin-top: 48px;
     }
-    .form-feedback.show { display: block; }
-    .form-feedback.err { background: #FEE8E8; border: 1px solid #F9BBBB; color: #7F1D1D; }
-    .form-feedback.ok { background: #EAF3DE; border: 1px solid #97C459; color: #3B6D11; }
-
-    select.field-locked, input.field-locked {
-      background: var(--bg) !important;
-      color: var(--text-secondary);
-      cursor: not-allowed;
-    }
-    .cond-pill.locked {
-      pointer-events: none;
-      opacity: 0.75;
-      cursor: not-allowed;
-    }
+    .form-actions .btn { flex: 1; padding: 16px; font-size: 16px; font-weight: 600; }
 
     /* ── SPINNER ── */
     .spinner {
       display: inline-block;
-      width: 13px; height: 13px;
-      border: 2px solid var(--brand-mid);
-      border-top-color: var(--brand);
+      width: 16px; height: 16px;
+      border: 2px solid rgba(0,0,0,0.1);
+      border-left-color: currentColor;
       border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      vertical-align: middle;
-      margin-right: 5px;
+      animation: spin 1s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    @media (max-width: 720px) {
-      .create-wrap { padding: 16px; }
-      .form-grid { grid-template-columns: 1fr; gap: 16px; }
-      .btn-row { flex-direction: column; }
-      .btn-row .btn { width: 100%; text-align: center; }
-      .page-title { font-size: 19px; }
-      .upload-box { padding: 20px 16px; }
-      .photo-grid { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 768px) {
+      .create-wrap { padding: 24px; margin: 16px auto; }
+      .form-grid { grid-template-columns: 1fr; }
+      .upload-actions { flex-direction: column; }
+      .form-actions { flex-direction: column; }
+      .page-title { font-size: 24px; }
     }
   </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav class="navbar">
-  <a href="browse.html" class="logo"><span>Hobbie</span>Trades</a>
+  <a href="browse.html" class="logo">HobbieTrades</a>
   <div class="nav-search">
-    <span class="search-icon">🔍</span>
+    <i data-feather="search" class="search-icon"></i>
     <input type="text" placeholder="Search items to trade..."/>
   </div>
   <div class="nav-links">
-    <a href="browse.html"         class="nav-link">Browse</a>
-    <a href="for-you.html"        class="nav-link">✨ For You</a>
-    <a href="messages.html"       class="nav-link">Messages</a>
+    <a href="browse.html"        class="nav-link">Browse</a>
+    <a href="for-you.html"       class="nav-link">For You</a>
+    <a href="messages.html"      class="nav-link">Messages</a>
     <a href="create-listing.html" class="nav-link active">+ List Item</a>
-    <a href="profile.html"        class="nav-avatar" id="nav-avatar">?</a>
+    <a href="profile.html"       class="nav-avatar" id="nav-avatar">?</a>
   </div>
 </nav>
 
 <div class="create-wrap page-enter">
   <div class="page-header">
-    <div class="page-title">List your hobby for trade</div>
-    <div class="page-sub">Upload your item, then add 5 quick photos of you using your hobby</div>
+    <h1 class="page-title">List an Item</h1>
+    <div class="page-sub">Upload a photo to automatically fill in details. Make sure you show the item clearly.</div>
   </div>
 
-  <div class="form-grid">
+  <div id="form-alert" class="alert" style="display:none"></div>
 
+  <form id="create-form" onsubmit="event.preventDefault(); submitListing();">
+    
     <!-- ── MAIN ITEM PHOTO (large upload + AI) ── -->
-    <div class="full">
-      <div class="form-group">
-        <label class="form-label">
-          Item photo *
-          <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-tertiary)">
-            — upload or use ESP32-CAM; AI detects cameras or instruments
-          </span>
+    <div class="form-group full">
+      <label class="form-label">Item Photo * 
+        <span style="font-weight:400;color:var(--text-tertiary);text-transform:none;letter-spacing:0">
+          — upload or use ESP32-CAM; AI detects details automatically
+        </span>
+      </label>
+      
+      <div class="upload-actions">
+        <label class="upload-box" id="upload-box-main">
+          <input type="file" accept="image/*" style="display:none" onchange="handleMainPhoto(this)"/>
+          <div class="upload-icon"><i data-feather="upload-cloud"></i></div>
+          <div class="upload-text" id="upload-text-main">Click to upload photo</div>
+          <div class="upload-sub">JPEG, PNG • Max 10MB</div>
         </label>
-        <div class="upload-actions">
-          <div class="upload-box" id="upload-box" onclick="document.getElementById('item-photo-input').click()">
-            <div class="upload-icon">📤</div>
-            <div class="upload-text">Click to upload your item photo</div>
-            <div class="upload-sub">PNG or JPG up to 10MB</div>
-          </div>
-          <button type="button" class="esp32-btn" id="esp32-btn" onclick="openEsp32Camera()">
-            <span class="esp32-btn-icon">📷</span>
-            <span>Use ESP32 Camera</span>
-          </button>
-        </div>
-        <input type="file" id="item-photo-input" accept="image/*" style="display:none" onchange="onItemPhotoSelected(this)"/>
-        <img id="item-photo-preview" class="main-preview-img" alt="Item preview"/>
-
-        <div class="ai-box" id="ai-box">
-          <div class="ai-box-title" id="ai-box-title"></div>
-          <div id="ai-box-body"></div>
-        </div>
+        
+        <button type="button" class="esp32-btn" onclick="openEsp32Modal()">
+          <span class="esp32-btn-icon"><i data-feather="camera"></i></span>
+          Use ESP32 Camera
+        </button>
       </div>
+
+      <div id="ai-main" class="ai-result">
+        <div class="ai-icon" id="ai-main-icon"></div>
+        <div class="ai-text" id="ai-main-text"></div>
+      </div>
+      
+      <div id="detection-picker-container"></div>
     </div>
 
     <!-- ── TITLE ── -->
-    <div class="full">
-      <div class="form-group">
-        <label class="form-label">Item title * <span id="title-lock-hint" style="display:none;font-weight:400;color:var(--text-tertiary)">(set by AI)</span></label>
-        <input type="text" class="form-control"
-               placeholder="e.g. Vintage Acoustic Guitar, Canon DSLR 200D"
-               id="item-title" oninput="onTitleInput()"/>
-        <input type="hidden" id="estimate-keyword" value=""/>
-      </div>
-    </div>
-
-    <!-- ── DESCRIPTION ── -->
-    <div class="full">
-      <div class="form-group">
-        <label class="form-label">Description *</label>
-        <textarea class="form-control"
-                  placeholder="Describe the item, its condition, what's included, and why you're trading it..."
-                  id="item-desc"></textarea>
-      </div>
+    <div class="form-group">
+      <label class="form-label">Title *</label>
+      <input type="text" class="form-control" id="f-title" placeholder="e.g. Fender Stratocaster" required/>
     </div>
 
     <!-- ── CATEGORY ── -->
-    <div>
-      <div class="form-group">
-        <label class="form-label">Category * <span id="cat-lock-hint" style="display:none;font-weight:400;color:var(--text-tertiary)">(set by AI)</span></label>
-        <select class="form-control" id="item-category" onchange="checkEstimate()">
-          <option value="">Select category</option>
-          <option value="Cameras">📷 Cameras</option>
-          <option value="Instruments">🎸 Instruments</option>
-        </select>
-      </div>
+    <div class="form-group">
+      <label class="form-label">Category *</label>
+      <select class="form-control" id="f-category" required>
+        <option value="" disabled selected>Select category</option>
+        <option value="Cameras">Cameras</option>
+        <option value="Instruments">Instruments</option>
+        <option value="Gaming">Gaming</option>
+        <option value="Sports">Sports & Outdoors</option>
+        <option value="Art">Art Supplies</option>
+        <option value="Craft">Craft & Hobby</option>
+        <option value="Other">Other</option>
+      </select>
     </div>
 
     <!-- ── CONDITION ── -->
-    <div>
-      <div class="form-group">
-        <label class="form-label">Condition * <span id="cond-lock-hint" style="display:none;font-weight:400;color:var(--text-tertiary)">(set by AI)</span></label>
-        <div class="cond-pills">
-          <div class="cond-pill" onclick="selectCondition(this,'Like New')">Like New</div>
-          <div class="cond-pill" onclick="selectCondition(this,'Good')">Good</div>
-          <div class="cond-pill" onclick="selectCondition(this,'Fair')">Fair</div>
-          <div class="cond-pill" onclick="selectCondition(this,'Worn')">Worn</div>
-        </div>
+    <div class="form-group full">
+      <label class="form-label">Condition *</label>
+      <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+        <div class="cond-pill" data-val="Like New" onclick="setCondition('Like New')">Like New</div>
+        <div class="cond-pill" data-val="Good"     onclick="setCondition('Good')">Good</div>
+        <div class="cond-pill" data-val="Fair"     onclick="setCondition('Fair')">Fair</div>
+        <div class="cond-pill" data-val="Worn"     onclick="setCondition('Worn')">Worn</div>
       </div>
-    </div>
+      <input type="hidden" id="f-condition" required/>
 
-    <!-- ── MARKET VALUE ESTIMATOR ── -->
-    <div class="full">
-      <div class="estimator-box" id="estimator-box">
-        <div class="est-title">📊 Market Value Estimate</div>
+      <!-- ── MARKET VALUE ESTIMATOR ── -->
+      <div class="est-box" id="est-box" style="display:none">
+        <div class="est-title"><i data-feather="bar-chart-2" style="width:16px;height:16px"></i> Market Value Estimate</div>
         <div class="est-value"  id="est-value">₱0</div>
-        <div class="est-range"  id="est-range">Based on current market data</div>
-        <div class="est-source" id="est-source">Source: price reference</div>
-        <button type="button" class="btn btn-outline btn-sm" style="margin-top:8px" id="scrape-price-btn" onclick="refreshMarketPrice()">
-          ↻ Refresh from Facebook public pages
+        <div class="est-meta"   id="est-range">Range: ₱0 – ₱0</div>
+        <div class="est-meta"   id="est-source">Source: —</div>
+        <button type="button" class="scrape-btn" id="scrape-btn" onclick="forceScrape()">
+          <i data-feather="refresh-cw"></i> Refresh market data
         </button>
       </div>
     </div>
 
     <!-- ── ESTIMATED VALUE ── -->
-    <div>
-      <div class="form-group">
-        <label class="form-label">Your estimated value (₱) * <span id="val-lock-hint" style="display:none;font-weight:400;color:var(--text-tertiary)">(from estimate)</span></label>
-        <input type="number" class="form-control" placeholder="0.00" id="item-value"/>
-      </div>
+    <div class="form-group">
+      <label class="form-label">Your estimated value (₱) * <span id="val-lock-hint" style="display:none;font-weight:400;color:var(--text-tertiary);text-transform:none">(from estimate)</span></label>
+      <input type="number" class="form-control" id="f-value" placeholder="e.g. 5000" min="0" required/>
     </div>
 
     <!-- ── LOCATION ── -->
-    <div>
-      <div class="form-group">
-        <label class="form-label">Location</label>
-        <input type="text" class="form-control"
-               placeholder="e.g. Davao City, Cebu, BGC" id="item-location"/>
-      </div>
+    <div class="form-group">
+      <label class="form-label">Location (optional)</label>
+      <input type="text" class="form-control" id="f-location" placeholder="e.g. Quezon City"/>
+    </div>
+
+    <!-- ── DESCRIPTION ── -->
+    <div class="form-group full">
+      <label class="form-label">Description (optional)</label>
+      <textarea class="form-control" id="f-desc" placeholder="Details about the item, any defects, etc."></textarea>
     </div>
 
     <!-- ── LOOKING FOR ── -->
-    <div class="full">
-      <div class="form-group">
-        <label class="form-label">I'm looking to trade for</label>
-        <input type="text" class="form-control"
-               placeholder="e.g. mirrorless camera, electric guitar, violin..."
-               id="item-looking"/>
-      </div>
+    <div class="form-group full">
+      <label class="form-label">What are you looking to trade for? (optional)</label>
+      <input type="text" class="form-control" id="f-looking" placeholder="e.g. Any mirrorless camera, or a bass guitar"/>
     </div>
 
     <!-- ── HOBBY PROOF PHOTOS (bottom) ── -->
-    <div class="full" style="margin-top:8px">
-      <div class="form-group">
-        <label class="form-label">Hobby photos * <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-tertiary)">— 5 photos showing you with a camera or instrument (AI verified)</span></label>
-        <div class="photo-grid" id="hobby-photo-grid"></div>
-        <div id="hobby-photo-progress" style="font-size:12px;color:var(--text-secondary);margin-top:10px">0 / 5 hobby photos</div>
+    <div class="form-group full" style="margin-top:24px;border-top:1px solid var(--border);padding-top:32px">
+      <label class="form-label">Hobby photos * <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-tertiary)">— 5 photos showing you with the gear (AI verified)</span></label>
+      
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:16px;margin-bottom:12px">
+        <!-- 5 slots generated by JS -->
+        <div id="hobby-slots-container" style="display:contents"></div>
       </div>
     </div>
 
-  </div><!-- end form-grid -->
-
-  <div class="btn-row">
-    <button class="btn btn-primary btn-lg" style="flex:2" id="submit-btn" onclick="submitListing()">
-      List for trade
-    </button>
-    <a href="browse.html" class="btn btn-outline btn-lg" style="flex:1">Cancel</a>
-  </div>
-  <div id="form-feedback" class="form-feedback" role="status"></div>
+    <div class="form-actions">
+      <a href="browse.html" class="btn btn-outline" style="flex:0.5;text-align:center">Cancel</a>
+      <button type="submit" class="btn btn-primary" id="btn-submit">List Item</button>
+    </div>
+  </form>
 </div>
 
-<div class="esp32-modal-overlay" id="esp32-modal" aria-hidden="true" onclick="closeEsp32Camera()">
-  <div class="esp32-modal" role="dialog" aria-labelledby="esp32-modal-title" onclick="event.stopPropagation()">
+<!-- ── ESP32 MODAL ── -->
+<div class="esp32-modal-overlay" id="esp32-modal">
+  <div class="esp32-modal">
     <div class="esp32-modal-header">
-      <div class="esp32-modal-title" id="esp32-modal-title">ESP32 Camera</div>
-      <button type="button" class="esp32-modal-close" id="esp32-modal-close" aria-label="Close" onclick="closeEsp32Camera()">&times;</button>
+      <div class="esp32-modal-title"><i data-feather="camera"></i> ESP32-CAM</div>
+      <button class="esp32-modal-close" onclick="closeEsp32Modal()"><i data-feather="x"></i></button>
     </div>
     <div class="esp32-modal-body">
+      <div id="esp32-wait-msg" class="esp32-wait" style="display:none">
+        <span class="spinner" style="margin-right:8px;border-width:2px;width:14px;height:14px"></span>
+        <span id="esp32-wait-text">Connecting to ESP32 camera…</span>
+      </div>
+
       <div class="esp32-live-view">
-        <img id="esp32-live-img" alt="ESP32 live preview" style="display:none"/>
-        <div class="esp32-live-placeholder" id="esp32-live-placeholder">
-          Connecting to ESP32 camera…
+        <div class="esp32-live-placeholder" id="esp32-placeholder">
+          <i data-feather="video-off" style="width:48px;height:48px;margin-bottom:12px;opacity:0.5"></i>
+          Waiting for live feed...
         </div>
+        <img id="esp32-stream" src="" style="display:none" alt="Live stream"/>
       </div>
-      <div class="esp32-modal-status" id="esp32-modal-status">
-        Point the camera at your item in good light. The live preview is lower quality; Take Photo uses full resolution.
-      </div>
+      
+      <div class="esp32-modal-status" id="esp32-status"><i data-feather="info" style="width:14px;height:14px"></i> Ready.</div>
+      
       <div class="esp32-modal-actions">
-        <button type="button" class="btn btn-outline" id="esp32-cancel-btn" onclick="closeEsp32Camera()">Cancel</button>
-        <button type="button" class="btn btn-primary" id="esp32-shutter-btn" disabled onclick="takeEsp32Photo()">Take Photo</button>
+        <button class="btn btn-outline" onclick="closeEsp32Modal()">Cancel</button>
+        <button class="btn btn-primary" id="esp32-capture-btn" onclick="captureEsp32Photo()"><i data-feather="aperture"></i> Take Photo</button>
       </div>
     </div>
   </div>
@@ -570,6 +476,8 @@
 
 <script src="js/api.js"></script>
 <script>
+  feather.replace();
+
   const API = window.HobbieAPI ? window.HobbieAPI.baseUrl : (
     window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
       ? 'http://localhost:8080'
@@ -577,576 +485,407 @@
   );
   if (window.HobbieAPI) window.HobbieAPI.wakeBackend();
 
+  // ─── State ───────────────────────────────────────────────────────────────────
+  let mainPhotoFile = null;
+  let detectedCondition = null;
+  
+  const HOBBY_PHOTOS_REQUIRED = 5;
+  let hobbyPhotoFiles = new Array(HOBBY_PHOTOS_REQUIRED).fill(null);
+  let hobbyPhotoValid = new Array(HOBBY_PHOTOS_REQUIRED).fill(false);
+
+  let esp32Mode = 'main'; // 'main' | 'hobby0'..'hobby4'
+  let currentEsp32Session = '';
+
+  const loggedInUserId = localStorage.getItem('userId');
+  if (!loggedInUserId) {
+    window.location.href = 'index.html';
+  }
+
+  const userLoc = localStorage.getItem('userLocation');
+  if (userLoc) document.getElementById('f-location').value = userLoc;
+
   // ─── Init ────────────────────────────────────────────────────────────────────
   document.getElementById('nav-avatar').textContent =
     (localStorage.getItem('userName') || '?').charAt(0).toUpperCase();
 
-  const HOBBY_PHOTOS_REQUIRED = 5;
-
-  let selectedCondition = '';
-  let pendingItemPhoto = null;
-  let pendingHobbyPhotos = new Array(HOBBY_PHOTOS_REQUIRED).fill(null);
-  let hobbyPhotosValidated = new Array(HOBBY_PHOTOS_REQUIRED).fill(false);
-  let itemPhotoAccepted = false;
-  let aiLocked = false;
-  let espPollTimer = null;
-  let espPreviewTimer = null;
-  let espHealthTimer = null;
-  let espLatestPreviewAt = 0;
-  let espPreviewSession = 0;
-  let lastAiResult = null;
-  let selectedDetectionIndex = 0;
-
-  function setEsp32ModalStatus(text) {
-    const el = document.getElementById('esp32-modal-status');
-    if (el) el.textContent = text;
+  function setFormFeedback(kind, text) {
+    const box = document.getElementById('form-alert');
+    box.style.display = 'flex';
+    box.className = 'alert alert-' + (kind === 'ok' ? 'green' : 'err');
+    box.innerHTML = kind === 'ok' 
+      ? `<i data-feather="check-circle" style="color:#065F46"></i> <span>${text}</span>`
+      : `<i data-feather="alert-circle" style="color:#991B1B"></i> <span>${text}</span>`;
+    feather.replace();
+    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
-  function stopEsp32Timers() {
-    if (espPollTimer) {
-      clearInterval(espPollTimer);
-      espPollTimer = null;
-    }
-    if (espPreviewTimer) {
-      clearInterval(espPreviewTimer);
-      espPreviewTimer = null;
-    }
-    if (espHealthTimer) {
-      clearInterval(espHealthTimer);
-      espHealthTimer = null;
-    }
+  // ─── ESP32 Camera ────────────────────────────────────────────────────────────
+  function setEsp32ModalStatus(msg, isError=false) {
+    const el = document.getElementById('esp32-status');
+    el.style.color = isError ? 'var(--red)' : 'var(--text-secondary)';
+    el.innerHTML = isError ? `<i data-feather="alert-triangle" style="width:14px;height:14px"></i> ${msg}` : `<i data-feather="info" style="width:14px;height:14px"></i> ${msg}`;
+    feather.replace();
   }
 
-  function closeEsp32Camera() {
-    stopEsp32Timers();
-    fetch(`${API}/api/esp32/preview/stop`, { method: 'POST' }).catch(() => {});
-    const modal = document.getElementById('esp32-modal');
-    modal.classList.remove('open');
-    modal.setAttribute('aria-hidden', 'true');
-    document.getElementById('esp32-btn').disabled = false;
-    document.getElementById('esp32-shutter-btn').disabled = true;
-    espLatestPreviewAt = 0;
-    espPreviewSession = 0;
-  }
-
-  function showEsp32PreviewFrame(data) {
-    const img = document.getElementById('esp32-live-img');
-    const placeholder = document.getElementById('esp32-live-placeholder');
-    const mime = data.mimeType || 'image/jpeg';
-    img.src = `data:${mime};base64,${data.imageBase64}`;
-    img.style.display = 'block';
-    placeholder.style.display = 'none';
-    document.getElementById('esp32-shutter-btn').disabled = false;
-    espLatestPreviewAt = data.updatedAt || Date.now();
-    setEsp32ModalStatus('Live feed connected. Click Take Photo when ready.');
-  }
-
-  function pollEsp32Health() {
-    fetch(`${API}/api/esp32/preview/health`)
-      .then(r => r.json())
-      .then(health => {
-        if (!health.deviceConfigured) {
-          setEsp32ModalStatus('Server missing ESP32_DEVICE_KEY. Add it on Render, then redeploy.');
-          return;
-        }
-        if (health.feedLive) {
-          setEsp32ModalStatus('Live feed connected. Click Take Photo when ready.');
-          document.getElementById('esp32-shutter-btn').disabled = false;
-          return;
-        }
-        if (health.esp32Online && health.previewActive) {
-          setEsp32ModalStatus('ESP32 connected. Waiting for live feed… You can still click Take Photo.');
-          document.getElementById('esp32-shutter-btn').disabled = false;
-          return;
-        }
-        if (health.previewActive) {
-          setEsp32ModalStatus(
-            'ESP32 not responding. Unplug USB for 10 seconds, press RST, then click Cancel and open the camera again.');
-          document.getElementById('esp32-live-placeholder').textContent =
-            'ESP32 not connected — try power reset';
-          return;
-        }
-        setEsp32ModalStatus('Camera session is not active.');
-      })
-      .catch(() => {});
-  }
-
-  function pollEsp32PreviewFrame() {
-    fetch(`${API}/api/esp32/preview/frame?since=${espLatestPreviewAt}`)
-      .then(r => r.json())
-      .then(data => {
-        if (!data.available) return;
-        showEsp32PreviewFrame(data);
-      })
-      .catch(() => {});
-  }
-
-  function openEsp32Camera() {
-    closeEsp32Camera();
-
-    pendingItemPhoto = null;
-    itemPhotoAccepted = false;
-    lastAiResult = null;
-    releaseAiLocks();
-    clearFormFeedback();
-    document.getElementById('item-photo-input').value = '';
-    document.getElementById('item-photo-preview').style.display = 'none';
-
-    const modal = document.getElementById('esp32-modal');
-    const img = document.getElementById('esp32-live-img');
-    const placeholder = document.getElementById('esp32-live-placeholder');
-    img.style.display = 'none';
-    img.removeAttribute('src');
+  function openEsp32Modal(mode = 'main') {
+    esp32Mode = mode;
+    document.getElementById('esp32-modal').classList.add('open');
+    document.getElementById('esp32-stream').style.display = 'none';
+    
+    const placeholder = document.getElementById('esp32-placeholder');
     placeholder.style.display = 'flex';
-    placeholder.textContent = 'Waking server and connecting to ESP32…';
-    setEsp32ModalStatus('Waking HobbieTrades server…');
-    document.getElementById('esp32-btn').disabled = true;
-    document.getElementById('esp32-shutter-btn').disabled = true;
+    
+    const waitBox = document.getElementById('esp32-wait-msg');
+    const waitText = document.getElementById('esp32-wait-text');
 
-    modal.classList.add('open');
-    modal.setAttribute('aria-hidden', 'false');
-
-    const startPreviewFlow = () => {
-      setEsp32ModalStatus('Starting ESP32 camera session…');
-      fetch(`${API}/api/esp32/preview/start`, { method: 'POST' })
-        .then(r => {
-          if (r.status === 404) {
-            throw new Error('404');
-          }
-          if (!r.ok) {
-            throw new Error(`Server error (${r.status})`);
-          }
-          return r.json();
-        })
-        .then(data => {
-          if (!data.success) {
-            throw new Error(data.message || 'Could not start ESP32 preview.');
-          }
-          espPreviewSession = data.session || 0;
-          setEsp32ModalStatus('Session started. Waiting for ESP32 feed…');
-          espPreviewTimer = setInterval(pollEsp32PreviewFrame, 500);
-          espHealthTimer = setInterval(pollEsp32Health, 2000);
-          pollEsp32Health();
-          pollEsp32PreviewFrame();
+    if (window.HobbieAPI) {
+      waitBox.style.display = 'none';
+      placeholder.innerHTML = `<i data-feather="video" style="width:48px;height:48px;opacity:0.5;margin-bottom:12px"></i><br/>Connecting via native SDK...`;
+      feather.replace();
+      window.HobbieAPI.startEsp32Session()
+        .then(url => {
+          document.getElementById('esp32-stream').src = url;
+          document.getElementById('esp32-stream').style.display = 'block';
+          placeholder.style.display = 'none';
+          setEsp32ModalStatus('ESP32 connected. Waiting for live feed… You can still click Take Photo.');
         })
         .catch(err => {
-          const msg = err.message || 'Could not start ESP32 preview.';
-          setEsp32ModalStatus(msg.includes('404')
-            ? 'Backend is missing the ESP32 preview endpoints. Redeploy the HobbieTrades backend on Render.'
-            : msg);
-          placeholder.textContent = 'Could not connect to ESP32 preview.';
+          placeholder.innerHTML = `<i data-feather="video-off" style="width:48px;height:48px;opacity:0.5;margin-bottom:12px"></i><br/>Native ESP32 failed.`;
+          feather.replace();
+          setEsp32ModalStatus(err.message || 'ESP32 not connected — try power reset', true);
         });
-    };
+      return;
+    }
 
-    const wake = window.HobbieAPI ? window.HobbieAPI.wakeBackend() : fetch(`${API}/api/health`).then(r => r.ok);
-    Promise.resolve(wake)
-      .then(() => startPreviewFlow())
-      .catch(() => startPreviewFlow());
+    waitBox.style.display = 'flex';
+    waitText.textContent = 'Waking server and connecting to ESP32…';
+    placeholder.innerHTML = `<i data-feather="loader" class="spinner" style="width:48px;height:48px;opacity:0.5;margin-bottom:12px;border:none"></i><br/>Connecting...`;
+    feather.replace();
+    setEsp32ModalStatus('Waking HobbieTrades server…');
+
+    fetch(`${API}/api/health`, { cache: 'no-store' })
+    .then(() => {
+      setEsp32ModalStatus('Starting ESP32 camera session…');
+      return fetch(`${API}/api/esp32/start-session`, { method: 'POST' });
+    })
+    .then(res => res.json())
+    .then(data => {
+      waitBox.style.display = 'none';
+      if (data.success && data.streamUrl) {
+        currentEsp32Session = data.session;
+        document.getElementById('esp32-stream').src = `${API}${data.streamUrl}`;
+        document.getElementById('esp32-stream').style.display = 'block';
+        placeholder.style.display = 'none';
+        setEsp32ModalStatus('Session started. Waiting for ESP32 feed…');
+      } else {
+        throw new Error(data.message || 'Failed to get stream URL');
+      }
+    })
+    .catch(err => {
+      waitBox.style.display = 'none';
+      placeholder.innerHTML = `<i data-feather="video-off" style="width:48px;height:48px;opacity:0.5;margin-bottom:12px"></i><br/>No connection.`;
+      feather.replace();
+      setEsp32ModalStatus(err.message || 'Server awake, but ESP32 not connected', true);
+    });
   }
 
-  window.addEventListener('beforeunload', () => {
-    fetch(`${API}/api/esp32/preview/stop`, { method: 'POST', keepalive: true }).catch(() => {});
-  });
+  function closeEsp32Modal() {
+    document.getElementById('esp32-modal').classList.remove('open');
+    document.getElementById('esp32-stream').src = '';
+    if (window.HobbieAPI) window.HobbieAPI.stopEsp32Session();
+  }
 
-  function takeEsp32Photo() {
-    const shutter = document.getElementById('esp32-shutter-btn');
-    if (!shutter || shutter.disabled) return;
-    shutter.disabled = true;
+  function captureEsp32Photo() {
+    const btn = document.getElementById('esp32-capture-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Capturing…';
+
     setEsp32ModalStatus('Taking photo…');
 
-    const since = Date.now();
-    const deadline = since + 60000;
+    if (window.HobbieAPI) {
+      window.HobbieAPI.captureEsp32Photo()
+        .then(blob => processCapturedBlob(blob))
+        .catch(err => {
+          setEsp32ModalStatus(err.message || 'Capture failed', true);
+          btn.disabled = false;
+          btn.innerHTML = '<i data-feather="aperture"></i> Take Photo';
+          feather.replace();
+        });
+      return;
+    }
 
-    fetch(`${API}/api/esp32/capture/request`, { method: 'POST' })
-      .then(r => r.json())
+    setEsp32ModalStatus('Photo requested. Waiting for ESP32…');
+    fetch(`${API}/api/esp32/capture`, { method: 'POST' })
+      .then(res => res.json())
       .then(data => {
-        if (!data.success) {
-          throw new Error(data.message || 'Could not request capture.');
-        }
-        setEsp32ModalStatus('Photo requested. Waiting for ESP32…');
-
-        stopEsp32Timers();
-        espPollTimer = setInterval(() => {
-          if (Date.now() > deadline) {
-            closeEsp32Camera();
-            showAiBox('error', 'Timed out',
-              'No photo received from the ESP32. Check WiFi and try again.');
-            return;
-          }
-
-          fetch(`${API}/api/esp32/latest?since=${since}`)
-            .then(r => r.json())
-            .then(latest => {
-              if (!latest.available) return;
-              closeEsp32Camera();
-              onEsp32PhotoReceived(latest, since);
-            })
-            .catch(() => {});
-        }, 1000);
+        if (!data.success) throw new Error(data.message);
+        setEsp32ModalStatus('Photo taken! Downloading…');
+        return fetch(`${API}${data.photoUrl}?t=${Date.now()}`);
       })
+      .then(res => res.blob())
+      .then(blob => processCapturedBlob(blob))
       .catch(err => {
-        shutter.disabled = false;
-        setEsp32ModalStatus(err.message || 'Could not request capture.');
+        setEsp32ModalStatus(err.message || 'Capture failed. ESP32 might be offline.', true);
+        btn.disabled = false;
+        btn.innerHTML = '<i data-feather="aperture"></i> Take Photo';
+        feather.replace();
       });
   }
 
-  function base64ToFile(base64, mime, filename) {
-    const bin = atob(base64);
-    const arr = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-    return new File([arr], filename, { type: mime || 'image/jpeg' });
-  }
+  function processCapturedBlob(blob) {
+    const file = new File([blob], `esp32_${Date.now()}.jpg`, { type: 'image/jpeg' });
+    closeEsp32Modal();
+    const btn = document.getElementById('esp32-capture-btn');
+    btn.disabled = false;
+    btn.innerHTML = '<i data-feather="aperture"></i> Take Photo';
+    feather.replace();
 
-  function onEsp32PhotoReceived(data, sinceMs) {
-    if (!data.success || !data.accepted) {
-      showAiBox('error', 'ESP32 photo not accepted',
-        (data.message || 'Only cameras and musical instruments are allowed.') +
-        '<div style="margin-top:8px;font-size:12px">Point the ESP32 at the item and open the camera again.</div>');
-      return;
+    if (esp32Mode === 'main') {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      const input = document.querySelector('#upload-box-main input');
+      input.files = dt.files;
+      handleMainPhoto(input);
+    } else if (esp32Mode.startsWith('hobby')) {
+      const idx = parseInt(esp32Mode.replace('hobby', ''), 10);
+      const input = document.getElementById(`hobby-file-${idx}`);
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      handleHobbyPhoto(input, idx);
     }
+  }
 
-    if (data.capturedAt && sinceMs && data.capturedAt <= sinceMs) {
-      return;
+  // ─── Build Hobby Slots ────────────────────────────────────────────────────────
+  function renderHobbySlots() {
+    let html = '';
+    for (let i = 0; i < HOBBY_PHOTOS_REQUIRED; i++) {
+      html += `
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <label class="upload-box" id="upload-box-h${i}" style="padding:16px;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <input type="file" id="hobby-file-${i}" accept="image/*" style="display:none" onchange="handleHobbyPhoto(this, ${i})"/>
+          <div id="hobby-icon-${i}" style="color:var(--text-tertiary)"><i data-feather="camera"></i></div>
+          <div id="hobby-text-${i}" style="font-size:11px;font-weight:600;margin-top:6px;color:var(--text-secondary)">Photo ${i+1}</div>
+        </label>
+        <button type="button" class="btn btn-outline btn-sm" onclick="openEsp32Modal('hobby${i}')" style="font-size:11px;padding:4px"><i data-feather="camera" style="width:12px;height:12px"></i> ESP32</button>
+      </div>`;
     }
+    document.getElementById('hobby-slots-container').innerHTML = html;
+    feather.replace();
+  }
+  renderHobbySlots();
 
-    const mime = data.mimeType || 'image/jpeg';
-    pendingItemPhoto = base64ToFile(data.imageBase64, mime, 'esp32-item.jpg');
-    itemPhotoAccepted = true;
-
-    const prev = document.getElementById('item-photo-preview');
-    prev.src = `data:${mime};base64,${data.imageBase64}`;
-    prev.style.display = 'block';
-
-    applyAiResult(data);
-    aiLocked = true;
-    applyAiLocks();
+  function updateSubmitButton() {
+    const validated = hobbyPhotoValid.filter(Boolean).length;
+    const btn = document.getElementById('btn-submit');
+    if (validated < HOBBY_PHOTOS_REQUIRED) {
+      btn.textContent = `List Item (Need ${HOBBY_PHOTOS_REQUIRED - validated} more hobby photos)`;
+      btn.disabled = true;
+    } else {
+      btn.textContent = 'List Item';
+      btn.disabled = false;
+    }
   }
 
-  function buildHobbyPhotoGrid() {
-    const grid = document.getElementById('hobby-photo-grid');
-    grid.innerHTML = Array.from({ length: HOBBY_PHOTOS_REQUIRED }, (_, i) => `
-      <div class="photo-slot" id="hobby-slot-${i}" onclick="document.getElementById('hobby-input-${i}').click()">
-        <div class="photo-slot-num">${i + 1}</div>
-        <span id="hobby-icon-${i}" style="font-size:18px">📷</span>
-        <img id="hobby-preview-${i}" class="hobby-preview-img" alt="" style="display:none"/>
-        <input type="file" id="hobby-input-${i}" accept="image/*" style="display:none"
-               onchange="onHobbyPhotoSelected(this, ${i})"/>
-      </div>
-    `).join('');
-  }
-  buildHobbyPhotoGrid();
-
-  function updateHobbyPhotoProgress() {
-    const validated = hobbyPhotosValidated.filter(Boolean).length;
-    document.getElementById('hobby-photo-progress').textContent =
-      `${validated} / ${HOBBY_PHOTOS_REQUIRED} hobby photos validated` +
-      (validated < HOBBY_PHOTOS_REQUIRED ? ' — all 5 required' : ' ✓');
-  }
-
-  function setFormFeedback(kind, text) {
-    const el = document.getElementById('form-feedback');
-    el.textContent = text;
-    el.className = 'form-feedback show ' + (kind === 'ok' ? 'ok' : 'err');
-  }
-  function clearFormFeedback() {
-    const el = document.getElementById('form-feedback');
-    el.className = 'form-feedback';
-    el.textContent = '';
-  }
-
-  function applyAiLocks() {
-    const titleEl = document.getElementById('item-title');
-    titleEl.readOnly = true;
-    titleEl.classList.add('field-locked');
-    document.getElementById('title-lock-hint').style.display = 'inline';
-    document.getElementById('item-category').disabled = true;
-    document.getElementById('item-category').classList.add('field-locked');
-    document.getElementById('item-value').readOnly = true;
-    document.getElementById('item-value').classList.add('field-locked');
-    document.querySelectorAll('.cond-pill').forEach(p => {
-      p.classList.add('locked');
-      p.onclick = null;
-    });
-    document.getElementById('cat-lock-hint').style.display = 'inline';
-    document.getElementById('cond-lock-hint').style.display = 'inline';
-    document.getElementById('val-lock-hint').style.display = 'inline';
-  }
-
-  function releaseAiLocks() {
-    aiLocked = false;
-    const titleEl = document.getElementById('item-title');
-    titleEl.readOnly = false;
-    titleEl.classList.remove('field-locked');
-    document.getElementById('title-lock-hint').style.display = 'none';
-    document.getElementById('item-category').disabled = false;
-    document.getElementById('item-category').classList.remove('field-locked');
-    document.getElementById('item-value').readOnly = false;
-    document.getElementById('item-value').classList.remove('field-locked');
-    document.getElementById('cat-lock-hint').style.display = 'none';
-    document.getElementById('cond-lock-hint').style.display = 'none';
-    document.getElementById('val-lock-hint').style.display = 'none';
-    document.querySelectorAll('.cond-pill').forEach(p => {
-      p.classList.remove('locked');
-    });
-    // restore pill handlers
-    const vals = ['Like New', 'Good', 'Fair', 'Worn'];
-    document.querySelectorAll('.cond-pill').forEach((p, i) => {
-      const v = vals[i];
-      p.onclick = function() { selectCondition(this, v); };
-    });
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
   }
 
   // ─── Condition pills ──────────────────────────────────────────────────────────
-  function selectCondition(el, val) {
-    if (el.classList.contains('locked')) return;
-    document.querySelectorAll('.cond-pill').forEach(p => p.classList.remove('sel'));
-    el.classList.add('sel');
-    selectedCondition = val;
-    checkEstimate();
+  function setCondition(val) {
+    document.getElementById('f-condition').value = val;
+    document.querySelectorAll('.cond-pill').forEach(p => p.classList.toggle('active', p.dataset.val === val));
+    estimateValue();
   }
 
-  function refreshMarketPrice() {
-    const category = document.getElementById('item-category').value;
-    const title = document.getElementById('item-title').value.trim();
-    if (!category || !title) {
-      setFormFeedback('err', 'Enter a title and category before refreshing market prices.');
-      return;
-    }
-    const btn = document.getElementById('scrape-price-btn');
+  // ─── Estimator Box (Value) ────────────────────────────────────────────────────
+  async function forceScrape() {
+    const cat  = document.getElementById('f-category').value;
+    const desc = document.getElementById('f-desc').value;
+    const title = document.getElementById('f-title').value;
+    if (!title || !cat) return;
+    
+    const btn = document.getElementById('scrape-btn');
+    btn.innerHTML = '<span class="spinner" style="margin-right:6px"></span> Scraping Facebook pages…';
     btn.disabled = true;
-    btn.textContent = '⏳ Scraping Facebook pages…';
-    const kw = title.split(/\s+/).slice(0, 3).join(' ');
-    fetch(`${API}/api/prices/scrape?keyword=${encodeURIComponent(kw)}&category=${encodeURIComponent(category)}`, { method: 'POST' })
-      .then(r => r.json())
+
+    try {
+      await fetch(`${API}/api/value/estimate?title=${encodeURIComponent(title)}&category=${encodeURIComponent(cat)}&description=${encodeURIComponent(desc)}&forceScrape=true`);
+      estimateValue();
+    } finally {
+      btn.innerHTML = '<i data-feather="refresh-cw"></i> Refresh market data';
+      btn.disabled = false;
+      feather.replace();
+    }
+  }
+
+  function estimateValue() {
+    const title = document.getElementById('f-title').value;
+    const cat   = document.getElementById('f-category').value;
+    const desc  = document.getElementById('f-desc').value;
+    const cond  = document.getElementById('f-condition').value;
+
+    if (!title || !cat) return;
+
+    fetch(`${API}/api/value/estimate?title=${encodeURIComponent(title)}&category=${encodeURIComponent(cat)}&description=${encodeURIComponent(desc)}&condition=${encodeURIComponent(cond)}`)
+      .then(res => res.json())
       .then(data => {
-        btn.disabled = false;
-        btn.textContent = '↻ Refresh from Facebook public pages';
-        if (data.success) {
-          const src = data.source ? ` (${data.source})` : '';
-          setFormFeedback('ok', (data.message || 'Prices updated.') + src);
-          checkEstimate();
-        } else {
-          setFormFeedback('err', data.message || 'Could not extract prices. Try again in a moment.');
+        document.getElementById('est-box').style.display = 'flex';
+        document.getElementById('est-value').textContent  = `₱${data.estimatedValue.toLocaleString()}`;
+        
+        let rangeText = `Range: ₱${Math.round(data.rangeLow).toLocaleString()} – ₱${Math.round(data.rangeHigh).toLocaleString()}`;
+        if (cond) rangeText += ` for ${cond}`;
+        document.getElementById('est-range').textContent  = rangeText;
+        
+        let sourceText = `Source: ${data.source} • Confidence: ${data.confidence}`;
+        if (data.matchedKeyword) sourceText += ` • Matched: ${data.matchedKeyword}`;
+        document.getElementById('est-source').textContent = sourceText;
+
+        const valInput = document.getElementById('f-value');
+        if (!valInput.value || valInput.dataset.autoSet === "true") {
+          valInput.value = data.estimatedValue;
+          valInput.dataset.autoSet = "true";
+          document.getElementById('val-lock-hint').style.display = 'inline';
         }
       })
-      .catch(() => {
-        btn.disabled = false;
-        btn.textContent = '↻ Refresh from Facebook public pages';
-        setFormFeedback('err', 'Could not reach scrape API. Try again after the backend wakes up.');
-      });
+      .catch(() => {});
   }
 
-  function onTitleInput() {
-    document.getElementById('estimate-keyword').value = '';
-    checkEstimate();
-  }
-
-  // ─── Market value estimator ───────────────────────────────────────────────────
-  function checkEstimate() {
-    const category = document.getElementById('item-category').value;
-    const box      = document.getElementById('estimator-box');
-    if (!category || !selectedCondition) { box.classList.remove('show'); return; }
-
-    const title = document.getElementById('item-title').value;
-    const aiKw  = document.getElementById('estimate-keyword').value.trim();
-    const keyword = aiKw || title;
-    fetch(`${API}/api/estimate?category=${encodeURIComponent(category)}&condition=${encodeURIComponent(selectedCondition)}&keyword=${encodeURIComponent(keyword)}`)
-      .then(r => r.json())
-      .then(data => {
-        document.getElementById('est-value').textContent  = `₱${data.estimatedValue.toLocaleString()}`;
-        document.getElementById('est-range').textContent  = `Range: ₱${Math.round(data.rangeLow).toLocaleString()} – ₱${Math.round(data.rangeHigh).toLocaleString()} for ${selectedCondition}`;
-        document.getElementById('est-source').textContent = `Source: ${data.source} · Confidence: ${data.confidence}${data.matchedKeyword ? ' · Matched: ' + data.matchedKeyword : ''}`;
-        document.getElementById('item-value').value = data.estimatedValue;
-        box.classList.add('show');
-      })
-      .catch(() => box.classList.remove('show'));
-  }
+  document.getElementById('f-title').addEventListener('blur', estimateValue);
+  document.getElementById('f-category').addEventListener('change', estimateValue);
+  document.getElementById('f-value').addEventListener('input', function() {
+    this.dataset.autoSet = "false";
+    document.getElementById('val-lock-hint').style.display = 'none';
+  });
 
   // ─── AI box helper ────────────────────────────────────────────────────────────
-  function showAiBox(state, title, bodyHtml) {
-    const box = document.getElementById('ai-box');
-    box.className = 'ai-box ' + state;
-    document.getElementById('ai-box-title').textContent = title;
-    document.getElementById('ai-box-body').innerHTML    = bodyHtml;
+  function showAiBox(idPrefix, status, title, html) {
+    const box = document.getElementById(`${idPrefix}`);
+    const iconEl = document.getElementById(`${idPrefix}-icon`);
+    const textEl = document.getElementById(`${idPrefix}-text`);
+    
+    box.className = `ai-result ${status}`;
+    
+    if (status === 'loading') {
+      iconEl.innerHTML = '<span class="spinner"></span>';
+    } else if (status === 'success') {
+      iconEl.innerHTML = '<i data-feather="check-circle"></i>';
+    } else {
+      iconEl.innerHTML = '<i data-feather="alert-circle"></i>';
+    }
+    
+    textEl.innerHTML = `<strong>${title}</strong>${html}`;
+    feather.replace();
   }
 
   // ─── Main item photo (AI) ────────────────────────────────────────────────────
-  function onItemPhotoSelected(input) {
-    if (!input.files || !input.files[0]) return;
-    pendingItemPhoto = input.files[0];
-    itemPhotoAccepted = false;
-    lastAiResult = null;
-    releaseAiLocks();
-    clearFormFeedback();
+  function handleMainPhoto(input) {
+    const file = input.files[0];
+    if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = e => {
-      const prev = document.getElementById('item-photo-preview');
-      prev.src = e.target.result;
-      prev.style.display = 'block';
-    };
-    reader.readAsDataURL(pendingItemPhoto);
+    mainPhotoFile = file;
+    document.getElementById('upload-text-main').textContent = file.name;
+    document.getElementById('upload-box-main').style.borderColor = 'var(--brand)';
 
-    showAiBox('loading', 'Analyzing item photo…',
-      '<span class="spinner"></span> Checking for a camera or musical instrument…');
+    showAiBox('ai-main', 'loading', 'Analyzing item photo…', 'Checking for a camera or musical instrument…');
+    document.getElementById('detection-picker-container').innerHTML = '';
 
-    const formData = new FormData();
-    formData.append('photo', pendingItemPhoto);
+    const fd = new FormData();
+    fd.append('photo', file);
 
-    fetch(`${API}/api/items/analyze`, { method: 'POST', body: formData })
-      .then(parseApiJson)
-      .then(result => {
-        if (!result.success || !result.accepted) {
-          pendingItemPhoto = null;
-          input.value = '';
-          document.getElementById('item-photo-preview').style.display = 'none';
-          showAiBox('error', 'Photo not accepted',
-            (result.message || 'Only cameras and musical instruments are allowed on HobbieTrades.') +
-            '<div style="margin-top:8px;font-size:12px">Please upload a clear photo of the item itself.</div>');
-          return;
+    fetch(`${API}/api/upload/analyze`, { method: 'POST', body: fd })
+      .then(res => res.json())
+      .then(data => {
+        if (!data.success) throw new Error(data.message || 'Analysis failed');
+
+        if (data.multipleDetections && data.multipleDetections.length > 1) {
+          showDetectionPicker(data.multipleDetections);
+          showAiBox('ai-main', 'success', 'Multiple items detected', 'Please select which one you are trading below.');
+        } else {
+          applyDetectionData(data);
         }
-        applyAiResult(result);
-        itemPhotoAccepted = true;
-        aiLocked = true;
-        applyAiLocks();
       })
-      .catch(() => {
-        pendingItemPhoto = null;
-        input.value = '';
-        itemPhotoAccepted = false;
-        showAiBox('error', 'Could not connect',
-          'Make sure the backend is running and try again.');
+      .catch(err => {
+        showAiBox('ai-main', 'error', 'AI could not detect item', err.message || 'Please fill the details manually.');
       });
   }
 
-  function onHobbyPhotoSelected(input, slot) {
-    if (!input.files || !input.files[0]) return;
+  // ─── Hobby photos (AI verify) ────────────────────────────────────────────────
+  function handleHobbyPhoto(input, slot) {
     const file = input.files[0];
-    pendingHobbyPhotos[slot] = null;
-    hobbyPhotosValidated[slot] = false;
-    clearFormFeedback();
+    if (!file) return;
 
-    const slotEl = document.getElementById('hobby-slot-' + slot);
-    slotEl.classList.remove('filled', 'invalid');
+    hobbyPhotoFiles[slot] = file;
+    const box = document.getElementById(`upload-box-h${slot}`);
+    const icon = document.getElementById(`hobby-icon-${slot}`);
+    const text = document.getElementById(`hobby-text-${slot}`);
+    
+    text.textContent = 'Analyzing...';
+    icon.innerHTML = '<span class="spinner" style="width:14px;height:14px"></span>';
+    box.style.borderColor = 'var(--brand-mid)';
 
-    showAiBox('loading', `🤖 Checking hobby photo ${slot + 1}…`,
-      '<span class="spinner"></span> Verifying a camera or instrument appears in this photo…');
+    const fd = new FormData();
+    fd.append('photo', file);
 
-    const formData = new FormData();
-    formData.append('photo', file);
-    formData.append('slot', String(slot + 1));
-
-    fetch(`${API}/api/items/validate-photo`, { method: 'POST', body: formData })
-      .then(parseApiJson)
-      .then(result => {
-        if (!result.success || !result.accepted) {
-          input.value = '';
-          slotEl.classList.add('invalid');
-          showAiBox('error', `❌ Hobby photo ${slot + 1} rejected`,
-            result.message || 'Each hobby photo must show a camera or musical instrument.');
-          updateHobbyPhotoProgress();
-          return;
+    fetch(`${API}/api/upload/analyze`, { method: 'POST', body: fd })
+      .then(res => res.json())
+      .then(data => {
+        if (!data.success) throw new Error(data.message);
+        if (data.category === 'Cameras' || data.category === 'Instruments') {
+          hobbyPhotoValid[slot] = true;
+          box.style.borderColor = 'var(--green)';
+          box.style.background = 'var(--green-light)';
+          icon.innerHTML = '<i data-feather="check" style="color:var(--green)"></i>';
+          icon.style.color = 'var(--green)';
+          text.textContent = data.brand ? data.brand : 'Verified';
+        } else {
+          throw new Error('No camera/instrument detected');
         }
-        pendingHobbyPhotos[slot] = file;
-        hobbyPhotosValidated[slot] = true;
-
-        const reader = new FileReader();
-        reader.onload = e => {
-          const prev = document.getElementById('hobby-preview-' + slot);
-          const icon = document.getElementById('hobby-icon-' + slot);
-          prev.src = e.target.result;
-          prev.style.display = 'block';
-          if (icon) icon.style.display = 'none';
-          slotEl.classList.add('filled');
-        };
-        reader.readAsDataURL(file);
-        updateHobbyPhotoProgress();
-        showAiBox('success', `✅ Hobby photo ${slot + 1} accepted`,
-          `${result.detectedCategory || 'Item'} detected (${result.confidence || 'OK'}).`);
       })
-      .catch(() => {
-        input.value = '';
-        showAiBox('error', '⚠️ Could not validate hobby photo',
-          'Check your connection and try again.');
-        updateHobbyPhotoProgress();
+      .catch(err => {
+        hobbyPhotoValid[slot] = false;
+        box.style.borderColor = 'var(--red)';
+        box.style.background = 'var(--red-light)';
+        icon.innerHTML = '<i data-feather="x" style="color:var(--red)"></i>';
+        icon.style.color = 'var(--red)';
+        text.textContent = 'Rejected';
+      })
+      .finally(() => {
+        feather.replace();
+        updateSubmitButton();
       });
   }
 
   // ─── Apply AI result to form ──────────────────────────────────────────────────
-  function applyDetectionFields(option) {
-    const category  = option.detectedCategory || '';
-    const condition = option.detectedCondition || '';
-    const suggestedTitle = (option.suggestedTitle || '').trim();
-    const brand = (option.detectedBrand || '').trim();
-    const model = (option.detectedModel || '').trim();
-    const estimateKw = (option.estimateKeyword || '').trim();
-
-    if (estimateKw) {
-      document.getElementById('estimate-keyword').value = estimateKw;
-    } else {
-      document.getElementById('estimate-keyword').value = '';
-    }
-
-    if (suggestedTitle) {
-      document.getElementById('item-title').value = suggestedTitle;
-    }
-
-    if (category === 'Cameras' || category === 'Instruments') {
-      document.getElementById('item-category').value = category;
-      checkEstimate();
-    }
-
-    if (condition) {
-      const pill = [...document.querySelectorAll('.cond-pill')]
-        .find(p => p.textContent.trim() === condition);
-      if (pill) selectCondition(pill, condition);
-    }
-
-    return { category, condition, suggestedTitle, brand, model, caption: option.caption || option.className || '' };
+  function showDetectionPicker(detections) {
+    let html = `<div class="detection-picker">
+        <div class="detection-picker-title"><i data-feather="layers" style="width:14px;height:14px"></i> We found multiple items. Select one:</div>
+        <div class="detection-options">`;
+    
+    detections.forEach((d, i) => {
+      const title = d.suggestedTitle || d.type || 'Unknown Item';
+      const type = d.type || d.class_name || '';
+      const conf = d.confidence ? (d.confidence * 100).toFixed(0) + '%' : '';
+      
+      html += `
+        <div class="detection-option" onclick='applySelectedDetection(${JSON.stringify(d).replace(/'/g, "&apos;")})'>
+          <div class="detection-option-title">${escapeHtml(title)}</div>
+          <div class="detection-option-meta">${escapeHtml(type)}${conf ? ` • ${escapeHtml(conf)}` : ''}</div>
+        </div>`;
+    });
+    
+    html += `</div></div>`;
+    document.getElementById('detection-picker-container').innerHTML = html;
+    feather.replace();
   }
 
-  function buildDetectionPickerHtml(options, selectedIndex) {
-    const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
-    const cards = options.map((opt, idx) => {
-      const cat = opt.detectedCategory || 'Item';
-      const title = opt.suggestedTitle || opt.className || cat;
-      const conf = opt.confidence || '';
-      const type = opt.detectedModel || opt.caption || '';
-      return `
-        <button type="button" class="detection-option${idx === selectedIndex ? ' selected' : ''}"
-                onclick="selectDetectionOption(${idx})">
-          <div class="detection-option-cat">${esc(cat)}</div>
-          <div class="detection-option-title">${esc(title)}</div>
-          <div class="detection-option-meta">${esc(type)}${conf ? ` · ${esc(conf)}` : ''}</div>
-        </button>`;
-    }).join('');
-
-    return `
-      <div class="detection-picker">
-        <div class="detection-picker-title">We found more than one item — which are you trading?</div>
-        <div class="detection-options">${cards}</div>
-      </div>`;
+  function applySelectedDetection(d) {
+    document.getElementById('detection-picker-container').innerHTML = '';
+    applyDetectionData(d);
   }
 
-  function selectDetectionOption(index) {
-    if (!lastAiResult || !lastAiResult.detectionOptions || !lastAiResult.detectionOptions[index]) return;
-    selectedDetectionIndex = index;
-    renderAiResultBox(lastAiResult, index);
-  }
-
-  function renderAiResultBox(result, selectedIndex) {
-    const options = result.detectionOptions;
-    const hasPicker = result.hasMultipleDetections && options && options.length >= 2;
-    const active = hasPicker ? options[selectedIndex] : result;
-    const fields = applyDetectionFields(active);
-
-    const category  = fields.category;
-    const condition = fields.condition;
-    const caption   = active.caption || active.className || result.caption || '';
-    const rawLabels = result.rawLabels || '';
-    const suggestedTitle = fields.suggestedTitle;
-    const brand = fields.brand;
-    const model = fields.model;
+  function applyDetectionData(data) {
+    const { suggestedTitle, brand, model, category, condition } = data;
     const applied = [];
 
     if (suggestedTitle) applied.push(`Title → ${suggestedTitle}`);
@@ -1155,199 +894,116 @@
     if (category) applied.push(`Category → ${category}`);
     if (condition) applied.push(`Condition → ${condition}`);
 
-    const labels = rawLabels.split(',').map(l => l.trim()).filter(l =>
-      l && l !== 'MODEL_LOADING' && !l.startsWith('EXCEPTION') && !l.startsWith('API_ERROR')
-    );
-
-    const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
-    const pickerHtml = hasPicker ? buildDetectionPickerHtml(options, selectedIndex) : '';
-    const pickerNote = hasPicker
-      ? `<div style="font-size:12px;margin-bottom:8px;color:#5c4d1f">Tap the item you want to list for trade.</div>`
-      : '';
-
-    const captionHtml = caption
-      ? `<div style="font-style:italic;margin-bottom:8px;background:white;border-radius:6px;
-                     padding:7px 10px;border:1px solid #97C459;font-size:12px">
-           "${esc(caption)}"
-         </div>`
-      : '';
-
-    const brandModelLine = (brand || model)
-      ? `<div style="font-size:12px;margin-bottom:6px">${brand ? `Brand: <strong>${esc(brand)}</strong>` : ''}${brand && model ? ' · ' : ''}${model ? `Type: <strong>${esc(model)}</strong>` : ''}</div>`
-      : '';
-
-    const summaryHtml = `
-      <div style="font-size:12px;font-weight:600;margin-bottom:6px">
-        ${suggestedTitle ? `Title: <strong>${esc(suggestedTitle)}</strong> &nbsp;·&nbsp; ` : ''}
-        Category: <strong>${esc(category || '—')}</strong> &nbsp;·&nbsp;
-        Condition: <strong>${esc(condition || '—')}</strong>
-      </div>${brandModelLine}`;
-
-    const tagsHtml = labels.length > 0
-      ? `<div class="ai-tags">${labels.slice(0,10).map(l => `<span class="ai-tag">${l}</span>`).join('')}</div>`
-      : '';
-
-    const appliedHtml = applied.length > 0
-      ? `<div style="font-size:12px;margin-top:8px">Using: ${applied.join(' · ')}</div>`
-      : `<div style="font-size:12px;margin-top:8px;color:#888">Could not detect — please select manually.</div>`;
-
-    const detectionSrc = result.detectionSource || '';
-    const srcNote = detectionSrc.startsWith('roboflow')
-      ? `<div style="font-size:11px;margin-top:6px;opacity:0.85">Detected with your Roboflow model</div>`
-      : '';
-
-    showAiBox('success', hasPicker ? 'Multiple items detected' : 'AI Image Analysis',
-      pickerNote + pickerHtml + captionHtml + summaryHtml + tagsHtml + appliedHtml + srcNote);
-  }
-
-  function applyAiResult(result) {
-    lastAiResult = result;
-    selectedDetectionIndex = 0;
-    renderAiResultBox(result, 0);
-  }
-
-  function parseApiJson(r) {
-    return r.text().then(text => {
-      let data = {};
-      if (text) {
-        try {
-          data = JSON.parse(text);
-        } catch (e) {
-          data = { success: false, message: text.slice(0, 200) || `Server error (${r.status})` };
-        }
+    if (suggestedTitle) document.getElementById('f-title').value = suggestedTitle;
+    if (category) {
+      const sel = document.getElementById('f-category');
+      for (let i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value === category) { sel.selectedIndex = i; break; }
       }
-      if (data.success === undefined) {
-        data.success = r.ok;
-      }
-      if (!data.message && data.error) {
-        data.message = data.error;
-      }
-      if (!data.message && !r.ok) {
-        data.message = r.status === 413
-          ? 'Photo is too large (max 10MB per image).'
-          : `Upload failed (HTTP ${r.status}). Try again.`;
-      }
-      return data;
-    });
+    }
+    if (condition) {
+      detectedCondition = condition;
+      setCondition(condition);
+    }
+    
+    let aiHtml = `
+      <div style="font-size:13px;margin-bottom:8px">
+        ${suggestedTitle ? `Title: <strong>${escapeHtml(suggestedTitle)}</strong> &nbsp;•&nbsp; ` : ''}
+        Category: <strong>${escapeHtml(category || '—')}</strong> &nbsp;•&nbsp;
+        Condition: <strong>${escapeHtml(condition || '—')}</strong>
+      </div>
+      <div style="font-size:12px;color:var(--text-secondary)">
+        ${(brand || model) 
+          ? `Details: ${brand ? escapeHtml(brand) : ''} ${model ? escapeHtml(model) : ''}`
+          : 'Autofilled from image.'}
+      </div>
+    `;
+
+    showAiBox('ai-main', 'success', 'Item detected!', aiHtml);
+    estimateValue();
   }
 
   // ─── Submit listing ───────────────────────────────────────────────────────────
-  function submitListing() {
-    clearFormFeedback();
-    const title      = document.getElementById('item-title').value.trim();
-    const desc       = document.getElementById('item-desc').value.trim();
-    const category   = document.getElementById('item-category').value;
-    const value      = document.getElementById('item-value').value;
-    const location   = document.getElementById('item-location').value.trim();
-    const lookingFor = document.getElementById('item-looking').value.trim();
+  async function submitListing() {
+    const btn = document.getElementById('btn-submit');
+    const title = document.getElementById('f-title').value.trim();
+    const category = document.getElementById('f-category').value;
+    const condition = document.getElementById('f-condition').value;
+    const estVal = document.getElementById('f-value').value;
+    const location = document.getElementById('f-location').value.trim();
+    const desc = document.getElementById('f-desc').value.trim();
+    const looking = document.getElementById('f-looking').value.trim();
 
-    if (!pendingItemPhoto || !itemPhotoAccepted) {
+    if (!mainPhotoFile) {
       setFormFeedback('err', 'Upload a valid item photo — only cameras and instruments are accepted.');
       return;
     }
-
-    if (!pendingItemPhoto.size || pendingItemPhoto.size <= 0) {
-      setFormFeedback('err', 'Item photo file is empty. Please upload the photo again.');
+    if (hobbyPhotoValid.filter(Boolean).length < HOBBY_PHOTOS_REQUIRED) {
+      setFormFeedback('err', `Please provide all ${HOBBY_PHOTOS_REQUIRED} verified hobby photos.`);
+      return;
+    }
+    if (!loggedInUserId) {
+      setFormFeedback('err', 'You must be logged in to list an item.');
+      setTimeout(() => window.location.href = 'index.html', 2000);
       return;
     }
 
-    const hobbyFiles = pendingHobbyPhotos.filter(Boolean);
-    if (hobbyFiles.length < HOBBY_PHOTOS_REQUIRED) {
-      setFormFeedback('err', `All ${HOBBY_PHOTOS_REQUIRED} hobby photos must pass AI validation (camera or instrument visible).`);
-      return;
-    }
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner" style="margin-right:8px"></span> Saving…';
 
-    if (!title || !desc || !category || !selectedCondition || !value) {
-      setFormFeedback('err', 'Please fill in all required fields marked with *.');
-      return;
-    }
+    try {
+      // 1. Create item
+      const itemData = {
+        title, category,
+        conditionLabel: condition,
+        estimatedValue: parseFloat(estVal),
+        description: desc,
+        location: location,
+        lookingFor: looking,
+        user: { id: parseInt(loggedInUserId) }
+      };
 
-    if (category !== 'Cameras' && category !== 'Instruments') {
-      setFormFeedback('err', 'Only Cameras and Instruments categories are supported.');
-      return;
-    }
+      const res = await fetch(`${API}/api/items`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(itemData)
+      });
+      if (!res.ok) throw new Error('Failed to create item');
+      const createdItem = await res.json();
+      const itemId = createdItem.id;
 
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
-      setFormFeedback('err', 'You must be logged in to list an item. Redirecting to sign in…');
-      setTimeout(() => { window.location.href = 'index.html'; }, 1600);
-      return;
-    }
+      btn.innerHTML = '<span class="spinner" style="margin-right:8px"></span> Uploading photos…';
 
-    const btn = document.getElementById('submit-btn');
-    btn.disabled    = true;
-    btn.textContent = '⏳ Saving…';
+      // 2. Upload main photo (slot 1)
+      const fdMain = new FormData();
+      fdMain.append('photo', mainPhotoFile);
+      fdMain.append('slot', 1);
+      const uRes1 = await fetch(`${API}/api/items/${itemId}/upload`, { method: 'POST', body: fdMain });
+      if (!uRes1.ok) throw new Error('Failed to upload main photo');
 
-    // Step 1 — save item
-    fetch(`${API}/api/items`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId,
-        title,
-        description:    desc,
-        category,
-        conditionLabel: selectedCondition,
-        estimatedValue: value,
-        lookingFor,
-        location
-      })
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (!data.success) {
-        btn.disabled    = false;
-        btn.textContent = 'List for trade';
-        setFormFeedback('err', data.message || 'Failed to save item. Please try again.');
-        return;
+      // 3. Upload hobby photos
+      let uploadCount = 0;
+      for (let i = 0; i < HOBBY_PHOTOS_REQUIRED; i++) {
+        if (hobbyPhotoFiles[i] && hobbyPhotoValid[i]) {
+          const fdH = new FormData();
+          fdH.append('photo', hobbyPhotoFiles[i]);
+          fdH.append('slot', i + 2); // slots 2,3,4,5,6
+          await fetch(`${API}/api/items/${itemId}/upload`, { method: 'POST', body: fdH });
+          uploadCount++;
+        }
       }
 
-      const itemId = data.itemId;
+      setFormFeedback('ok', `"${title}" was listed successfully. Taking you to Browse…`);
+      setTimeout(() => { window.location.href = 'browse.html'; }, 1500);
 
-      // Step 2 — upload main item photo (slot 1)
-      if (itemId && pendingItemPhoto) {
-        btn.textContent = '⏳ Uploading photos…';
-        const fd = new FormData();
-        const photoName = pendingItemPhoto.name || 'item.jpg';
-        fd.append('photo', pendingItemPhoto, photoName);
-
-        fetch(`${API}/api/items/${itemId}/upload`, { method: 'POST', body: fd })
-          .then(parseApiJson)
-          .then(uploadData => {
-            if (!uploadData.success) {
-              throw new Error(uploadData.message || 'Item photo upload failed.');
-            }
-            const galleryFd = new FormData();
-            hobbyFiles.forEach(f => galleryFd.append('photos', f, f.name || 'hobby.jpg'));
-            return fetch(`${API}/api/items/${itemId}/upload-gallery`, { method: 'POST', body: galleryFd });
-          })
-          .then(r => r ? parseApiJson(r) : { success: false, message: 'Gallery upload failed.' })
-          .then(galleryData => {
-            if (!galleryData || !galleryData.success) {
-              setFormFeedback('err', galleryData?.message || 'Hobby photos failed to upload. Make sure all 5 are added.');
-              btn.disabled = false;
-              btn.textContent = 'List for trade';
-              return;
-            }
-            setFormFeedback('ok', `"${title}" was listed with item + hobby photos. Taking you to Browse…`);
-            setTimeout(() => { window.location.href = 'browse.html'; }, 900);
-          })
-          .catch(err => {
-            setFormFeedback('err', err.message || 'Photo upload failed. Please try again.');
-            btn.disabled = false;
-            btn.textContent = 'List for trade';
-          });
-      } else {
-        setFormFeedback('ok', `"${title}" was listed successfully. Taking you to Browse…`);
-        setTimeout(() => { window.location.href = 'browse.html'; }, 900);
-      }
-    })
-    .catch(() => {
-      btn.disabled    = false;
-      btn.textContent = 'List for trade';
-      setFormFeedback('err', 'Cannot connect to the server. Check that the HobbieTrades API is running.');
-    });
+    } catch (err) {
+      setFormFeedback('err', err.message || 'An error occurred while saving.');
+      btn.disabled = false;
+      btn.textContent = 'List Item';
+    }
   }
+
+  updateSubmitButton();
 </script>
 </body>
 </html>

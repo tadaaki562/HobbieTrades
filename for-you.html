@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>HobbieTrades — For You</title>
   <link rel="stylesheet" href="style.css"/>
+  <script src="https://unpkg.com/feather-icons"></script>
   <style>
     /* ── HERO ── */
     .fy-hero {
-      background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand) 60%, var(--brand-mid) 100%);
-      padding: 2.5rem 2rem;
+      background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand) 100%);
+      padding: 60px 40px;
       color: white;
       position: relative;
       overflow: hidden;
@@ -18,8 +19,8 @@
       content: '';
       position: absolute;
       top: -40px; right: -40px;
-      width: 220px; height: 220px;
-      background: rgba(255,255,255,0.08);
+      width: 250px; height: 250px;
+      background: rgba(255,255,255,0.06);
       border-radius: 50%;
     }
     .fy-hero::after {
@@ -27,7 +28,7 @@
       position: absolute;
       bottom: -60px; left: 30%;
       width: 300px; height: 300px;
-      background: rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.04);
       border-radius: 50%;
     }
     .hero-inner {
@@ -38,61 +39,103 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 1rem;
+      gap: 24px;
     }
     .hero-text h1 {
-      font-family: 'Syne', sans-serif;
-      font-size: 2rem;
+      font-size: 32px;
       font-weight: 800;
-      margin-bottom: 0.4rem;
-      letter-spacing: 0;
+      margin-bottom: 8px;
+      letter-spacing: -0.03em;
+      color: white;
     }
-    .hero-text p { color: rgba(255,255,255,0.75); font-size: 0.9rem; }
-    .hero-icon { font-size: 3.5rem; line-height: 1; }
+    .hero-text p { color: rgba(255,255,255,0.85); font-size: 16px; font-weight: 500; max-width: 600px; }
+    .hero-icon { color: rgba(255,255,255,0.9); }
+    .hero-icon i { width: 64px; height: 64px; stroke-width: 1.5; }
 
     /* ── PREF FILTER BAR ── */
     .pref-wrap {
       max-width: 1200px;
-      margin: 1.25rem auto 0;
-      padding: 0 2rem;
+      margin: 24px auto 0;
+      padding: 0 40px;
     }
     .pref-bar {
       display: flex;
-      gap: 0.45rem;
+      gap: 12px;
       flex-wrap: wrap;
       align-items: center;
     }
     .pref-label {
-      font-size: 0.8rem;
+      font-size: 14px;
       color: var(--text-secondary);
       font-weight: 600;
-      margin-right: 0.25rem;
-      flex-shrink: 0;
+      margin-right: 8px;
     }
     .pref-tag {
-      font-size: 0.77rem;
-      padding: 0.32rem 0.85rem;
-      border-radius: 20px;
-      border: 1.5px solid var(--border);
+      font-size: 13px;
+      padding: 8px 16px;
+      border-radius: 24px;
+      border: 1px solid var(--border);
       color: var(--text-secondary);
       cursor: pointer;
-      transition: all 0.18s;
+      transition: all 0.2s;
       background: var(--white);
       font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .pref-tag:hover { border-color: var(--brand-mid); color: var(--brand); }
+    .pref-tag i { width: 14px; height: 14px; }
+    .pref-tag:hover { background: var(--bg); color: var(--text); }
     .pref-tag.active {
-      background: var(--brand-light);
-      border-color: var(--brand-mid);
-      color: var(--brand);
+      background: var(--brand);
+      border-color: var(--brand);
+      color: white;
+    }
+
+    /* ── SIGNALS ── */
+    .fy-signals-wrap {
+      max-width: 1200px;
+      margin: 16px auto 8px;
+      padding: 0 40px;
+    }
+    .fy-signals-label {
+      font-size: 12px;
       font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-tertiary);
+      margin-bottom: 8px;
+    }
+    .fy-signals-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .signal-chip {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .signal-chip i { width: 12px; height: 12px; }
+    .signal-chip.cat {
+      background: var(--brand-light);
+      border-color: var(--brand-light);
+      color: var(--brand-dark);
     }
 
     /* ── MAIN LAYOUT ── */
     .fy-layout {
       max-width: 1200px;
-      margin: 1.5rem auto;
-      padding: 0 2rem 3rem;
+      margin: 24px auto 48px;
+      padding: 0 40px;
     }
 
     /* ── SECTION HEADERS ── */
@@ -100,66 +143,73 @@
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      gap: 0.75rem;
-      margin-bottom: 1rem;
-      margin-top: 2rem;
+      gap: 16px;
+      margin-bottom: 24px;
+      margin-top: 40px;
     }
     .section-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 1rem;
+      font-size: 20px;
       font-weight: 700;
       color: var(--text);
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 0.5rem;
-      min-width: 0;
-      flex: 1;
+      gap: 12px;
     }
     .section-count {
-      font-size: 0.7rem;
+      font-size: 13px;
       font-weight: 600;
-      background: var(--brand-light);
-      color: var(--brand);
-      padding: 2px 9px;
+      background: var(--border-light);
+      color: var(--text-secondary);
+      padding: 2px 10px;
       border-radius: 20px;
     }
     .section-link {
-      font-size: 0.8rem;
+      font-size: 14px;
       color: var(--brand);
       text-decoration: none;
       font-weight: 500;
-      flex-shrink: 0;
-      padding-top: 0.15rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
+    .section-link i { width: 16px; height: 16px; }
     .section-link:hover { text-decoration: underline; }
+    
+    .section-sub {
+      font-size: 14px;
+      color: var(--text-tertiary);
+      font-weight: 400;
+      margin-top: 4px;
+      width: 100%;
+      flex-basis: 100%;
+    }
 
     /* ── ITEM GRID ── */
     .item-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-      gap: 1.1rem;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 24px;
     }
 
-    /* ── ITEM CARD (mirrors browse.html exactly) ── */
+    /* ── ITEM CARD (mirrors browse) ── */
     .item-card {
       background: var(--white);
       border-radius: var(--radius-md);
       border: 1px solid var(--border);
       overflow: hidden;
       cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s;
+      transition: all 0.2s ease;
       text-decoration: none;
       color: inherit;
       display: flex;
       flex-direction: column;
     }
     .item-card:hover {
-      transform: translateY(-3px);
+      transform: translateY(-4px);
       box-shadow: var(--shadow-md);
-      border-color: var(--brand-mid);
+      border-color: var(--border-light);
     }
-
     .card-img {
       position: relative;
       padding-top: 75%;
@@ -171,312 +221,214 @@
       inset: 0;
       width: 100%; height: 100%;
       object-fit: cover;
-      transition: transform 0.35s ease;
+      transition: transform 0.4s ease;
     }
-    .item-card:hover .card-img img { transform: scale(1.05); }
-
-    .card-emoji-placeholder {
+    .item-card:hover .card-img img { transform: scale(1.04); }
+    .card-placeholder-icon {
       position: absolute;
       inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2.5rem;
+      color: var(--text-tertiary);
     }
-
+    .card-placeholder-icon i { width: 48px; height: 48px; }
     .card-trade-badge {
       position: absolute;
-      top: 8px; left: 8px;
-      background: var(--brand);
-      color: white;
-      font-size: 0.65rem;
+      top: 12px; left: 12px;
+      background: var(--white);
+      color: var(--text);
+      font-size: 11px;
       font-weight: 700;
-      padding: 2px 7px;
-      border-radius: 5px;
-      letter-spacing: 0.04em;
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.05em;
+      box-shadow: var(--shadow-sm);
       z-index: 2;
     }
-
     .match-badge {
       position: absolute;
-      top: 8px; right: 8px;
-      font-size: 0.65rem;
-      font-weight: 700;
-      padding: 2px 7px;
-      border-radius: 5px;
+      top: 12px; right: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
       z-index: 2;
       color: white;
       background: var(--brand);
+      box-shadow: var(--shadow-sm);
     }
-    .match-badge.high   { background: #1D9E75; }
-    .match-badge.medium { background: #EF9F27; }
-    .match-badge.low    { background: #888; }
-
+    .match-badge.high   { background: var(--green); }
+    .match-badge.medium { background: var(--orange); }
+    .match-badge.low    { background: var(--text-tertiary); }
     .card-cond-badge {
       position: absolute;
-      bottom: 8px; right: 8px;
-      font-size: 0.65rem;
-      font-weight: 700;
-      padding: 2px 7px;
-      border-radius: 5px;
+      bottom: 12px; right: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
       z-index: 2;
+      background: var(--white);
+      color: var(--text-secondary);
+      box-shadow: var(--shadow-sm);
     }
-    .cond-like-new { background: #EAF3DE; color: #3B6D11; }
-    .cond-good     { background: #EEF2FF; color: #4F46E5; }
-    .cond-fair     { background: #FEF3E2; color: #633806; }
-    .cond-worn     { background: #FEE2E2; color: #7F1D1D; }
-
     .card-body {
-      padding: 0.85rem 0.9rem;
+      padding: 16px;
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 0.3rem;
+      gap: 8px;
     }
     .card-category {
-      font-size: 0.68rem;
-      font-weight: 700;
+      font-size: 12px;
+      font-weight: 600;
       color: var(--brand);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
     .card-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 0.88rem;
-      font-weight: 700;
+      font-size: 15px;
+      font-weight: 600;
       color: var(--text);
-      line-height: 1.3;
+      line-height: 1.4;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
     .card-meta {
-      font-size: 0.75rem;
+      font-size: 13px;
       color: var(--text-secondary);
-      margin-top: 0.1rem;
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 8px;
     }
-    .cdot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      display: inline-block;
-      flex-shrink: 0;
-    }
-    .card-location { font-size: 0.72rem; color: var(--text-tertiary); margin-top: 0.1rem; }
-
+    .card-meta .cdot { width: 6px; height: 6px; border-radius: 50%; }
+    .card-location { font-size: 13px; color: var(--text-tertiary); display: flex; align-items: center; gap: 6px; }
+    .card-location i { width: 14px; height: 14px; }
+    
     .match-reason-chip {
-      font-size: 0.68rem;
-      color: var(--brand);
-      background: var(--brand-light);
-      border-radius: 20px;
-      padding: 2px 8px;
-      margin-top: 0.25rem;
-      display: inline-block;
-      font-weight: 500;
-      width: fit-content;
+      font-size: 12px;
+      color: var(--brand-dark);
+      margin-top: 8px;
+      line-height: 1.4;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
     }
+    .match-reason-chip i { width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; }
 
     .card-seller {
       display: flex;
       align-items: center;
-      gap: 6px;
-      margin-top: 0.4rem;
-      padding-top: 0.4rem;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 12px;
       border-top: 1px solid var(--border-light);
     }
     .seller-ava {
-      width: 20px; height: 20px;
+      width: 24px; height: 24px;
       border-radius: 50%;
       color: white;
-      font-size: 0.6rem;
-      font-weight: 700;
+      font-size: 10px;
+      font-weight: 600;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
     }
-    .seller-name  { font-size: 0.72rem; color: var(--text-secondary); }
-    .seller-rating { font-size: 0.68rem; color: #EF9F27; margin-left: auto; }
+    .seller-name  { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+    .seller-rating { font-size: 12px; color: var(--orange); margin-left: auto; display: flex; align-items: center; gap: 4px; font-weight: 500; }
+    .seller-rating i { width: 12px; height: 12px; fill: currentColor; }
 
     .card-footer {
-      padding: 0.65rem 0.9rem;
+      padding: 16px;
       border-top: 1px solid var(--border-light);
       display: flex;
       align-items: center;
       justify-content: space-between;
+      background: var(--bg);
     }
     .card-value {
-      font-family: 'Syne', sans-serif;
-      font-size: 0.95rem;
+      font-size: 16px;
       font-weight: 700;
       color: var(--text);
     }
-    .card-value span {
-      font-size: 0.7rem;
-      font-weight: 400;
-      color: var(--text-secondary);
-      font-family: 'DM Sans', sans-serif;
-    }
+    .card-value span { font-size: 12px; font-weight: 500; color: var(--text-secondary); }
     .trade-btn-sm {
       background: var(--brand);
       color: white;
       border: none;
-      padding: 0.35rem 0.75rem;
-      border-radius: 6px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.75rem;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 13px;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: all 0.2s;
     }
-    .trade-btn-sm:hover { background: var(--brand-dark); }
+    .trade-btn-sm:hover { background: var(--brand-dark); transform: translateY(-1px); }
 
     /* ── SKELETON ── */
-    .skeleton-card {
-      background: var(--white);
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border);
-      overflow: hidden;
-    }
-    .skel {
-      background: linear-gradient(90deg, var(--bg) 25%, var(--border-light) 50%, var(--bg) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.3s infinite;
-    }
-    .skel-img  { height: 160px; }
-    .skel-body { padding: 0.85rem 0.9rem; }
-    .skel-line { height: 11px; border-radius: 6px; margin-bottom: 7px; }
-    .skel-w80  { width: 80%; }
-    .skel-w55  { width: 55%; }
-    .skel-w40  { width: 40%; }
-    @keyframes shimmer {
-      0%   { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
+    .skeleton-card { background: var(--white); border-radius: var(--radius-md); border: 1px solid var(--border); overflow: hidden; }
+    .skel { background: linear-gradient(90deg, var(--border-light) 25%, var(--border) 50%, var(--border-light) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+    .skel-img { height: 180px; }
+    .skel-body { padding: 16px; }
+    .skel-line { height: 12px; border-radius: 6px; margin-bottom: 10px; }
+    .skel-w80 { width: 80%; }
+    .skel-w55 { width: 55%; }
+    .skel-w40 { width: 40%; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
     /* ── EMPTY / PROMPT STATES ── */
     .empty-state {
       grid-column: 1 / -1;
       text-align: center;
-      padding: 3.5rem 1.5rem;
+      padding: 64px 24px;
       color: var(--text-secondary);
+      background: var(--white);
+      border-radius: var(--radius-md);
+      border: 1px dashed var(--border);
     }
-    .empty-icon { font-size: 2.8rem; margin-bottom: 0.75rem; }
-    .empty-state h3 {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.1rem;
-      color: var(--text);
-      margin-bottom: 0.4rem;
-    }
+    .empty-icon { color: var(--text-tertiary); margin-bottom: 16px; display: flex; justify-content: center; }
+    .empty-icon i { width: 48px; height: 48px; }
+    .empty-state h3 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+    .empty-state p { font-size: 14px; }
 
     .prompt-card {
       grid-column: 1 / -1;
       background: var(--brand-light);
-      border: 1.5px dashed var(--brand-mid);
+      border: 1px dashed var(--brand-mid);
       border-radius: var(--radius-md);
-      padding: 2.5rem;
+      padding: 48px 24px;
       text-align: center;
     }
     .prompt-card h3 {
-      font-family: 'Syne', sans-serif;
-      font-size: 1rem;
-      color: var(--brand);
-      margin-bottom: 0.4rem;
+      font-size: 18px;
+      color: var(--brand-dark);
+      margin-bottom: 8px;
     }
     .prompt-card p {
-      font-size: 0.88rem;
-      color: var(--text-secondary);
-      margin-bottom: 1rem;
-    }
-
-    .fy-signals-wrap {
-      max-width: 1200px;
-      margin: 0 auto 0.5rem;
-      padding: 0 2rem;
-    }
-    .fy-signals-label {
-      font-size: 0.72rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--text-secondary);
-      margin-bottom: 0.45rem;
-    }
-    .fy-signals-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      align-items: center;
-    }
-    .signal-chip {
-      font-size: 0.76rem;
-      font-weight: 600;
-      padding: 0.28rem 0.65rem;
-      border-radius: 20px;
-      background: var(--white);
-      border: 1.5px solid var(--border);
-      color: var(--text-secondary);
-    }
-    .signal-chip.cat {
-      background: var(--brand-light);
-      border-color: var(--brand-mid);
+      font-size: 14px;
       color: var(--brand);
-    }
-    .section-sub {
-      font-size: 0.78rem;
-      color: var(--text-secondary);
-      font-weight: 500;
-      margin-top: 0.15rem;
-      width: 100%;
-      flex-basis: 100%;
+      margin-bottom: 24px;
     }
 
     @media (max-width: 768px) {
-      .fy-hero { padding: 1.5rem 1rem; }
-      .hero-inner {
-        flex-direction: column;
-        align-items: flex-start;
-        text-align: left;
-      }
-      .hero-text h1 { font-size: 1.45rem; }
-      .hero-text p { font-size: 0.82rem; }
-      .hero-icon { font-size: 2.5rem; align-self: flex-end; }
-      .fy-signals-wrap { padding: 0 1rem; }
-      .pref-wrap { padding: 0 1rem; margin-top: 1rem; }
-      .pref-bar { gap: 0.35rem; }
-      .pref-tag { font-size: 0.72rem; padding: 0.35rem 0.65rem; }
-      .fy-layout { margin: 1rem auto; padding: 0 1rem 2rem; }
-      .section-header {
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin-top: 1.5rem;
-      }
+      .fy-hero { padding: 40px 20px; }
+      .hero-inner { flex-direction: column; align-items: flex-start; text-align: left; }
+      .hero-text h1 { font-size: 26px; }
+      .hero-icon { align-self: flex-end; }
+      .fy-signals-wrap { padding: 0 20px; }
+      .pref-wrap { padding: 0 20px; margin-top: 16px; }
+      .fy-layout { padding: 0 20px 40px; margin-top: 16px; }
+      .section-header { flex-wrap: wrap; gap: 12px; margin-top: 32px; }
       .section-link { margin-left: auto; }
-      .item-grid {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 0.85rem;
-      }
-      .empty-state { padding: 2.5rem 1rem; }
-      .prompt-card { padding: 1.5rem 1rem; }
+      .item-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
     }
-
     @media (max-width: 480px) {
-      .item-grid {
-        grid-template-columns: 1fr;
-      }
-      .card-footer {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.5rem;
-      }
-      .trade-btn-sm {
-        width: 100%;
-        text-align: center;
-        padding: 0.45rem 0.75rem;
-        min-height: 44px;
-      }
-      .seller-rating { margin-left: 0; }
+      .item-grid { grid-template-columns: 1fr; }
+      .card-footer { flex-direction: column; align-items: stretch; gap: 12px; }
+      .trade-btn-sm { width: 100%; text-align: center; padding: 10px; }
     }
   </style>
 </head>
@@ -484,14 +436,14 @@
 
 <!-- NAV -->
 <nav class="navbar">
-  <a href="browse.html" class="logo"><span>Hobbie</span>Trades</a>
+  <a href="browse.html" class="logo">HobbieTrades</a>
   <div class="nav-search">
-    <span class="search-icon">🔍</span>
+    <i data-feather="search" class="search-icon"></i>
     <input type="text" placeholder="Search items to trade..."/>
   </div>
   <div class="nav-links">
     <a href="browse.html"         class="nav-link">Browse</a>
-    <a href="for-you.html"        class="nav-link active">✨ For You</a>
+    <a href="for-you.html"        class="nav-link active">For You</a>
     <a href="messages.html"       class="nav-link">Messages</a>
     <a href="create-listing.html" class="nav-link">+ List Item</a>
     <a href="profile.html"        class="nav-avatar" id="nav-avatar">?</a>
@@ -502,10 +454,10 @@
 <div class="fy-hero">
   <div class="hero-inner">
     <div class="hero-text">
-      <h1>For You ✨</h1>
-      <p>Personal picks from your listings, your “looking for” lines, and items you’ve traded toward—so a trade aimed at a Switch can surface more handhelds and gaming gear like it.</p>
+      <h1>For You</h1>
+      <p>Personal picks from your listings, your "looking for" lines, and items you've traded toward.</p>
     </div>
-    <div class="hero-icon">🎯</div>
+    <div class="hero-icon"><i data-feather="crosshair"></i></div>
   </div>
 </div>
 
@@ -513,13 +465,14 @@
 <div class="pref-wrap">
   <div class="pref-bar">
     <span class="pref-label">Filter:</span>
-    <div class="pref-tag active" onclick="filterPref(this,'all')">🌐 All</div>
-    <div class="pref-tag" onclick="filterPref(this,'Cameras')">📷 Cameras</div>
-    <div class="pref-tag" onclick="filterPref(this,'Instruments')">🎸 Instruments</div>
+    <div class="pref-tag active" onclick="filterPref(this,'all')"><i data-feather="grid"></i> All</div>
+    <div class="pref-tag" onclick="filterPref(this,'Cameras')"><i data-feather="camera"></i> Cameras</div>
+    <div class="pref-tag" onclick="filterPref(this,'Instruments')"><i data-feather="music"></i> Instruments</div>
   </div>
 </div>
 
 <div class="fy-signals-wrap" id="trade-signals-wrap" style="display:none" aria-live="polite">
+  <div class="fy-signals-label">Matching Signals</div>
   <div class="fy-signals-chips" id="trade-signals-chips"></div>
 </div>
 
@@ -529,21 +482,21 @@
   <!-- TOP MATCHES -->
   <div class="section-header">
     <div class="section-title">
-      🔥 Picked for you
-      <span class="section-count" id="match-count">—</span>
+      <i data-feather="trending-up" style="color:var(--brand)"></i> Picked for you
+      <span class="section-count" id="match-count">0</span>
       <div class="section-sub">Ranked using listings, wish text, and the items you wanted in past trades.</div>
     </div>
-    <a href="browse.html" class="section-link">Browse all →</a>
+    <a href="browse.html" class="section-link">Browse all <i data-feather="arrow-right"></i></a>
   </div>
   <div class="item-grid" id="match-grid"></div>
 
   <!-- NEW ITEMS -->
   <div class="section-header">
     <div class="section-title">
-      🆕 New on HobbieTrades
-      <span class="section-count" id="new-count">—</span>
+      <i data-feather="clock" style="color:var(--text-secondary)"></i> New on HobbieTrades
+      <span class="section-count" id="new-count">0</span>
     </div>
-    <a href="browse.html" class="section-link">See all →</a>
+    <a href="browse.html" class="section-link">See all <i data-feather="arrow-right"></i></a>
   </div>
   <div class="item-grid" id="new-grid"></div>
 
@@ -551,6 +504,8 @@
 
 <script src="js/api.js"></script>
 <script>
+  feather.replace();
+
   const API = window.HobbieAPI ? window.HobbieAPI.baseUrl : (
     window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
       ? 'http://localhost:8080'
@@ -558,20 +513,8 @@
   );
   if (window.HobbieAPI) window.HobbieAPI.wakeBackend();
 
-  const CAT_EMOJI = {
-    Cameras:'📷', Instruments:'🎸', Gaming:'🎮',
-    Sports:'🛹', Art:'🎨', Craft:'🧵', Other:'📦'
-  };
-  const CAT_BG = {
-    Cameras:'#F0F4FF', Instruments:'#EAF3DE', Gaming:'#FAEEDA',
-    Sports:'#E6F1FB', Art:'#FAECE7', Craft:'#FBEAF0', Other:'#F5F5F5'
-  };
-  const COND_COLOR = {
-    'Like New':'#1D9E75', 'Good':'#639922', 'Fair':'#EF9F27', 'Worn':'#E24B4A'
-  };
-  const COND_CLASS = {
-    'Like New':'cond-like-new', 'Good':'cond-good', 'Fair':'cond-fair', 'Worn':'cond-worn'
-  };
+  const CAT_ICON = { Cameras:'camera', Instruments:'music', Other:'box' };
+  const COND_COLOR = { 'Like New':'var(--green)', 'Good':'var(--brand)', 'Fair':'var(--orange)', 'Worn':'var(--red)' };
   const AVATAR_COLORS = ['#AFA9EC','#9FE1CB','#F5C4B3','#85B7EB','#F7D08A','#B5EAD7','#C7CEEA'];
 
   // ── State ──────────────────────────────────────────────────────────────────
@@ -600,7 +543,7 @@
       <div class="skeleton-card">
         <div class="skel skel-img"></div>
         <div class="skel-body">
-          <div class="skel skel-line skel-w40" style="margin-bottom:6px"></div>
+          <div class="skel skel-line skel-w40" style="margin-bottom:8px"></div>
           <div class="skel skel-line skel-w80"></div>
           <div class="skel skel-line skel-w55"></div>
         </div>
@@ -612,49 +555,43 @@
   document.getElementById('new-grid').innerHTML   = skeletonHTML(4);
 
   // ── Render one card ────────────────────────────────────────────────────────
-  // matchPercent + matchReason are optional (omit for new-items section)
   function renderCard(item, matchPercent, matchReason) {
-    const emoji    = CAT_EMOJI[item.category]  || '📦';
-    const bg       = CAT_BG[item.category]     || '#F5F5F5';
-    const cond     = item.conditionLabel        || '';
+    const icon     = CAT_ICON[item.category]  || 'box';
+    const cond     = item.conditionLabel || '';
     const val      = parseFloat(item.estimatedValue) || 0;
     const seller   = item.user ? item.user.name : 'Unknown';
     const initials = getInitials(seller);
     const color    = avatarColor(item.user ? item.user.id : 0);
     const rating   = item.user ? (parseFloat(item.user.rating) || 0).toFixed(1) : '0.0';
 
-    // Match % badge (top-right) — only for matched cards
     let matchBadgeHtml = '';
     if (matchPercent !== undefined) {
       const cls = matchPercent >= 70 ? 'high' : matchPercent >= 40 ? 'medium' : 'low';
-      matchBadgeHtml = `<div class="match-badge ${cls}">${matchPercent}% match</div>`;
+      matchBadgeHtml = `<div class="match-badge ${cls}">${matchPercent}% Match</div>`;
     }
 
-    // Condition badge (bottom-right of image)
     const condBadge = cond
-      ? `<div class="card-cond-badge ${COND_CLASS[cond] || ''}">${cond}</div>`
+      ? `<div class="card-cond-badge">${cond}</div>`
       : '';
 
-    // Image or emoji placeholder
     const imgSrc = window.HobbieAPI
       ? window.HobbieAPI.resolveImageUrl(item.photoUrl, item.id)
       : (item.photoUrl
           ? `${API}${item.photoUrl}`
           : (item.id ? `${API}/api/items/${item.id}/photo` : null));
-    const imgHtml = imgSrc
-      ? `<img src="${imgSrc}" alt="${item.title}" loading="lazy"
-             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
-         <div class="card-emoji-placeholder" style="display:none;background:${bg}">${emoji}</div>`
-      : `<div class="card-emoji-placeholder" style="background:${bg}">${emoji}</div>`;
 
-    // Match reason chip
+    const imgHtml = imgSrc
+      ? `<img src="${imgSrc}" alt="${item.title}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+         <div class="card-placeholder-icon" style="display:none"><i data-feather="${icon}"></i></div>`
+      : `<div class="card-placeholder-icon"><i data-feather="${icon}"></i></div>`;
+
     const reasonHtml = matchReason
-      ? `<div class="match-reason-chip">🎯 ${matchReason}</div>`
+      ? `<div class="match-reason-chip"><i data-feather="target"></i> <span>${matchReason}</span></div>`
       : '';
 
     return `
       <a class="item-card fade-in" href="item-detail.html?id=${item.id}">
-        <div class="card-img" style="${imgSrc ? '' : `background:${bg}`}">
+        <div class="card-img">
           ${imgHtml}
           <div class="card-trade-badge">TRADE</div>
           ${matchBadgeHtml}
@@ -664,22 +601,21 @@
           <div class="card-category">${item.category || 'General'}</div>
           <div class="card-title">${item.title || 'Untitled'}</div>
           <div class="card-meta">
-            <span class="cdot" style="background:${COND_COLOR[cond] || '#888'}"></span>
+            <span class="cdot" style="background:${COND_COLOR[cond] || 'var(--text-tertiary)'}"></span>
             ${cond || 'Unknown'}
           </div>
-          ${item.lookingFor ? `<div class="card-location">Wants: ${item.lookingFor}</div>` : ''}
-          <div class="card-location">📍 ${item.location || 'Philippines'}</div>
+          ${item.lookingFor ? `<div class="card-location" style="color:var(--text);margin-top:4px"><i data-feather="refresh-cw"></i> Wants: ${item.lookingFor}</div>` : ''}
+          <div class="card-location"><i data-feather="map-pin"></i> ${item.location || 'Philippines'}</div>
           ${reasonHtml}
           <div class="card-seller">
             <div class="seller-ava" style="background:${color}">${initials}</div>
             <div class="seller-name">${seller}</div>
-            <div class="seller-rating">★ ${rating}</div>
+            <div class="seller-rating"><i data-feather="star"></i> ${rating}</div>
           </div>
         </div>
         <div class="card-footer">
-          <div class="card-value">${formatPeso(val)} <span>est.</span></div>
-          <button class="trade-btn-sm"
-            onclick="event.preventDefault();goTrade(${item.id})">Trade ⇄</button>
+          <div class="card-value">${formatPeso(val)} <span>Value</span></div>
+          <button class="trade-btn-sm" onclick="event.preventDefault();goTrade(${item.id})">Trade</button>
         </div>
       </a>`;
   }
@@ -689,7 +625,7 @@
     if (!loggedInUserId) {
       document.getElementById('match-grid').innerHTML = `
         <div class="prompt-card">
-          <h3>🔐 Log in to see your matches</h3>
+          <h3>Log in to see your matches</h3>
           <p>Sign in to get personalized trade recommendations based on your listings.</p>
           <a href="index.html" class="btn btn-primary">Log in</a>
         </div>`;
@@ -700,54 +636,47 @@
     fetch(`${API}/api/trades/matches?userId=${loggedInUserId}&limit=20`)
       .then(res => { if (!res.ok) throw new Error(); return res.json(); })
       .then(data => {
-        // data shape: [{ item: {...}, matchPercent: 85, matchReason: "..." }]
         allMatches = data;
         renderMatchGrid();
       })
       .catch(() => {
         document.getElementById('match-grid').innerHTML = `
           <div class="empty-state">
-            <div class="empty-icon">⚠️</div>
+            <div class="empty-icon"><i data-feather="alert-triangle"></i></div>
             <h3>Could not load matches</h3>
-            <p>Make sure your Spring Boot server is running on port 8080.</p>
+            <p>Make sure your server is running.</p>
           </div>`;
+        feather.replace();
         document.getElementById('match-count').textContent = '0';
       });
   }
 
   function renderMatchGrid() {
     const grid = document.getElementById('match-grid');
-
-    const visible = activeFilter === 'all'
-      ? allMatches
-      : allMatches.filter(m => m.item && m.item.category === activeFilter);
-
+    const visible = activeFilter === 'all' ? allMatches : allMatches.filter(m => m.item && m.item.category === activeFilter);
     document.getElementById('match-count').textContent = visible.length;
 
     if (allMatches.length === 0) {
-      // User hasn't listed anything yet
       grid.innerHTML = `
         <div class="prompt-card">
-          <h3>📦 List an item to get matches!</h3>
+          <h3>List an item to get matches</h3>
           <p>Once you list items, we'll find the best trades for you automatically.</p>
           <a href="create-listing.html" class="btn btn-primary">List your first item</a>
         </div>`;
       return;
     }
-
     if (visible.length === 0) {
       grid.innerHTML = `
         <div class="empty-state">
-          <div class="empty-icon">🔍</div>
+          <div class="empty-icon"><i data-feather="search"></i></div>
           <h3>No matches in this category</h3>
           <p>Try a different filter or list more items to improve your matches.</p>
         </div>`;
+      feather.replace();
       return;
     }
-
-    grid.innerHTML = visible
-      .map(m => renderCard(m.item, m.matchPercent, m.matchReason))
-      .join('');
+    grid.innerHTML = visible.map(m => renderCard(m.item, m.matchPercent, m.matchReason)).join('');
+    feather.replace();
   }
 
   // ── Load new items: GET /api/items ─────────────────────────────────────────
@@ -755,7 +684,6 @@
     fetch(`${API}/api/items`)
       .then(res => { if (!res.ok) throw new Error(); return res.json(); })
       .then(items => {
-        // Exclude current user's own items, sort newest first, cap at 8
         const others = items
           .filter(item => !loggedInUserId || !item.user || item.user.id !== loggedInUserId)
           .sort((a, b) => b.id - a.id)
@@ -765,19 +693,21 @@
 
         document.getElementById('new-grid').innerHTML = others.length === 0
           ? `<div class="empty-state">
-               <div class="empty-icon">📭</div>
+               <div class="empty-icon"><i data-feather="inbox"></i></div>
                <h3>No items yet</h3>
                <p>Be the first to list something!</p>
              </div>`
           : others.map(item => renderCard(item)).join('');
+        feather.replace();
       })
       .catch(() => {
         document.getElementById('new-grid').innerHTML = `
           <div class="empty-state">
-            <div class="empty-icon">⚠️</div>
+            <div class="empty-icon"><i data-feather="alert-triangle"></i></div>
             <h3>Could not load items</h3>
-            <p>Make sure your Spring Boot server is running on port 8080.</p>
+            <p>Make sure your server is running.</p>
           </div>`;
+        feather.replace();
       });
   }
 
@@ -795,29 +725,24 @@
     window.location.href = `item-detail.html?id=${id}`;
   }
 
-  // ── Trade history signals (hero chips) ───────────────────────────────────────
+  // ── Trade history signals ───────────────────────────────────────
   async function loadTradeSignals() {
     const wrap = document.getElementById('trade-signals-wrap');
     const chipsEl = document.getElementById('trade-signals-chips');
-    if (!loggedInUserId) {
-      wrap.style.display = 'none';
-      return;
-    }
+    if (!loggedInUserId) { wrap.style.display = 'none'; return; }
     try {
       const res = await fetch(`${API}/api/trades/for-you-signals?userId=${loggedInUserId}`);
       if (!res.ok) throw new Error();
       const data = await res.json();
       const cats = data.wantedCategories || [];
       const kws = (data.topKeywords || []).map(String);
-      if (cats.length === 0 && kws.length === 0) {
-        wrap.style.display = 'none';
-        return;
-      }
+      if (cats.length === 0 && kws.length === 0) { wrap.style.display = 'none'; return; }
+      
       const catLower = new Set(cats.map(c => String(c).toLowerCase()));
       const html = [];
       cats.forEach(c => {
-        const em = CAT_EMOJI[c] || '📦';
-        html.push(`<span class="signal-chip cat">${em} ${c}</span>`);
+        const icon = CAT_ICON[c] || 'box';
+        html.push(`<span class="signal-chip cat"><i data-feather="${icon}"></i> ${c}</span>`);
       });
       let added = html.length;
       for (const k of kws) {
@@ -828,6 +753,7 @@
       }
       chipsEl.innerHTML = html.join('');
       wrap.style.display = 'block';
+      feather.replace();
     } catch {
       wrap.style.display = 'none';
     }

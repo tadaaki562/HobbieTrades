@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>HobbieTrades — Messages</title>
   <link rel="stylesheet" href="style.css"/>
+  <script src="https://unpkg.com/feather-icons"></script>
   <style>
     .messages-layout {
       display: grid;
-      grid-template-columns: 300px 1fr;
-      height: calc(100vh - 60px);
+      grid-template-columns: 320px 1fr;
+      height: calc(100vh - 64px);
     }
 
     /* ── SIDEBAR ──────────────────────────────────────────── */
@@ -21,7 +22,7 @@
     }
 
     .chat-sidebar-header {
-      padding: 20px 16px 14px;
+      padding: 24px 20px 16px;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
@@ -29,10 +30,14 @@
     }
 
     .chat-sidebar-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 17px;
+      font-size: 18px;
       font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
+    .chat-sidebar-title i { width: 18px; height: 18px; color: var(--text-secondary); }
 
     .sidebar-badge {
       background: var(--brand);
@@ -49,945 +54,643 @@
       display: flex;
       gap: 12px;
       align-items: flex-start;
-      padding: 14px 16px;
+      padding: 16px 20px;
       border-bottom: 1px solid var(--border-light);
       cursor: pointer;
-      transition: background 0.15s;
+      transition: all 0.2s;
     }
     .chat-item:hover  { background: var(--bg); }
     .chat-item.active { background: var(--brand-light); border-left: 3px solid var(--brand); }
 
     .chat-ava {
-      width: 40px; height: 40px;
+      width: 44px; height: 44px;
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 700;
+      font-size: 14px; font-weight: 700;
       color: white;
       flex-shrink: 0;
     }
 
     .chat-info { flex: 1; min-width: 0; }
-    .chat-name    { font-size: 13px; font-weight: 600; color: var(--text); }
-    .chat-preview { font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+    .chat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+    .chat-name    { font-size: 14px; font-weight: 600; color: var(--text); }
     .chat-time    { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; }
+    .chat-preview { font-size: 13px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     /* Status pills */
     .status-pill {
       font-size: 10px;
       font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 10px;
+      padding: 3px 8px;
+      border-radius: 6px;
       white-space: nowrap;
       display: inline-block;
-      margin-top: 5px;
+      margin-top: 6px;
     }
-    .status-pending           { background: #FEF3E2; color: #633806; }
-    .status-accepted          { background: #EAF3DE; color: #3B6D11; }
-    .status-awaiting-confirm  { background: #E6F1FB; color: #0C447C; }
-    .status-completed         { background: #EAF3DE; color: #085041; }
-    .status-declined          { background: #FEE2E2; color: #7F1D1D; }
+    .status-pending           { background: var(--orange-light); color: var(--orange); border: 1px solid #FDE68A; }
+    .status-accepted          { background: var(--brand-light); color: var(--brand-dark); border: 1px solid var(--brand-mid); }
+    .status-awaiting-confirm  { background: var(--brand-light); color: var(--brand-dark); border: 1px solid var(--brand-mid); }
+    .status-completed         { background: var(--green-light); color: var(--green); border: 1px solid #A7F3D0; }
+    .status-declined          { background: var(--red-light); color: var(--red); border: 1px solid #FECACA; }
 
     .sidebar-empty {
       padding: 40px 20px;
       text-align: center;
-      font-size: 13px;
+      font-size: 14px;
       color: var(--text-secondary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
     }
+    .sidebar-empty i { width: 32px; height: 32px; color: var(--border); }
 
     /* ── MAIN CHAT ────────────────────────────────────────── */
     .chat-main {
       display: flex;
       flex-direction: column;
       background: var(--bg);
-      flex: 1;
-      min-height: 0;
-      overflow: hidden;
+      position: relative;
     }
 
-    .chat-header {
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
-      padding: 14px 20px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
+    .chat-empty {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: var(--text-tertiary);
     }
-    .chat-header-name { font-size: 14px; font-weight: 600; color: var(--text); }
-    .chat-header-sub  { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+    .chat-empty i { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5; }
+
+    .chat-header-main {
+      background: var(--white);
+      padding: 16px 32px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+      z-index: 10;
+    }
+
+    .chat-target-user {
+      display: flex; align-items: center; gap: 12px;
+      text-decoration: none; color: inherit;
+    }
+    .chat-target-user:hover .chat-target-name { color: var(--brand); }
+    .chat-target-ava {
+      width: 40px; height: 40px; border-radius: 50%;
+      color: white; font-size: 13px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .chat-target-name { font-size: 16px; font-weight: 700; transition: color 0.2s; }
+    .chat-target-meta { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; }
+    .chat-target-meta i { width: 12px; height: 12px; fill: var(--orange); color: var(--orange); }
+
+    .chat-actions { display: flex; gap: 8px; }
 
     .chat-messages {
       flex: 1;
-      min-height: 0;
+      padding: 32px;
       overflow-y: auto;
-      overflow-x: hidden;
-      padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      overscroll-behavior: contain;
+      gap: 24px;
     }
 
-    /* Message rows */
-    .msg-row     { display: flex; flex-direction: column; max-width: 65%; }
-    .msg-row-out { align-self: flex-end; align-items: flex-end; }
-    .msg-row-in  { align-self: flex-start; align-items: flex-start; }
+    .msg-row { display: flex; gap: 12px; max-width: 80%; }
+    .msg-row.me { align-self: flex-end; flex-direction: row-reverse; }
+
+    .msg-ava {
+      width: 32px; height: 32px; border-radius: 50%;
+      color: white; font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
 
     .msg-bubble {
-      padding: 10px 14px;
-      font-size: 13px;
-      border-radius: 12px;
-      line-height: 1.5;
-      word-break: break-word;
-      display: inline-block;
-      max-width: 100%;
-    }
-    .msg-in  { background: var(--white); color: var(--text); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
-    .msg-out { background: var(--brand); color: white; border-bottom-right-radius: 4px; }
-    .msg-time       { font-size: 10px; color: var(--text-tertiary); margin-top: 3px; }
-    .msg-time-right { text-align: right; }
-
-    /* ── TRADE PROPOSAL BUBBLE ───────────────────────────── */
-    .trade-bubble {
-      background: var(--white);
-      border: 1.5px solid var(--brand-mid);
-      border-radius: var(--radius-md);
-      padding: 16px;
-      align-self: flex-start;
-      max-width: 80%;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .trade-bubble-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-    .trade-bubble-title { font-size: 12px; font-weight: 700; color: var(--brand-dark); }
-
-    .trade-items-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--bg);
-      border-radius: var(--radius-sm);
-      padding: 10px 12px;
-      margin-bottom: 12px;
-    }
-    .trade-item-chip {
-      flex: 1;
-      text-align: center;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text);
-    }
-    .trade-item-chip-emoji { font-size: 20px; display: block; margin-bottom: 3px; }
-    .trade-item-chip-val { font-size: 11px; color: var(--text-secondary); font-weight: 400; }
-    .trade-swap-icon { font-size: 16px; color: var(--text-tertiary); }
-
-    .trade-actions { display: flex; gap: 8px; }
-    .trade-btn {
-      padding: 7px 14px;
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: 'DM Sans', sans-serif;
-    }
-    .trade-btn-accept  { background: var(--brand); color: white; }
-    .trade-btn-accept:hover { background: var(--brand-dark); }
-    .trade-btn-decline { background: #FEE2E2; color: #7F1D1D; }
-    .trade-btn-decline:hover { background: #FECACA; }
-
-    .trade-status-label {
-      font-size: 12px;
-      font-weight: 600;
-      padding: 5px 12px;
-      border-radius: var(--radius-sm);
-      display: inline-block;
-    }
-
-    /* ── STATUS TIMELINE ─────────────────────────────────── */
-    .status-timeline {
       background: var(--white);
       border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 14px 16px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.5;
+      box-shadow: var(--shadow-sm);
+    }
+    .msg-row.me .msg-bubble {
+      background: var(--brand);
+      color: white;
+      border: none;
+    }
+    .msg-time {
+      font-size: 11px; color: var(--text-tertiary);
+      margin-top: 6px; text-align: left;
+    }
+    .msg-row.me .msg-time { text-align: right; }
+
+    /* Trade System Message */
+    .msg-sys {
       align-self: center;
-      max-width: 90%;
-      width: 100%;
-      margin: 8px 0;
-    }
-    .timeline-title { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
-    .timeline-steps { display: flex; align-items: center; gap: 0; }
-    .timeline-step {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      flex: 1;
-      position: relative;
-    }
-    .timeline-step:not(:last-child)::after {
-      content: '';
-      position: absolute;
-      top: 12px;
-      left: 50%;
-      width: 100%;
-      height: 2px;
-      background: var(--border);
-      z-index: 0;
-    }
-    .timeline-step.done:not(:last-child)::after { background: var(--brand); }
-    .timeline-dot {
-      width: 24px; height: 24px;
-      border-radius: 50%;
-      border: 2px solid var(--border);
-      background: var(--white);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-tertiary);
-      position: relative;
-      z-index: 1;
-    }
-    .timeline-step.done .timeline-dot { background: var(--brand); border-color: var(--brand); color: white; }
-    .timeline-step.current .timeline-dot { border-color: var(--brand); color: var(--brand); }
-    .timeline-label { font-size: 10px; color: var(--text-tertiary); margin-top: 5px; text-align: center; }
-    .timeline-step.done .timeline-label { color: var(--brand); font-weight: 600; }
-    .timeline-step.current .timeline-label { color: var(--text); font-weight: 600; }
-
-    /* ── CONFIRM BANNER ──────────────────────────────────── */
-    .confirm-banner {
-      background: #EAF3DE;
-      border: 1.5px solid #97C459;
+      background: var(--brand-light);
+      border: 1px solid var(--brand-mid);
       border-radius: var(--radius-md);
-      padding: 14px 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin: 0 20px 12px;
+      padding: 16px 24px;
+      max-width: 90%;
+      width: 500px;
+      margin: 12px 0;
     }
-    .confirm-banner-text strong { display: block; font-size: 13px; color: #3B6D11; margin-bottom: 2px; }
-    .confirm-banner-text span   { font-size: 12px; color: #3B6D11; opacity: 0.85; }
+    .sys-header { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--brand-dark); margin-bottom: 12px; }
+    .sys-header i { width: 16px; height: 16px; }
+    .trade-box {
+      background: var(--white);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .tb-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .tb-row:last-child { margin-bottom: 0; }
+    .tb-dir { font-size: 12px; font-weight: 600; color: var(--text-tertiary); width: 40px; text-align: right; }
+    .tb-item { display: flex; align-items: center; gap: 8px; flex: 1; font-size: 14px; font-weight: 600; color: var(--text); }
+    .tb-item img { width: 32px; height: 32px; border-radius: 4px; object-fit: cover; }
+    .tb-item-icon { width: 32px; height: 32px; border-radius: 4px; background: var(--bg); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); }
+    .tb-cash { font-size: 13px; font-weight: 600; color: var(--green); }
 
-    /* ── INPUT BAR ───────────────────────────────────────── */
-    .chat-input-bar {
-      flex-shrink: 0;
+    .sys-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+
+    /* Input area */
+    .chat-input-area {
       background: var(--white);
       border-top: 1px solid var(--border);
-      padding: 12px 16px;
-      padding-bottom: max(12px, env(safe-area-inset-bottom));
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      position: sticky;
-      bottom: 0;
-      z-index: 20;
-      box-shadow: 0 -4px 16px rgba(26, 16, 64, 0.06);
+      padding: 16px 32px;
+    }
+    .chat-form {
+      display: flex; gap: 12px;
     }
     .chat-input {
       flex: 1;
-      background: var(--bg);
-      border: 1.5px solid var(--border);
-      border-radius: 24px;
-      padding: 9px 16px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 12px 20px;
+      font-family: inherit;
+      font-size: 14px;
       outline: none;
-      transition: border-color 0.2s;
+      transition: all 0.2s;
     }
-    .chat-input:focus { border-color: var(--brand-mid); }
-    .send-btn {
-      width: 36px; height: 36px;
+    .chat-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-glow); }
+    .chat-send {
+      width: 44px; height: 44px;
       border-radius: 50%;
       background: var(--brand);
       color: white;
       border: none;
       display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
       cursor: pointer;
-      flex-shrink: 0;
       transition: all 0.2s;
     }
-    .send-btn:hover { background: var(--brand-dark); transform: scale(1.05); }
+    .chat-send:hover { background: var(--brand-dark); transform: scale(1.05); }
 
-    /* ── EMPTY STATE ─────────────────────────────────────── */
-    .chat-empty {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-secondary);
-      gap: 12px;
-      font-size: 13px;
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px);
+      z-index: 1000; align-items: center; justify-content: center;
     }
-    .chat-empty-icon { font-size: 40px; }
-
-    .chat-notice {
-      margin: 0 20px 10px;
-      padding: 10px 12px;
-      border-radius: var(--radius-sm);
-      font-size: 13px;
-      line-height: 1.5;
-      display: none;
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--white); border-radius: var(--radius-lg); width: 440px; max-width: 90%;
+      padding: 24px; position: relative; box-shadow: var(--shadow-lg);
     }
-    .chat-notice.show { display: block; }
-    .chat-notice.err { background: #FEE8E8; border: 1px solid #F9BBBB; color: #7F1D1D; }
-    .chat-notice.ok { background: #EAF3DE; border: 1px solid #97C459; color: #3B6D11; }
-    .chat-notice.neutral { background: var(--white); border: 1px solid var(--border); color: var(--text); }
-
-    .chat-header-actions {
-      margin-left: auto;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .header-text-btn {
-      font-size: 12px;
-      font-weight: 600;
-      color: #991B1B;
-      background: none;
-      border: none;
-      cursor: pointer;
-      text-decoration: underline;
-      font-family: inherit;
-      padding: 0;
-    }
-    .header-text-btn:hover { color: #7F1D1D; }
+    .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .modal-desc { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.5; }
 
     @media (max-width: 768px) {
-      body.messages-body {
-        min-height: 100dvh;
-        display: flex;
-        flex-direction: column;
-        overflow-x: hidden;
-      }
-      body.messages-body .navbar {
-        flex-shrink: 0;
-      }
-      .messages-layout {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        min-height: 0;
-        height: auto;
-      }
-      .chat-sidebar {
-        flex: 0 0 auto;
-        max-height: 42vh;
-        min-height: 140px;
-        border-right: none;
-        border-bottom: 1px solid var(--border);
-      }
-      .chat-list {
-        max-height: 36vh;
-      }
-      .chat-main {
-        flex: 1;
-        min-height: 0;
-        overflow: hidden;
-      }
-      .chat-header {
-        flex-wrap: wrap;
-        padding: 12px;
-        gap: 8px;
-      }
-      .chat-header-actions {
-        margin-left: 0;
-        width: 100%;
-        justify-content: flex-end;
-      }
-      .chat-messages {
-        padding: 12px;
-        gap: 8px;
-      }
-      .msg-row {
-        max-width: 92%;
-      }
-      .trade-bubble {
-        max-width: 100%;
-        padding: 12px;
-      }
-      .trade-items-row {
-        flex-direction: column;
-        gap: 8px;
-      }
-      .trade-swap-icon {
-        transform: rotate(90deg);
-      }
-      .trade-actions {
-        flex-direction: column;
-      }
-      .trade-actions .trade-btn {
-        width: 100%;
-        min-height: 44px;
-      }
-      .confirm-banner {
-        flex-direction: column;
-        align-items: stretch;
-        margin: 0 12px 12px;
-        padding: 12px 14px;
-      }
-      .confirm-banner .btn {
-        width: 100%;
-        min-height: 48px;
-      }
-      .chat-input-bar {
-        padding: 10px 12px;
-        padding-bottom: max(10px, env(safe-area-inset-bottom));
-      }
-      .send-btn {
-        width: 44px;
-        height: 44px;
-        min-width: 44px;
-      }
-      .chat-input {
-        font-size: 16px;
-      }
-      .chat-notice {
-        margin: 0 12px 10px;
-      }
-      .status-timeline {
-        margin: 8px 10px;
-        padding: 12px;
-      }
-      .timeline-steps {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 6px 12px;
-      }
-      .timeline-step:not(:last-child)::after {
-        display: none;
-      }
-      .timeline-label {
-        font-size: 9px;
-      }
+      .messages-layout { grid-template-columns: 1fr; height: 100vh; }
+      .chat-sidebar { display: flex; }
+      .chat-main { display: none; position: fixed; inset: 0; z-index: 200; height: 100vh; }
+      .chat-main.active { display: flex; }
+      .chat-header-main { padding: 12px 16px; }
+      .chat-messages { padding: 16px; }
+      .chat-input-area { padding: 12px 16px; }
+      .mobile-back { display: block; border: none; background: transparent; font-size: 20px; margin-right: 12px; }
     }
+    .mobile-back { display: none; }
+    @media (min-width: 769px) { .mobile-back { display: none !important; } }
   </style>
 </head>
-<body class="messages-body">
-  <nav class="navbar">
-    <a href="browse.html" class="logo"><span>Hobbie</span>Trades</a>
-    <div class="nav-search"><span class="search-icon">🔍</span><input type="text" placeholder="Search items to trade..."/></div>
-    <div class="nav-links">
-      <a href="browse.html" class="nav-link">Browse</a>
-      <a href="for-you.html" class="nav-link">✨ For You</a>
-      <a href="create-listing.html" class="nav-link">+ List Item</a>
-      <a href="messages.html" class="nav-link active">Messages</a>
-      <a href="profile.html" class="nav-avatar" id="nav-avatar">?</a>
-    </div>
-  </nav>
+<body>
 
-  <div class="messages-layout">
-    <!-- SIDEBAR -->
-    <div class="chat-sidebar">
-      <div class="chat-sidebar-header">
-        <div class="chat-sidebar-title">Messages</div>
-        <span class="sidebar-badge" id="trade-count" style="display:none">0</span>
-      </div>
-      <div class="chat-list" id="chat-list">
-        <div class="sidebar-empty">Loading trades...</div>
+<nav class="navbar">
+  <a href="browse.html" class="logo">HobbieTrades</a>
+  <div class="nav-links" style="margin-left:auto">
+    <a href="browse.html"        class="nav-link">Browse</a>
+    <a href="for-you.html"       class="nav-link">For You</a>
+    <a href="messages.html"      class="nav-link active">Messages</a>
+    <a href="create-listing.html" class="nav-link">+ List Item</a>
+    <a href="profile.html"       class="nav-avatar" id="nav-avatar">?</a>
+  </div>
+</nav>
+
+<div class="messages-layout">
+  
+  <aside class="chat-sidebar" id="sidebar">
+    <div class="chat-sidebar-header">
+      <div class="chat-sidebar-title"><i data-feather="message-square"></i> Messages</div>
+    </div>
+    <div class="chat-list" id="chat-list">
+      <div class="sidebar-empty">
+        <i data-feather="loader" class="spinner"></i>
+        Loading...
       </div>
     </div>
+  </aside>
 
-    <!-- MAIN -->
-    <div class="chat-main" id="chat-main">
-      <div class="chat-empty">
-        <div class="chat-empty-icon">💬</div>
-        <div>Select a trade to view the conversation</div>
+  <main class="chat-main" id="chat-main">
+    <div class="chat-empty" id="chat-empty">
+      <i data-feather="message-circle"></i>
+      <div>Select a conversation to start trading</div>
+    </div>
+
+    <div id="chat-active" style="display:none; flex-direction:column; height:100%">
+      <div class="chat-header-main">
+        <div style="display:flex;align-items:center">
+          <button class="mobile-back" onclick="closeMobileChat()"><i data-feather="arrow-left"></i></button>
+          <a href="#" class="chat-target-user" id="chat-target-link">
+            <div class="chat-target-ava" id="chat-target-ava">?</div>
+            <div>
+              <div class="chat-target-name" id="chat-target-name">...</div>
+              <div class="chat-target-meta">
+                <i data-feather="star"></i> <span id="chat-target-rating">0.0</span>
+              </div>
+            </div>
+          </a>
+        </div>
+        <div class="chat-actions" id="chat-header-actions">
+          <!-- Propose/Review buttons go here -->
+        </div>
       </div>
+
+      <div class="chat-messages" id="chat-messages"></div>
+
+      <div class="chat-input-area">
+        <form class="chat-form" onsubmit="event.preventDefault(); sendMessage();">
+          <input type="text" class="chat-input" id="msg-input" placeholder="Type a message..." autocomplete="off"/>
+          <button type="submit" class="chat-send"><i data-feather="send"></i></button>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="status-modal">
+  <div class="modal">
+    <div class="modal-title" id="sm-title">Confirm</div>
+    <div class="modal-desc" id="sm-desc">Are you sure?</div>
+    <div style="display:flex;gap:12px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeStatusModal()">Cancel</button>
+      <button class="btn btn-primary" id="sm-btn" onclick="execStatusAction()">Confirm</button>
     </div>
   </div>
+</div>
 
-  <script src="js/api.js"></script>
-  <script>
-    const API = window.HobbieAPI ? window.HobbieAPI.baseUrl : (
-      window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
-        ? 'http://localhost:8080'
-        : 'https://hobbietrades-backend.onrender.com'
-    );
-    if (window.HobbieAPI) window.HobbieAPI.wakeBackend();
+<script src="js/api.js"></script>
+<script>
+  feather.replace();
 
-    // ─── State ────────────────────────────────────────────────────────────────
-    const loggedInUserId   = parseInt(localStorage.getItem('userId')) || null;
-    const loggedInUserName = localStorage.getItem('userName') || 'Me';
-    const params           = new URLSearchParams(window.location.search);
-    document.getElementById('nav-avatar').textContent = loggedInUserName.charAt(0).toUpperCase();
+  const API = window.HobbieAPI ? window.HobbieAPI.baseUrl : (
+    window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:8080'
+      : 'https://hobbietrades-backend.onrender.com'
+  );
+  if (window.HobbieAPI) window.HobbieAPI.wakeBackend();
 
-    const urlTradeId = params.get('tradeId') ? parseInt(params.get('tradeId')) : null;
+  const loggedInUserId = parseInt(localStorage.getItem('userId'), 10);
+  if (!loggedInUserId) window.location.href = 'index.html';
 
-    const AVATAR_COLORS = ['#AFA9EC','#9FE1CB','#F5C4B3','#85B7EB','#F7D08A','#B5EAD7','#C7CEEA'];
-    function avatarColor(id) { return AVATAR_COLORS[(id||0) % AVATAR_COLORS.length]; }
-    function getInitials(name) {
-      if (!name) return '??';
-      return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-    }
-    function getItemDisplayEmoji(title, category) {
-      const t = (title || '').toLowerCase();
-      if ((/\bpiano\b|grand piano|upright piano|digital piano/.test(t)) && !/nintendo/.test(t)) return '🎹';
-      if (/\bcello\b|\bviolin\b|\bviola\b/.test(t)) return '🎻';
-      if (/electric\s*guitar|acoustic\s*guitar|bass\s*guitar|\bguitar\b|\bbass\b(?!ball)/.test(t)) return '🎸';
-      if (/\bdrum\b|cymbal/.test(t)) return '🥁';
-      if (/\bsax|\btrumpet|\btrombone|\bclarinet|\bflute|\boboe|\bbassoon\b/.test(t)) return '🎷';
-      if (/\bmicrophone\b|\bmic\b/.test(t)) return '🎤';
-      if (/\bukulele\b|\bbanjo\b|\bharp\b|\bmandolin\b/.test(t)) return '🪕';
-      if (/canon|nikon|sony\s*alpha|\bcamera\b|\bdslr\b|\blens\b|gopro|mirrorless/.test(t)) return '📷';
-      if (/nintendo|playstation|\bps5\b|\bxbox\b|steam\s*deck|game\s*console/.test(t)) return '🎮';
-      if (/\bbike\b|\bbicycle\b|skate|badminton|tennis|racket/.test(t)) return '🛹';
-      if (/paint|canvas|brush|easel|sketch/.test(t)) return '🎨';
-      if (/sewing|yarn|crochet|knit|craft/.test(t)) return '🧵';
-      const fallback = { Cameras:'📷', Instruments:'🎼', Sports:'⚽', Gaming:'🎮', Art:'🎨', Craft:'🧵', Other:'📦' };
-      return fallback[category] || '📦';
-    }
-    function formatRelativeTime(dateStr) {
-      if (!dateStr) return '';
-      const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
-      if (diff < 60)    return 'Just now';
-      if (diff < 3600)  return `${Math.floor(diff/60)}m ago`;
-      if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
-      return `${Math.floor(diff/86400)}d ago`;
-    }
+  document.getElementById('nav-avatar').textContent = (localStorage.getItem('userName') || '?').charAt(0).toUpperCase();
 
-    // ─── Status helpers ───────────────────────────────────────────────────────
-    function getStatusClass(status) {
-      return { pending:'status-pending', accepted:'status-accepted', completed:'status-completed', declined:'status-declined' }[status] || 'status-pending';
-    }
-    function getStatusLabel(status) {
-      return { pending:'⏳ Pending', accepted:'🤝 Accepted', completed:'✅ Completed', declined:'✗ Declined' }[status] || status;
-    }
+  const AVATAR_COLORS = ['#AFA9EC','#9FE1CB','#F5C4B3','#85B7EB','#F7D08A','#B5EAD7','#C7CEEA'];
+  function colorFor(id) { return AVATAR_COLORS[(id||0) % AVATAR_COLORS.length]; }
+  function getInitials(n) { return (n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+  function formatPeso(v) { return '₱' + Number(v||0).toLocaleString('en-PH'); }
+  function escapeHtml(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
 
-    // ─── Load trades ──────────────────────────────────────────────────────────
-    let allTrades   = [];
-    let activeTrade = null;
+  let threads = [];
+  let activeTargetId = null;
+  let activeTrade = null;
 
-    function loadTrades() {
-      if (!loggedInUserId) {
-        document.getElementById('chat-list').innerHTML =
-          '<div class="sidebar-empty">Please <a href="index.html">log in</a> to see your trades.</div>';
-        return;
-      }
+  async function loadThreads() {
+    try {
+      const res = await fetch(`${API}/api/messages/threads?userId=${loggedInUserId}`);
+      if (!res.ok) throw new Error();
+      threads = await res.json();
+      renderSidebar();
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const preselect = urlParams.get('userId');
+      if (preselect) openChat(parseInt(preselect, 10));
 
-      fetch(`${API}/api/trades/user/${loggedInUserId}`)
-        .then(res => res.json())
-        .then(trades => {
-          allTrades = trades;
-          if (trades.length === 0) {
-            document.getElementById('chat-list').innerHTML =
-              '<div class="sidebar-empty">No trades yet. <a href="browse.html">Browse items</a> to propose one!</div>';
-            return;
-          }
-          const badge = document.getElementById('trade-count');
-          badge.textContent  = trades.length;
-          badge.style.display = 'inline';
-          renderSidebar(trades);
-
-          // Auto-open
-          if (urlTradeId) {
-            const match = trades.find(t => t.id === urlTradeId);
-            if (match) { openTrade(match); return; }
-          }
-          openTrade(trades[0]);
-        })
-        .catch(() => {
-          document.getElementById('chat-list').innerHTML =
-            '<div class="sidebar-empty">Could not load trades. Make sure Spring Boot is running.</div>';
-        });
-    }
-
-    function renderSidebar(trades) {
-      document.getElementById('chat-list').innerHTML = trades.map(trade => {
-        const isProposer = trade.proposer && trade.proposer.id === loggedInUserId;
-        const other      = isProposer ? trade.receiver    : trade.proposer;
-        const theirItem  = isProposer ? trade.requestedItem : trade.offeredItem;
-        const otherName  = other ? other.name : 'Unknown';
-        const color      = avatarColor(other ? other.id : 0);
-        const emoji      = theirItem ? getItemDisplayEmoji(theirItem.title, theirItem.category) : '📦';
-        const preview    = `${isProposer ? 'You offered' : 'Incoming proposal'}: ${emoji} ${theirItem ? theirItem.title : ''}`;
-        const timeStr    = formatRelativeTime(trade.createdAt);
-
-        return `
-          <div class="chat-item" id="trade-item-${trade.id}"
-               onclick="openTrade(allTrades.find(t => t.id === ${trade.id}))">
-            <div class="chat-ava" style="background:${color}">${getInitials(otherName)}</div>
-            <div class="chat-info">
-              <div class="chat-name">${otherName}</div>
-              <div class="chat-preview">${preview}</div>
-              <span class="status-pill ${getStatusClass(trade.status)}">${getStatusLabel(trade.status)}</span>
-            </div>
-            <div class="chat-time">${timeStr}</div>
-          </div>`;
-      }).join('');
-    }
-
-    let removeTradeTarget = null;
-
-    function showChatNotice(kind, html) {
-      const n = document.getElementById('chat-notice');
-      if (!n) return;
-      n.className = 'chat-notice show ' + (kind || 'neutral');
-      n.innerHTML = html;
-    }
-    function clearChatNotice() {
-      const n = document.getElementById('chat-notice');
-      if (!n) return;
-      n.className = 'chat-notice';
-      n.innerHTML = '';
-      removeTradeTarget = null;
-    }
-
-    function promptRemoveTrade(tradeId) {
-      removeTradeTarget = tradeId;
-      showChatNotice('neutral',
-        '<strong>Remove this chat?</strong> It disappears from your inbox (completed or declined trades only). ' +
-        '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">' +
-        '<button type="button" class="trade-btn trade-btn-decline" onclick="executeRemoveTrade()">Remove</button>' +
-        '<button type="button" class="trade-btn" style="background:var(--border);color:var(--text)" onclick="clearChatNotice()">Cancel</button>' +
-        '</div>');
-    }
-
-    function executeRemoveTrade() {
-      if (!removeTradeTarget || !loggedInUserId) return;
-      const tid = removeTradeTarget;
-      clearChatNotice();
-      fetch(`${API}/api/trades/${tid}?userId=${loggedInUserId}`, { method: 'DELETE' })
-        .then(r => r.json())
-        .then(data => {
-          if (!data.success) {
-            showChatNotice('err', data.message || 'Could not remove chat.');
-            return;
-          }
-          allTrades = allTrades.filter(t => t.id !== tid);
-          const badge = document.getElementById('trade-count');
-          if (allTrades.length === 0) {
-            badge.style.display = 'none';
-            document.getElementById('chat-list').innerHTML =
-              '<div class="sidebar-empty">No trades yet. <a href="browse.html">Browse items</a> to propose one!</div>';
-            document.getElementById('chat-main').innerHTML = `
-              <div class="chat-empty">
-                <div class="chat-empty-icon">💬</div>
-                <div>Select a trade to view the conversation</div>
-              </div>`;
-            activeTrade = null;
-            return;
-          }
-          badge.textContent = allTrades.length;
-          renderSidebar(allTrades);
-          openTrade(allTrades[0]);
-        })
-        .catch(() => showChatNotice('err', 'Could not reach the server.'));
-    }
-
-    // ─── Open trade ───────────────────────────────────────────────────────────
-    function openTrade(trade) {
-      if (!trade) return;
-      activeTrade = trade;
-
-      document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
-      const sidebarEl = document.getElementById(`trade-item-${trade.id}`);
-      if (sidebarEl) sidebarEl.classList.add('active');
-
-      const isProposer  = trade.proposer && trade.proposer.id === loggedInUserId;
-      const other       = isProposer ? trade.receiver     : trade.proposer;
-      const myItem      = isProposer ? trade.offeredItem  : trade.requestedItem;
-      const theirItem   = isProposer ? trade.requestedItem : trade.offeredItem;
-      const otherName   = other ? other.name : 'Unknown';
-      const otherColor  = avatarColor(other ? other.id : 0);
-      const otherRating = other ? (other.rating || 0).toFixed(1) : '0.0';
-      const otherTrades = other ? (other.tradeCount || 0) : 0;
-
-      const myEmoji    = myItem    ? getItemDisplayEmoji(myItem.title, myItem.category)    : '📦';
-      const theirEmoji = theirItem ? getItemDisplayEmoji(theirItem.title, theirItem.category) : '📦';
-      const myTitle    = myItem    ? myItem.title    : 'Your item';
-      const theirTitle = theirItem ? theirItem.title : 'Their item';
-      const myValue    = myItem    ? parseFloat(myItem.estimatedValue)    : 0;
-      const theirValue = theirItem ? parseFloat(theirItem.estimatedValue) : 0;
-
-      // Determine what action buttons / labels to show on the trade bubble
-      const canAct = trade.status === 'pending' && !isProposer;
-      let tradeActions = '';
-      if (canAct) {
-        tradeActions = `
-          <div class="trade-actions">
-            <button class="trade-btn trade-btn-accept" onclick="acceptTrade(${trade.id})">✓ Accept trade</button>
-            <button class="trade-btn trade-btn-decline" onclick="declineTrade(${trade.id})">✗ Decline</button>
-          </div>`;
-      } else if (trade.status === 'pending' && isProposer) {
-        tradeActions = `<span class="trade-status-label" style="background:#FEF3E2;color:#633806">⏳ Waiting for response</span>`;
-      } else if (trade.status === 'accepted') {
-        tradeActions = `<span class="trade-status-label" style="background:#EAF3DE;color:#3B6D11">🤝 Accepted — awaiting confirmation</span>`;
-      } else if (trade.status === 'completed') {
-        tradeActions = `<span class="trade-status-label" style="background:#EAF3DE;color:#085041">✅ Trade completed</span>`;
-      } else if (trade.status === 'declined') {
-        tradeActions = `<span class="trade-status-label" style="background:#FEE2E2;color:#7F1D1D">✗ Declined</span>`;
-      }
-
-      // Timeline steps
-      const steps = [
-        { label: 'Proposed',  done: true },
-        { label: 'Accepted',  done: ['accepted','completed'].includes(trade.status) },
-        { label: 'Confirmed', done: trade.status === 'completed' },
-        { label: 'Completed', done: trade.status === 'completed' },
-      ];
-
-      const timelineHtml = `
-        <div class="status-timeline">
-          <div class="timeline-title">Trade progress</div>
-          <div class="timeline-steps">
-            ${steps.map((s, i) => `
-              <div class="timeline-step ${s.done ? 'done' : i === steps.findIndex(x => !x.done) ? 'current' : ''}">
-                <div class="timeline-dot">${s.done ? '✓' : i + 1}</div>
-                <div class="timeline-label">${s.label}</div>
-              </div>`).join('')}
-          </div>
+    } catch (e) {
+      document.getElementById('chat-list').innerHTML = `
+        <div class="sidebar-empty">
+          <i data-feather="alert-triangle"></i>
+          <div>Could not load messages.</div>
         </div>`;
+      feather.replace();
+    }
+  }
 
-      // Confirm banner — shown when accepted
-      const showConfirmBanner = trade.status === 'accepted';
-      const confirmBannerHtml = showConfirmBanner ? `
-        <div class="confirm-banner" id="confirm-banner">
-          <div class="confirm-banner-text">
-            <strong>🤝 Trade accepted! Meet up and exchange items.</strong>
-            <span>Once you've exchanged in person, click "Confirm done" below. Both parties must confirm for the trade to complete and items to be marked as traded.</span>
-          </div>
-          <button class="btn btn-primary btn-sm" onclick="confirmTrade(${trade.id})">Confirm done</button>
-        </div>` : '';
+  function renderSidebar() {
+    const list = document.getElementById('chat-list');
+    if (threads.length === 0) {
+      list.innerHTML = `
+        <div class="sidebar-empty">
+          <i data-feather="inbox"></i>
+          <div>No messages yet.</div>
+        </div>`;
+      feather.replace();
+      return;
+    }
 
-      const canRemoveChat = ['completed', 'declined'].includes(trade.status);
+    list.innerHTML = threads.map(t => {
+      const other = t.otherUser;
+      const ini = getInitials(other.name);
+      const col = colorFor(other.id);
+      const isActive = other.id === activeTargetId;
+      const lm = t.lastMessage;
+      let prev = 'No messages';
+      let time = '';
+      if (lm) {
+        prev = lm.tradeId ? '[Trade Update]' : lm.content;
+        const d = new Date(lm.createdAt);
+        time = d.toLocaleDateString() === new Date().toLocaleDateString()
+          ? d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
+          : d.toLocaleDateString([],{month:'short',day:'numeric'});
+      }
+      
+      let statusHtml = '';
+      if (t.activeTrade) {
+        statusHtml = `<div class="status-pill status-${t.activeTrade.status.toLowerCase()}">${t.activeTrade.status}</div>`;
+      }
 
-      document.getElementById('chat-main').innerHTML = `
-        <div class="chat-header">
-          <div class="chat-ava" style="background:${otherColor};width:38px;height:38px;font-size:13px">${getInitials(otherName)}</div>
-          <div>
-            <div class="chat-header-name">${otherName}</div>
-            <div class="chat-header-sub">★ ${otherRating} · ${otherTrades} trades completed</div>
-          </div>
-          <div class="chat-header-actions">
-            ${canRemoveChat ? `<button type="button" class="header-text-btn" onclick="promptRemoveTrade(${trade.id})">Remove chat</button>` : ''}
-            <span class="status-pill ${getStatusClass(trade.status)}">${getStatusLabel(trade.status)}</span>
-          </div>
-        </div>
-
-        <div id="chat-notice" class="chat-notice"></div>
-
-        <div class="chat-messages" id="chat-messages">
-
-          <!-- Opening message -->
-          <div class="msg-row ${isProposer ? 'msg-row-out' : 'msg-row-in'}">
-            <div class="msg-bubble ${isProposer ? 'msg-out' : 'msg-in'}">
-              Hi! I'm interested in trading for your ${theirTitle}. Would you like to swap?
+      return `
+        <div class="chat-item ${isActive ? 'active' : ''}" onclick="openChat(${other.id})">
+          <div class="chat-ava" style="background:${col}">${ini}</div>
+          <div class="chat-info">
+            <div class="chat-header">
+              <span class="chat-name">${escapeHtml(other.name)}</span>
+              <span class="chat-time">${time}</span>
             </div>
-            <div class="msg-time ${isProposer ? 'msg-time-right' : ''}">${formatRelativeTime(trade.createdAt)}</div>
+            <div class="chat-preview">${escapeHtml(prev)}</div>
+            ${statusHtml}
           </div>
-
-          <!-- Trade proposal bubble -->
-          <div class="trade-bubble">
-            <div class="trade-bubble-header">
-              <div class="trade-bubble-title">🔄 Trade Proposal</div>
-            </div>
-            <div class="trade-items-row">
-              <div class="trade-item-chip">
-                <span class="trade-item-chip-emoji">${myEmoji}</span>
-                ${myTitle}
-                <div class="trade-item-chip-val">~₱${myValue.toLocaleString()}</div>
-              </div>
-              <div class="trade-swap-icon">⇄</div>
-              <div class="trade-item-chip">
-                <span class="trade-item-chip-emoji">${theirEmoji}</span>
-                ${theirTitle}
-                <div class="trade-item-chip-val">~₱${theirValue.toLocaleString()}</div>
-              </div>
-            </div>
-            ${tradeActions}
-          </div>
-
-          <!-- Status timeline -->
-          ${timelineHtml}
-
-          ${trade.status === 'completed' ? `
-          <div style="align-self:center;text-align:center">
-            <div class="msg-bubble" style="background:#EAF3DE;border:1px solid #97C459;color:#3B6D11">
-              ✅ Trade completed! Both items are now marked as traded.
-            </div>
-          </div>` : ''}
-
-        </div>
-
-        ${confirmBannerHtml}
-
-        <div class="chat-input-bar">
-          <input class="chat-input" type="text" placeholder="Type a message..."
-                 id="msg-input" onkeydown="if(event.key==='Enter'){event.preventDefault();sendMessage();}"
-                 onfocus="this.scrollIntoView({block:'nearest',behavior:'instant'})"/>
-          <button class="send-btn" onclick="sendMessage()">↑</button>
         </div>
       `;
+    }).join('');
+    feather.replace();
+  }
 
-      loadMessages(trade.id);
+  async function openChat(targetId) {
+    activeTargetId = targetId;
+    renderSidebar();
+
+    document.getElementById('chat-empty').style.display = 'none';
+    document.getElementById('chat-active').style.display = 'flex';
+    if (window.innerWidth <= 768) {
+      document.getElementById('chat-main').classList.add('active');
     }
 
-    // ─── Trade actions ────────────────────────────────────────────────────────
-    function acceptTrade(tradeId) {
-      fetch(`${API}/api/trades/${tradeId}/accept`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: loggedInUserId })
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            const t = allTrades.find(t => t.id === tradeId);
-            if (t) t.status = 'accepted';
-            renderSidebar(allTrades);
-            openTrade(t);
-          } else showChatNotice('err', data.message || 'Could not accept trade.');
-        })
-        .catch(() => showChatNotice('err', 'Could not reach the server.'));
+    let targetUser = threads.find(t => t.otherUser.id === targetId)?.otherUser;
+    if (!targetUser) {
+      try {
+        const res = await fetch(`${API}/api/users/${targetId}`);
+        if(res.ok) targetUser = await res.json();
+      } catch(e) {}
+    }
+    if(targetUser) {
+      document.getElementById('chat-target-link').href = `profile.html?id=${targetUser.id}`;
+      document.getElementById('chat-target-name').textContent = escapeHtml(targetUser.name);
+      document.getElementById('chat-target-ava').textContent = getInitials(targetUser.name);
+      document.getElementById('chat-target-ava').style.background = colorFor(targetUser.id);
+      document.getElementById('chat-target-rating').textContent = (parseFloat(targetUser.rating)||0).toFixed(1);
     }
 
-    function declineTrade(tradeId) {
-      showChatNotice('neutral',
-        '<strong>Decline this trade?</strong> The other person will see it as declined. ' +
-        '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">' +
-        '<button type="button" class="trade-btn trade-btn-decline" onclick="confirmDeclineTrade(' + tradeId + ')">Decline trade</button>' +
-        '<button type="button" class="trade-btn" style="background:var(--border);color:var(--text)" onclick="clearChatNotice()">Cancel</button>' +
-        '</div>');
-    }
+    activeTrade = threads.find(t => t.otherUser.id === targetId)?.activeTrade;
+    updateHeaderActions(targetId);
 
-    function confirmDeclineTrade(tradeId) {
-      clearChatNotice();
-      fetch(`${API}/api/trades/${tradeId}/decline`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: loggedInUserId })
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            const t = allTrades.find(t => t.id === tradeId);
-            if (t) t.status = 'declined';
-            renderSidebar(allTrades);
-            openTrade(t);
-          } else showChatNotice('err', data.message || 'Could not decline trade.');
-        })
-        .catch(() => showChatNotice('err', 'Could not reach the server.'));
-    }
+    loadMessages();
+  }
 
-    function confirmTrade(tradeId) {
-      if (!loggedInUserId) {
-        showChatNotice('err', 'Please log in first.');
+  function closeMobileChat() {
+    document.getElementById('chat-main').classList.remove('active');
+  }
+
+  function updateHeaderActions(targetId) {
+    const act = document.getElementById('chat-header-actions');
+    if (!activeTrade) {
+      act.innerHTML = `<a href="propose-trade.html?targetUserId=${targetId}" class="btn btn-primary btn-sm"><i data-feather="refresh-cw"></i> Propose Trade</a>`;
+    } else if (activeTrade.status === 'COMPLETED') {
+      act.innerHTML = `<a href="review.html?tradeId=${activeTrade.id}" class="btn btn-outline btn-sm"><i data-feather="star"></i> Leave Review</a>`;
+    } else {
+      act.innerHTML = `<a href="propose-trade.html?targetUserId=${targetId}" class="btn btn-outline btn-sm">View Trade Details</a>`;
+    }
+    feather.replace();
+  }
+
+  async function loadMessages() {
+    const box = document.getElementById('chat-messages');
+    box.innerHTML = `<div style="text-align:center;padding:20px"><span class="spinner"></span></div>`;
+    
+    try {
+      const res = await fetch(`${API}/api/messages?user1Id=${loggedInUserId}&user2Id=${activeTargetId}`);
+      if (!res.ok) throw new Error();
+      const msgs = await res.json();
+      
+      if (msgs.length === 0) {
+        box.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-tertiary)">Say hello to start the conversation!</div>`;
         return;
       }
-      showChatNotice('neutral',
-        '<strong>Confirm meetup done?</strong> Only tap yes after you have exchanged items in person. ' +
-        '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">' +
-        '<button type="button" class="trade-btn trade-btn-accept" onclick="submitConfirmTrade(' + tradeId + ')">Yes, we exchanged items</button>' +
-        '<button type="button" class="trade-btn" style="background:var(--border);color:var(--text)" onclick="clearChatNotice()">Cancel</button>' +
-        '</div>');
+
+      box.innerHTML = msgs.map(m => {
+        const isMe = m.sender.id === loggedInUserId;
+        const d = new Date(m.createdAt);
+        const time = d.toLocaleDateString() === new Date().toLocaleDateString()
+          ? d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
+          : d.toLocaleDateString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+
+        if (m.tradeId && !m.content) return renderSysMessage(m);
+
+        return `
+          <div class="msg-row ${isMe ? 'me' : ''}">
+            <div class="msg-ava" style="background:${colorFor(m.sender.id)}">${getInitials(m.sender.name)}</div>
+            <div>
+              <div class="msg-bubble">${escapeHtml(m.content)}</div>
+              <div class="msg-time">${time}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      feather.replace();
+      box.scrollTop = box.scrollHeight;
+    } catch(e) {
+      box.innerHTML = `<div style="text-align:center;padding:20px;color:var(--red)">Failed to load messages</div>`;
+    }
+  }
+
+  function renderSysMessage(m) {
+    if (!activeTrade) return '';
+    const isReceiver = activeTrade.targetUser.id === loggedInUserId;
+    const isProposer = activeTrade.proposingUser.id === loggedInUserId;
+    
+    let title = 'Trade Update';
+    let bodyHtml = '';
+    let actions = '';
+
+    const iAmSending = isProposer ? activeTrade.proposerItem : activeTrade.targetItem;
+    const iAmReceiving = isProposer ? activeTrade.targetItem : activeTrade.proposerItem;
+    const cashOffered = activeTrade.cashOffered || 0;
+
+    const renderItem = (item) => {
+      if(!item) return `<div class="tb-item"><div class="tb-item-icon"><i data-feather="minus"></i></div><span>Nothing</span></div>`;
+      const url = window.HobbieAPI ? window.HobbieAPI.resolveImageUrl(item.photoUrl, item.id) : (item.photoUrl ? `${API}${item.photoUrl}` : `${API}/api/items/${item.id}/photo`);
+      return `
+        <div class="tb-item">
+          ${url ? `<img src="${url}" onerror="this.style.display='none'"/>` : `<div class="tb-item-icon"><i data-feather="box"></i></div>`}
+          <span>${escapeHtml(item.title)}</span>
+        </div>`;
+    };
+
+    let cashHtml = '';
+    if (cashOffered > 0) {
+      cashHtml = `<div class="tb-row"><div class="tb-dir">Cash</div><div class="tb-item"><span class="tb-cash">+ ${formatPeso(cashOffered)}</span> (from Proposer)</div></div>`;
     }
 
-    function submitConfirmTrade(tradeId) {
-      clearChatNotice();
-      fetch(`${API}/api/trades/${tradeId}/confirm`, {
+    bodyHtml = `
+      <div class="trade-box">
+        <div class="tb-row">
+          <div class="tb-dir">Send</div>
+          ${renderItem(iAmSending)}
+        </div>
+        <div class="tb-row">
+          <div class="tb-dir">Get</div>
+          ${renderItem(iAmReceiving)}
+        </div>
+        ${cashHtml}
+      </div>
+      <div style="font-size:13px;color:var(--text-secondary)">Status: <strong>${activeTrade.status}</strong></div>
+    `;
+
+    if (activeTrade.status === 'PENDING') {
+      title = isProposer ? 'You proposed a trade' : 'New trade proposal';
+      if (isReceiver) {
+        actions = `
+          <button class="btn btn-outline btn-sm" onclick="promptStatusAction('DECLINED')">Decline</button>
+          <button class="btn btn-primary btn-sm" onclick="promptStatusAction('ACCEPTED')">Accept Trade</button>
+        `;
+      } else {
+        actions = `<button class="btn btn-outline btn-sm" onclick="promptStatusAction('DECLINED')">Cancel Proposal</button>`;
+      }
+    } else if (activeTrade.status === 'ACCEPTED') {
+      title = 'Trade Accepted! Time to meet up.';
+      actions = `<button class="btn btn-primary btn-sm" onclick="promptStatusAction('AWAITING_CONFIRM')">Mark as Completed</button>`;
+    } else if (activeTrade.status === 'AWAITING_CONFIRM') {
+      title = 'One party marked as completed';
+      actions = `<button class="btn btn-primary btn-sm" onclick="promptStatusAction('COMPLETED')">Confirm Completion</button>`;
+    } else if (activeTrade.status === 'COMPLETED') {
+      title = 'Trade Completed!';
+      actions = `<a href="review.html?tradeId=${activeTrade.id}" class="btn btn-outline btn-sm">Leave a Review</a>`;
+    } else if (activeTrade.status === 'DECLINED') {
+      title = 'Trade Declined';
+    }
+
+    return `
+      <div class="msg-sys">
+        <div class="sys-header"><i data-feather="refresh-cw"></i> ${title}</div>
+        ${bodyHtml}
+        ${actions ? `<div class="sys-actions">${actions}</div>` : ''}
+      </div>
+    `;
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById('msg-input');
+    const txt = input.value.trim();
+    if (!txt || !activeTargetId) return;
+
+    input.value = '';
+    
+    try {
+      await fetch(`${API}/api/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sender: { id: loggedInUserId },
+          receiver: { id: activeTargetId },
+          content: txt
+        })
+      });
+      loadMessages();
+      loadThreads();
+    } catch(e) {}
+  }
+
+  let pendingAction = null;
+  function promptStatusAction(newStatus) {
+    pendingAction = newStatus;
+    const modal = document.getElementById('status-modal');
+    const title = document.getElementById('sm-title');
+    const desc = document.getElementById('sm-desc');
+    const btn = document.getElementById('sm-btn');
+
+    if (newStatus === 'ACCEPTED') {
+      title.textContent = 'Accept Trade?';
+      desc.textContent = 'You agree to swap items. You can coordinate meetup details in the chat.';
+      btn.textContent = 'Accept Trade';
+      btn.className = 'btn btn-primary';
+    } else if (newStatus === 'DECLINED') {
+      title.textContent = 'Decline Trade?';
+      desc.textContent = 'This will cancel the proposal. You can still chat and propose a different trade later.';
+      btn.textContent = 'Decline Trade';
+      btn.className = 'btn btn-danger';
+    } else if (newStatus === 'AWAITING_CONFIRM') {
+      title.textContent = 'Mark as Completed?';
+      desc.textContent = 'Click this when you have successfully exchanged the items. The other person will need to confirm.';
+      btn.textContent = 'Mark Completed';
+      btn.className = 'btn btn-primary';
+    } else if (newStatus === 'COMPLETED') {
+      title.textContent = 'Confirm Completion?';
+      desc.textContent = 'This will finalize the trade and you will both be able to leave a review.';
+      btn.textContent = 'Finalize Trade';
+      btn.className = 'btn btn-primary';
+    }
+    
+    modal.classList.add('open');
+  }
+
+  function closeStatusModal() {
+    document.getElementById('status-modal').classList.remove('open');
+    pendingAction = null;
+  }
+
+  async function execStatusAction() {
+    if (!pendingAction || !activeTrade) return;
+    const btn = document.getElementById('sm-btn');
+    btn.disabled = true;
+
+    try {
+      await fetch(`${API}/api/trades/${activeTrade.id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: loggedInUserId })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          const t = allTrades.find(t => t.id === tradeId);
-          if (t) t.status = data.status;
-
-          if (data.status === 'completed') {
-            renderSidebar(allTrades);
-            const isProposer = t.proposer && t.proposer.id === loggedInUserId;
-            const other      = isProposer ? t.receiver    : t.proposer;
-            const theirItem  = isProposer ? t.requestedItem : t.offeredItem;
-            const otherName  = other ? other.name : 'Trader';
-            const theirEmoji = theirItem ? getItemDisplayEmoji(theirItem.title, theirItem.category) : '📦';
-
-            window.location.href =
-              `review.html?tradeId=${tradeId}` +
-              `&revieweeId=${other ? other.id : ''}` +
-              `&itemTitle=${encodeURIComponent(theirItem ? theirItem.title : '')}` +
-              `&itemEmoji=${encodeURIComponent(theirEmoji)}` +
-              `&itemValue=${theirItem ? theirItem.estimatedValue : 0}` +
-              `&sellerName=${encodeURIComponent(otherName)}` +
-              `&sellerInitials=${encodeURIComponent(getInitials(otherName))}` +
-              `&sellerColor=${encodeURIComponent(avatarColor(other ? other.id : 0))}` +
-              `&sellerTrades=${other ? other.tradeCount || 0 : 0}`;
-          } else {
-            renderSidebar(allTrades);
-            openTrade(t);
-            setTimeout(() => showChatNotice('ok', 'Your confirmation was saved. Waiting for the other trader to confirm before the trade completes.'), 0);
-          }
-        } else {
-          showChatNotice('err', data.message || 'Could not confirm trade.');
-        }
-      })
-      .catch(() => showChatNotice('err', 'Could not reach the server.'));
+        body: JSON.stringify({ status: pendingAction })
+      });
+      closeStatusModal();
+      await loadThreads();
+      if (activeTargetId) {
+        await openChat(activeTargetId);
+      }
+    } catch(e) {
+      alert('Failed to update status');
+    } finally {
+      btn.disabled = false;
     }
+  }
 
-    // ─── Messages ─────────────────────────────────────────────────────────────
-    function loadMessages(tradeId) {
-      fetch(`${API}/api/messages/trade/${tradeId}`)
-        .then(res => res.json())
-        .then(messages => {
-          const msgs = document.getElementById('chat-messages');
-          if (!msgs) return;
-          msgs.querySelectorAll('.db-message').forEach(el => el.remove());
-          messages.forEach(msg => {
-            const isMe   = msg.sender && msg.sender.id === loggedInUserId;
-            const div    = document.createElement('div');
-            div.className = `db-message msg-row ${isMe ? 'msg-row-out' : 'msg-row-in'}`;
-            div.innerHTML = `
-              <div class="msg-bubble ${isMe ? 'msg-out' : 'msg-in'}">${msg.content}</div>
-              <div class="msg-time ${isMe ? 'msg-time-right' : ''}">${formatRelativeTime(msg.sentAt)}</div>`;
-            msgs.appendChild(div);
-          });
-          scrollMessagesToEnd(false);
-        })
-        .catch(() => {});
-    }
-
-    function scrollMessagesToEnd(smooth) {
-      const msgs = document.getElementById('chat-messages');
-      if (!msgs) return;
-      msgs.scrollTo({ top: msgs.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
-    }
-
-    function sendMessage() {
-      if (!activeTrade) return;
-      const input = document.getElementById('msg-input');
-      if (!input) return;
-      const text = input.value.trim();
-      if (!text) return;
-
-      const msgs = document.getElementById('chat-messages');
-      const div  = document.createElement('div');
-      div.className = 'db-message msg-row msg-row-out';
-      div.innerHTML = `
-        <div class="msg-bubble msg-out">${text}</div>
-        <div class="msg-time msg-time-right">Just now</div>`;
-      msgs.appendChild(div);
-      scrollMessagesToEnd(true);
-      input.value = '';
-      input.focus({ preventScroll: true });
-
-      fetch(`${API}/api/messages`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tradeId: activeTrade.id, senderId: loggedInUserId, content: text })
-      }).catch(() => {});
-    }
-
-    loadTrades();
-  </script>
+  loadThreads();
+</script>
 </body>
 </html>

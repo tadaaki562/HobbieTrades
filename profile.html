@@ -5,812 +5,460 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>HobbieTrades — Profile</title>
   <link rel="stylesheet" href="style.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <script src="https://unpkg.com/feather-icons"></script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     /* ── Cover ── */
     .cover {
-      height: 120px;
-      background: linear-gradient(135deg, #1A1040 0%, #3B2A8C 45%, #6C47D4 75%, #A67CF5 100%);
+      height: 160px;
+      background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand) 100%);
       position: relative; overflow: hidden;
     }
     .cover::before {
       content: '';
       position: absolute; inset: 0;
       background:
-        radial-gradient(ellipse 60% 80% at 80% 50%, rgba(255,255,255,0.07) 0%, transparent 70%),
-        radial-gradient(circle at 20% 80%, rgba(108,71,212,0.5) 0%, transparent 60%);
+        radial-gradient(circle at 20% 80%, rgba(255,255,255,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 50%, rgba(255,255,255,0.04) 0%, transparent 70%);
     }
-    .cover-dot { position: absolute; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.1); }
-    .cover-dot-1 { width: 160px; height: 160px; bottom: -40px; left: 10%; }
-    .cover-dot-2 { width:  80px; height:  80px; top: 20px;    left: 35%; }
-    .cover-dot-3 { width: 220px; height: 220px; top: -80px;   right: 12%; }
 
     /* ── Page wrap ── */
-    .profile-page { max-width: 1000px; margin: 0 auto; padding: 0 24px 80px; }
+    .profile-page { max-width: 1100px; margin: 0 auto; padding: 0 40px 80px; }
 
     /* ── Identity block ── */
     .identity-block {
-      display: flex; align-items: center; gap: 18px;
-      margin-top: 14px; padding-bottom: 20px; flex-wrap: wrap;
+      display: flex; align-items: flex-end; gap: 24px;
+      margin-top: -48px; padding-bottom: 32px; flex-wrap: wrap;
+      position: relative; z-index: 2;
     }
     .big-ava {
-      width: 84px; height: 84px; border-radius: 50%;
-      border: 4px solid #fff;
-      box-shadow: 0 8px 28px rgba(59,42,140,0.28);
+      width: 104px; height: 104px; border-radius: 50%;
+      border: 4px solid var(--white);
+      box-shadow: var(--shadow-md);
       display: flex; align-items: center; justify-content: center;
-      font-family: 'Syne', sans-serif;
-      font-size: 26px; font-weight: 800; color: #fff;
-      flex-shrink: 0; position: relative; z-index: 2;
+      font-size: 32px; font-weight: 700; color: white;
+      flex-shrink: 0; background: var(--brand);
     }
-    .identity-text { flex: 1; min-width: 180px; }
+    .identity-text { flex: 1; min-width: 200px; padding-bottom: 8px; }
     .identity-name {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 24px; font-weight: 600;
-      letter-spacing: 0; line-height: 1.25; margin-bottom: 5px;
-      color: #1A1040;
+      font-size: 28px; font-weight: 800;
+      letter-spacing: -0.02em; margin-bottom: 8px;
+      color: var(--text);
     }
-    .identity-meta { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: #6B6878; }
-    .identity-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .identity-meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: 14px; color: var(--text-secondary); font-weight: 500; }
+    .identity-meta div { display: flex; align-items: center; gap: 6px; }
+    .identity-meta i { width: 14px; height: 14px; }
+    
+    .identity-actions { display: flex; gap: 12px; flex-wrap: wrap; padding-bottom: 8px; }
 
     /* ── Own banner ── */
     .own-banner {
-      background: linear-gradient(90deg, #F0EEFF, #E8F4FF);
-      border: 1px solid #C8BFFF; border-radius: 12px;
-      padding: 12px 18px; font-size: 13px; color: #2D2480;
+      background: var(--brand-light);
+      border: 1px dashed var(--brand-mid);
+      border-radius: var(--radius-md);
+      padding: 16px 20px; font-size: 14px; color: var(--brand-dark);
       display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 24px; gap: 12px; flex-wrap: wrap;
+      margin-bottom: 32px; gap: 16px; flex-wrap: wrap;
     }
+    .own-banner i { width: 18px; height: 18px; }
 
     /* ── Stat strip ── */
     .stat-strip {
       display: grid; grid-template-columns: repeat(4, 1fr);
-      gap: 12px; margin-bottom: 28px;
+      gap: 16px; margin-bottom: 32px;
     }
     .stat-card {
-      background: #fff; border: 1px solid #E8E4DF;
-      border-radius: 14px; padding: 18px 12px 14px;
-      text-align: center; box-shadow: 0 2px 8px rgba(26,16,64,0.05);
-      transition: transform 0.18s, box-shadow 0.18s;
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 24px;
+      text-align: center; box-shadow: var(--shadow-sm);
+      transition: all 0.2s;
     }
-    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,16,64,0.10); }
-    .stat-num { font-size: 26px; line-height: 1; margin-bottom: 4px; }
-    .stat-label { font-size: 11px; color: #6B6878; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border-light); }
+    .stat-num { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; margin-bottom: 8px; color: var(--text); }
+    .stat-label { font-size: 12px; color: var(--text-tertiary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
 
     /* ── Two-col layout ── */
-    .profile-cols { display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: start; }
+    .profile-cols { display: grid; grid-template-columns: 320px 1fr; gap: 32px; align-items: start; }
 
     /* ── Panels ── */
     .panel {
-      background: #fff; border: 1px solid #E8E4DF;
-      border-radius: 16px; padding: 20px 22px;
-      box-shadow: 0 2px 8px rgba(26,16,64,0.05); margin-bottom: 16px;
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 24px;
+      box-shadow: var(--shadow-sm); margin-bottom: 24px;
     }
     .panel-title {
-      font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
-      color: #1A1040; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 16px;
+      font-size: 13px; font-weight: 700;
+      color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 20px;
+      display: flex; align-items: center; gap: 8px;
     }
-    .rating-hero { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
-    .rating-big-num { font-size: 52px; line-height: 1; }
-    .rating-stars-lg { font-size: 17px; color: #F59E0B; margin-bottom: 3px; }
-    .rating-cnt { font-size: 12px; color: #6B6878; }
-    .sub-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid #F0EDE8; }
-    .sub-lbl { font-size: 11px; color: #6B6878; width: 105px; flex-shrink: 0; font-weight: 500; }
-    .sub-track { flex: 1; height: 5px; background: #EDE9F8; border-radius: 99px; overflow: hidden; }
-    .sub-fill  { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #534AB7, #9F7CF5); transition: width 0.8s ease; }
-    .sub-score { font-size: 11px; font-weight: 700; color: #534AB7; width: 26px; text-align: right; }
+    .panel-title i { width: 16px; height: 16px; }
 
-    /* ── Tab bar ── */
-    .tab-bar {
-      display: flex; gap: 2px; background: #F3F1FA;
-      border: 1px solid #E2DCFF; border-radius: 12px; padding: 4px; margin-bottom: 16px;
-    }
-    .tab-btn {
-      flex: 1; padding: 9px 8px; border: none; background: transparent;
-      border-radius: 9px; font-family: 'DM Sans', sans-serif;
-      font-size: 13px; font-weight: 500; color: #6B6878; cursor: pointer;
-      transition: all 0.18s; white-space: nowrap;
-    }
-    .tab-btn.active { background: #fff; color: #534AB7; font-weight: 700; box-shadow: 0 2px 8px rgba(83,74,183,0.12); }
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
+    /* Ratings */
+    .rating-hero { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+    .rating-big-num { font-size: 48px; font-weight: 800; line-height: 1; letter-spacing: -0.02em; color: var(--text); }
+    .rating-stars-lg { color: var(--orange); margin-bottom: 4px; display: flex; gap: 2px; }
+    .rating-stars-lg i { width: 16px; height: 16px; fill: currentColor; }
+    .rating-cnt { font-size: 13px; color: var(--text-tertiary); font-weight: 500; }
+    
+    .sub-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--border-light); }
+    .sub-lbl { font-size: 13px; color: var(--text-secondary); width: 100px; flex-shrink: 0; font-weight: 500; }
+    .sub-track { flex: 1; height: 6px; background: var(--bg); border-radius: 99px; overflow: hidden; }
+    .sub-fill { height: 100%; border-radius: 99px; background: var(--brand); }
+    .sub-val { font-size: 13px; font-weight: 600; color: var(--text); width: 32px; text-align: right; }
 
-    /* ── Listing grid ── */
-    .listings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 14px; }
-    .listing-card {
-      background: #fff; border: 1px solid #E8E4DF;
-      border-radius: 14px; overflow: hidden;
-      transition: transform 0.18s, box-shadow 0.18s;
-    }
-    .listing-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(83,74,183,0.14); }
-    .listing-img {
-      height: 120px; position: relative;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 40px; overflow: hidden;
-    }
-    .listing-img img {
-      position: absolute; inset: 0;
-      width: 100%; height: 100%; object-fit: cover;
-      transition: transform 0.4s;
-    }
-    .listing-card:hover .listing-img img { transform: scale(1.06); }
+    /* Empty state */
+    .p-empty { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
+    .p-empty i { width: 32px; height: 32px; margin-bottom: 12px; color: var(--text-tertiary); }
+    .p-empty div { font-size: 14px; font-weight: 500; }
 
-    /* Condition badge — same keys as browse/item-detail */
-    .cond-badge {
-      position: absolute; top: 7px; left: 7px;
-      font-size: 10px; font-weight: 700;
-      padding: 2px 8px; border-radius: 20px;
-      backdrop-filter: blur(4px); z-index: 1;
+    /* Badges */
+    .badges-flex { display: flex; flex-wrap: wrap; gap: 10px; }
+    .ach-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 12px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 20px; font-size: 13px; font-weight: 500; color: var(--text-secondary);
     }
-    .cond-like-new { background: rgba(230,244,236,0.92); color: #1A6B3C; }
-    .cond-good     { background: rgba(230,240,251,0.92); color: #1A4A8C; }
-    .cond-fair     { background: rgba(254,243,226,0.92); color: #7A4500; }
-    .cond-worn     { background: rgba(254,232,232,0.92); color: #8C1A1A; }
+    .ach-badge i { width: 14px; height: 14px; }
+    .ach-badge.gold { background: var(--orange-light); color: var(--orange); border-color: var(--orange); }
+    .ach-badge.brand { background: var(--brand-light); color: var(--brand); border-color: var(--brand-mid); }
 
-    .listing-body { padding: 10px 12px 6px; }
-    .listing-title { font-size: 13px; font-weight: 700; color: #1A1040; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
-    .listing-val   { font-size: 13px; color: #534AB7; font-weight: 700; }
-    .listing-sub   { font-size: 11px; color: #6B6878; margin-top: 2px; }
-    .listing-actions { display: flex; gap: 6px; padding: 8px 10px 10px; }
-
-    /* ── Trade rows ── */
-    .trade-row {
-      background: #fff; border: 1px solid #E8E4DF; border-radius: 14px;
-      padding: 14px 16px; margin-bottom: 10px;
-      display: flex; align-items: center; gap: 14px; transition: box-shadow 0.18s;
+    /* Feed Tabs */
+    .feed-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 24px; gap: 24px; }
+    .feed-tab {
+      padding: 0 0 12px; font-size: 15px; font-weight: 600; color: var(--text-secondary);
+      border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.2s;
     }
-    .trade-row:hover { box-shadow: 0 4px 16px rgba(83,74,183,0.10); }
-    .trade-emoji { font-size: 24px; flex-shrink: 0; }
-    .trade-info  { flex: 1; min-width: 0; }
-    .trade-title { font-size: 13px; font-weight: 600; color: #1A1040; }
-    .trade-meta  { font-size: 11px; color: #6B6878; margin-top: 3px; }
-    .pill { font-size: 11px; font-weight: 700; padding: 4px 11px; border-radius: 20px; white-space: nowrap; }
-    .pill-pending   { background: #FEF3E2; color: #7A4500; }
-    .pill-accepted  { background: #E6F4EC; color: #085041; }
-    .pill-completed { background: #EDE9F8; color: #3B2A8C; }
-    .pill-declined  { background: #FEE8E8; color: #8C1A1A; }
+    .feed-tab:hover { color: var(--text); }
+    .feed-tab.active { color: var(--brand); border-bottom-color: var(--brand); }
 
-    /* ── Review cards ── */
-    .review-card {
-      background: #fff; border: 1px solid #E8E4DF;
-      border-radius: 14px; padding: 16px 18px;
-      margin-bottom: 12px; transition: box-shadow 0.18s;
+    /* List Grid */
+    .list-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+    .list-card {
+      background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden;
+      text-decoration: none; color: inherit; transition: all 0.2s; display: flex; flex-direction: column;
     }
-    .review-card:hover { box-shadow: 0 4px 16px rgba(83,74,183,0.10); }
-    .review-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-    .review-ava { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; }
-    .review-author { font-size: 13px; font-weight: 600; color: #1A1040; }
-    .review-date   { font-size: 11px; color: #6B6878; margin-top: 1px; }
-    .review-stars  { font-size: 14px; color: #F59E0B; margin-left: auto; white-space: nowrap; }
-    .review-text   { font-size: 13px; color: #1A1040; line-height: 1.65; margin-bottom: 10px; font-style: italic; }
-    .review-tags   { display: flex; flex-wrap: wrap; gap: 6px; }
-    .review-tag    { background: #F0EEFF; color: #534AB7; border: 1px solid #D8CFFF; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 500; }
+    .list-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border-light); }
+    .lc-img { height: 160px; background: var(--bg); position: relative; }
+    .lc-img img { width: 100%; height: 100%; object-fit: cover; }
+    .lc-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--text-tertiary); }
+    .lc-placeholder i { width: 32px; height: 32px; }
+    .lc-status { position: absolute; top: 8px; left: 8px; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 6px; background: var(--white); color: var(--text); box-shadow: var(--shadow-sm); }
+    .lc-body { padding: 12px 16px; flex: 1; }
+    .lc-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; line-height: 1.4; color: var(--text); }
+    .lc-meta { font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center; }
 
-    /* ── Empty state ── */
-    .empty-state { text-align: center; padding: 44px 20px; color: #6B6878; font-size: 13px; }
-    .empty-icon  { font-size: 36px; margin-bottom: 10px; }
-    .empty-state h4 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: #1A1040; margin-bottom: 4px; }
+    /* Reviews */
+    .rev-card { padding: 16px 0; border-bottom: 1px solid var(--border-light); }
+    .rev-card:last-child { border: none; padding-bottom: 0; }
+    .rev-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .rev-author { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+    .rev-date { font-size: 12px; color: var(--text-tertiary); }
+    .rev-stars { color: var(--orange); font-size: 12px; display: flex; gap: 2px; }
+    .rev-stars i { width: 12px; height: 12px; fill: currentColor; }
+    .rev-text { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
 
-    /* ── Buttons ── */
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center;
-      gap: 6px; border-radius: 8px; font-family: 'DM Sans', sans-serif;
-      font-weight: 600; cursor: pointer; transition: all 0.18s;
-      border: none; text-decoration: none;
-    }
-    .btn-primary   { background: #534AB7; color: #fff; }
-    .btn-primary:hover { background: #3B2A8C; }
-    .btn-secondary { background: #F0EEFF; color: #534AB7; }
-    .btn-secondary:hover { background: #E2DCFF; }
-    .btn-ghost     { background: transparent; color: #6B6878; border: 1px solid #E8E4DF; }
-    .btn-ghost:hover { border-color: #534AB7; color: #534AB7; }
-    .btn-danger    { background: #FEE8E8; color: #8C1A1A; border: 1px solid #F9BBBB; }
-    .btn-danger:hover { background: #FDCACA; }
-    .btn-sm  { font-size: 11px; padding: 5px 12px; }
-    .btn-md  { font-size: 13px; padding: 8px 18px; }
-    .btn-lg  { font-size: 14px; padding: 11px 24px; }
-
-    /* ── Edit modal ── */
-    .modal-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(10,6,30,0.5); z-index: 200;
-      align-items: center; justify-content: center; backdrop-filter: blur(4px);
-    }
-    .modal-overlay.open { display: flex; }
-    .modal-box {
-      background: #fff; border-radius: 20px; padding: 30px 32px;
-      width: 100%; max-width: 500px;
-      box-shadow: 0 32px 80px rgba(10,6,30,0.22);
-      max-height: 90vh; overflow-y: auto;
-    }
-    .modal-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: #1A1040; margin-bottom: 22px; }
-    .form-group   { margin-bottom: 14px; }
-    .form-label   { display: block; font-size: 12px; font-weight: 600; color: #6B6878; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
-    .form-control {
-      width: 100%; padding: 9px 13px;
-      border: 1.5px solid #E8E4DF; border-radius: 9px;
-      font-family: 'DM Sans', sans-serif; font-size: 14px;
-      color: #1A1040; background: #FAFAFA; outline: none;
-      transition: border-color 0.18s;
-    }
-    .form-control:focus { border-color: #534AB7; background: #fff; }
-    .modal-btn-row { display: flex; gap: 10px; margin-top: 22px; }
-
-    @media (max-width: 720px) {
-      .profile-page { padding: 0 14px 48px; }
+    @media (max-width: 900px) {
       .profile-cols { grid-template-columns: 1fr; }
-      .stat-strip   { grid-template-columns: repeat(2, 1fr); }
-      .cover        { height: 92px; }
-      .identity-block { margin-top: 10px; flex-direction: column; align-items: flex-start; }
-      .identity-actions { width: 100%; }
-      .big-ava      { width: 68px; height: 68px; font-size: 22px; }
-      .identity-name { font-size: 20px; }
-      .own-banner { flex-direction: column; align-items: flex-start; }
-      .modal-box { margin: 12px; padding: 22px 18px; max-height: calc(100dvh - 24px); }
-      .modal-btn-row { flex-direction: column; }
-      .modal-btn-row .btn { width: 100%; }
-      .listings-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+      .profile-page { padding: 0 20px 40px; }
+      .stat-strip { grid-template-columns: 1fr 1fr; }
+      .identity-block { padding-top: 12px; flex-direction: column; align-items: center; text-align: center; }
+      .identity-meta { justify-content: center; }
+      .identity-actions { justify-content: center; width: 100%; margin-top: 12px; }
+      .feed-tabs { overflow-x: auto; white-space: nowrap; }
     }
   </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav class="navbar">
-  <a href="browse.html" class="logo"><span>Hobbie</span>Trades</a>
-  <div class="nav-search">
-    <span class="search-icon">🔍</span>
-    <input type="text" placeholder="Search items to trade…"
-      onkeydown="if(event.key==='Enter')window.location.href='browse.html?q='+this.value"/>
-  </div>
-  <div class="nav-links">
-    <a href="browse.html"         class="nav-link">Browse</a>
-    <a href="for-you.html"        class="nav-link">✨ For You</a>
-    <a href="messages.html"       class="nav-link">Messages</a>
+  <a href="browse.html" class="logo">HobbieTrades</a>
+  <div class="nav-links" style="margin-left:auto">
+    <a href="browse.html"        class="nav-link">Browse</a>
+    <a href="for-you.html"       class="nav-link">For You</a>
+    <a href="messages.html"      class="nav-link">Messages</a>
     <a href="create-listing.html" class="nav-link">+ List Item</a>
-    <a href="profile.html"        class="nav-avatar active" id="nav-avatar">?</a>
+    <a href="profile.html"       class="nav-avatar active" id="nav-avatar">?</a>
   </div>
 </nav>
 
-<!-- COVER -->
-<div class="cover">
-  <div class="cover-dot cover-dot-1"></div>
-  <div class="cover-dot cover-dot-2"></div>
-  <div class="cover-dot cover-dot-3"></div>
-</div>
+<div class="cover"></div>
 
 <div class="profile-page page-enter">
-
-  <!-- IDENTITY -->
   <div class="identity-block">
-    <div class="big-ava" id="profile-ava">??</div>
+    <div class="big-ava" id="p-ava">?</div>
     <div class="identity-text">
-      <div class="identity-name" id="profile-name">Loading…</div>
+      <div class="identity-name" id="p-name">Loading...</div>
       <div class="identity-meta">
-        <span>📍 <span id="profile-location">—</span></span>
-        <span>📅 Since <span id="profile-since">—</span></span>
+        <div id="p-loc"><i data-feather="map-pin"></i> <span>Philippines</span></div>
+        <div id="p-joined"><i data-feather="calendar"></i> <span>Joined 2026</span></div>
       </div>
     </div>
-    <div class="identity-actions" id="identity-actions"></div>
+    <div class="identity-actions" id="p-actions"></div>
   </div>
 
-  <div id="profile-feedback" style="display:none;margin-bottom:16px;padding:12px 14px;border-radius:12px;font-size:13px;line-height:1.45"></div>
+  <div id="own-banner-container"></div>
 
-  <!-- OWN BANNER -->
-  <div class="own-banner" id="own-banner" style="display:none">
-    <span>👤 <strong>This is your profile.</strong> Keep your listings fresh!</span>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <a href="create-listing.html" class="btn btn-primary btn-sm">+ New listing</a>
-      <a href="browse.html"         class="btn btn-secondary btn-sm">Browse</a>
-    </div>
-  </div>
-
-  <!-- STAT STRIP -->
   <div class="stat-strip">
-    <div class="stat-card"><div class="stat-num display-num" id="stat-rating">—</div><div class="stat-label">⭐ Rating</div></div>
-    <div class="stat-card"><div class="stat-num display-num" id="stat-trades">—</div><div class="stat-label">🔄 Trades</div></div>
-    <div class="stat-card"><div class="stat-num display-num" id="stat-listings">—</div><div class="stat-label">🛒 Listings</div></div>
-    <div class="stat-card"><div class="stat-num display-num" id="stat-reviews">—</div><div class="stat-label">💬 Reviews</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-trades">—</div><div class="stat-label">Past Trades</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-active">—</div><div class="stat-label">Active Listings</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-rating">—</div><div class="stat-label">Avg Rating</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-val">—</div><div class="stat-label">Est. Value</div></div>
   </div>
 
-  <!-- TWO-COL -->
   <div class="profile-cols">
-
-    <!-- LEFT: rating -->
-    <div>
-      <div class="panel" id="rating-panel" style="display:none">
-        <div class="panel-title">⭐ Ratings</div>
+    <!-- LEFT -->
+    <aside>
+      <div class="panel">
+        <div class="panel-title"><i data-feather="award"></i> Reputation</div>
         <div class="rating-hero">
-          <div class="rating-big-num display-num" id="rating-score">0.0</div>
+          <div class="rating-big-num" id="r-avg">0.0</div>
           <div>
-            <div class="rating-stars-lg" id="rating-stars">☆☆☆☆☆</div>
-            <div class="rating-cnt"      id="rating-count">0 reviews</div>
+            <div class="rating-stars-lg" id="r-stars"></div>
+            <div class="rating-cnt" id="r-cnt">0 reviews</div>
           </div>
         </div>
-        <div class="sub-row">
-          <div class="sub-lbl">Item accuracy</div>
-          <div class="sub-track"><div class="sub-fill" id="bar-described" style="width:0%"></div></div>
-          <div class="sub-score" id="val-described">—</div>
-        </div>
-        <div class="sub-row">
-          <div class="sub-lbl">Communication</div>
-          <div class="sub-track"><div class="sub-fill" id="bar-communication" style="width:0%"></div></div>
-          <div class="sub-score" id="val-communication">—</div>
-        </div>
-        <div class="sub-row">
-          <div class="sub-lbl">Meetup reliability</div>
-          <div class="sub-track"><div class="sub-fill" id="bar-meetup" style="width:0%"></div></div>
-          <div class="sub-score" id="val-meetup">—</div>
+        <div>
+          <div class="sub-row"><div class="sub-lbl">Communication</div><div class="sub-track"><div class="sub-fill" id="bar-com" style="width:0%"></div></div><div class="sub-val" id="val-com">0.0</div></div>
+          <div class="sub-row"><div class="sub-lbl">Item as Described</div><div class="sub-track"><div class="sub-fill" id="bar-item" style="width:0%"></div></div><div class="sub-val" id="val-item">0.0</div></div>
+          <div class="sub-row"><div class="sub-lbl">Punctuality</div><div class="sub-track"><div class="sub-fill" id="bar-pun" style="width:0%"></div></div><div class="sub-val" id="val-pun">0.0</div></div>
         </div>
       </div>
 
-      <div class="panel" id="no-rating-panel">
-        <div class="panel-title">⭐ Ratings</div>
-        <div class="empty-state" style="padding:20px 0">
-          <div class="empty-icon">🌟</div>
-          <h4>No ratings yet</h4>
-          <p>Complete a trade to receive your first review.</p>
+      <div class="panel">
+        <div class="panel-title"><i data-feather="shield"></i> Trust & Badges</div>
+        <div class="badges-flex" id="p-badges">
+          <div class="ach-badge"><i data-feather="check-circle"></i> Email Verified</div>
         </div>
       </div>
-    </div>
+    </aside>
 
-    <!-- RIGHT: tabs -->
-    <div>
-      <div class="tab-bar">
-        <button class="tab-btn active" onclick="showTab('listings',this)">🛒 Listings</button>
-        <button class="tab-btn"        onclick="showTab('trades',this)">🔄 Trades</button>
-        <button class="tab-btn"        onclick="showTab('reviews',this)">⭐ Reviews</button>
+    <!-- RIGHT -->
+    <main>
+      <div class="feed-tabs">
+        <div class="feed-tab active" onclick="switchTab('active')" id="tab-active">Active Listings (0)</div>
+        <div class="feed-tab" onclick="switchTab('reviews')" id="tab-reviews">Reviews (0)</div>
       </div>
 
-      <div class="tab-panel active" id="tab-listings">
-        <div class="listings-grid" id="listings-grid">
-          <div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⏳</div>Loading…</div>
+      <div id="view-active">
+        <div class="list-grid" id="grid-active">
+          <div class="p-empty"><i data-feather="package"></i><div>Loading listings...</div></div>
         </div>
       </div>
-      <div class="tab-panel" id="tab-trades">
-        <div id="trades-list"><div class="empty-state"><div class="empty-icon">⏳</div>Loading…</div></div>
-      </div>
-      <div class="tab-panel" id="tab-reviews">
-        <div id="reviews-list"><div class="empty-state"><div class="empty-icon">⏳</div>Loading…</div></div>
-      </div>
-    </div>
 
-  </div>
-</div>
-
-<!-- EDIT MODAL -->
-<div class="modal-overlay" id="edit-modal">
-  <div class="modal-box">
-    <div class="modal-title">✏️ Edit listing</div>
-    <input type="hidden" id="edit-item-id"/>
-    <div class="form-group">
-      <label class="form-label">Title *</label>
-      <input type="text" class="form-control" id="edit-title"/>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Description *</label>
-      <textarea class="form-control" id="edit-desc" style="min-height:80px;resize:vertical"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Category *</label>
-      <!-- FIX: matches your actual category system exactly -->
-      <select class="form-control" id="edit-category">
-        <option value="Cameras">Cameras</option>
-        <option value="Instruments">Instruments</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Condition *</label>
-      <select class="form-control" id="edit-condition">
-        <option value="Like New">Like New</option>
-        <option value="Good">Good</option>
-        <option value="Fair">Fair</option>
-        <option value="Worn">Worn</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Estimated Value (₱) *</label>
-      <input type="number" class="form-control" id="edit-value"/>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Looking to trade for</label>
-      <input type="text" class="form-control" id="edit-looking"/>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Location</label>
-      <input type="text" class="form-control" id="edit-location"/>
-    </div>
-    <div class="modal-btn-row">
-      <button class="btn btn-primary btn-lg" style="flex:2" onclick="saveEdit()">Save changes</button>
-      <button class="btn btn-ghost   btn-lg" style="flex:1" onclick="closeEditModal()">Cancel</button>
-    </div>
+      <div id="view-reviews" style="display:none">
+        <div id="list-reviews">
+          <div class="p-empty"><i data-feather="message-square"></i><div>Loading reviews...</div></div>
+        </div>
+      </div>
+    </main>
   </div>
 </div>
 
 <script src="js/api.js"></script>
 <script>
+  feather.replace();
+
   const API = window.HobbieAPI ? window.HobbieAPI.baseUrl : (
     window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
       ? 'http://localhost:8080'
       : 'https://hobbietrades-backend.onrender.com'
   );
   if (window.HobbieAPI) window.HobbieAPI.wakeBackend();
+
+  const CAT_ICON = { Cameras:'camera', Instruments:'music', Other:'box' };
   const AVATAR_COLORS = ['#AFA9EC','#9FE1CB','#F5C4B3','#85B7EB','#F7D08A','#B5EAD7','#C7CEEA'];
 
-  const loggedInUserId = parseInt(localStorage.getItem('userId')) || null;
-  const loggedInName   = localStorage.getItem('userName') || '';
-  if (loggedInName) document.getElementById('nav-avatar').textContent = loggedInName[0].toUpperCase();
-
-  const params    = new URLSearchParams(window.location.search);
-  const profileId = params.get('userId') ? parseInt(params.get('userId')) : loggedInUserId;
-
-  function setProfileFeedback(kind, text) {
-    const el = document.getElementById('profile-feedback');
-    el.style.display = 'block';
-    el.style.background = kind === 'ok' ? '#EAF3DE' : '#FEE8E8';
-    el.style.border = '1px solid ' + (kind === 'ok' ? '#97C459' : '#F9BBBB');
-    el.style.color = kind === 'ok' ? '#3B6D11' : '#7F1D1D';
-    el.textContent = text;
+  const urlParams = new URLSearchParams(window.location.search);
+  const targetIdStr = urlParams.get('id');
+  const loggedInUserIdStr = localStorage.getItem('userId');
+  
+  if (!targetIdStr && !loggedInUserIdStr) {
+    window.location.href = 'index.html';
   }
 
-  if (!profileId) {
-    setProfileFeedback('err', 'Please log in. Redirecting…');
-    setTimeout(() => { window.location.href = 'index.html'; }, 1200);
-  } else if (profileId === loggedInUserId && loggedInUserId) {
-    document.getElementById('identity-actions').innerHTML =
-      '<button type="button" class="btn btn-danger btn-sm" onclick="logout()">Log out</button>';
+  const profileId = targetIdStr ? parseInt(targetIdStr, 10) : parseInt(loggedInUserIdStr, 10);
+  const isOwnProfile = (!targetIdStr) || (loggedInUserIdStr && profileId === parseInt(loggedInUserIdStr, 10));
+
+  let profileUser = null;
+  let profileListings = [];
+  let profileReviews = [];
+
+  function escapeHtml(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+  function formatPeso(v) { return '₱' + Number(v||0).toLocaleString('en-PH'); }
+  function getInitials(n) { return (n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+  function colorFor(id) { return AVATAR_COLORS[(id||0) % AVATAR_COLORS.length]; }
+
+  async function loadProfile() {
+    try {
+      const resU = await fetch(`${API}/api/users/${profileId}`);
+      if (!resU.ok) throw new Error('User not found');
+      profileUser = await resU.json();
+
+      const resI = await fetch(`${API}/api/items?userId=${profileId}`);
+      if (resI.ok) profileListings = await resI.json();
+
+      const resR = await fetch(`${API}/api/reviews/user/${profileId}`);
+      if (resR.ok) profileReviews = await resR.json();
+
+      render();
+    } catch(e) {
+      document.querySelector('.profile-page').innerHTML = `
+        <div class="p-empty" style="margin-top:60px">
+          <i data-feather="alert-triangle"></i>
+          <div style="font-size:18px;margin-bottom:8px;color:var(--text)">User Not Found</div>
+          <div>This account doesn't exist or an error occurred.</div>
+          <a href="browse.html" class="btn btn-primary" style="margin-top:20px;text-decoration:none">Back to Browse</a>
+        </div>`;
+      feather.replace();
+    }
   }
 
-  let _items = [];
+  function render() {
+    // Nav
+    document.getElementById('nav-avatar').textContent = (localStorage.getItem('userName') || '?').charAt(0).toUpperCase();
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
-  const avatarColor = id   => AVATAR_COLORS[(id||0) % AVATAR_COLORS.length];
-  const initials    = name => name ? name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2) : '??';
-  const starsHtml   = r    => { const f=Math.round(r||0); return '★'.repeat(f)+'☆'.repeat(5-f); };
-  const formatDate  = d    => d ? new Date(d).toLocaleDateString('en-PH',{year:'numeric',month:'long'}) : '—';
-  const formatRel   = d    => {
-    if (!d) return '';
-    const diff = Math.floor((Date.now()-new Date(d))/86400000);
-    if (diff===0) return 'Today';
-    if (diff===1) return 'Yesterday';
-    if (diff<30)  return diff+' days ago';
-    return formatDate(d);
-  };
+    // Identity
+    const avaColor = colorFor(profileUser.id);
+    document.getElementById('p-ava').textContent = getInitials(profileUser.name);
+    document.getElementById('p-ava').style.background = avaColor;
+    document.getElementById('p-name').textContent = escapeHtml(profileUser.name);
+    document.querySelector('#p-loc span').textContent = escapeHtml(profileUser.location || 'Philippines');
 
-  // FIX: category keys now match your actual system (Cameras/Instruments/Gaming/Sports/Art/Craft/Other)
-  const CAT_EMOJI = {
-    Cameras:'📷', Instruments:'🎸', Gaming:'🎮',
-    Sports:'🛹', Art:'🎨', Craft:'🧵', Other:'📦'
-  };
-  const CAT_BG = {
-    Cameras:'#F0F4FF', Instruments:'#EAF3DE', Gaming:'#FAEEDA',
-    Sports:'#E6F1FB', Art:'#FAECE7', Craft:'#FBEAF0', Other:'#F5F5F5'
-  };
+    // Actions
+    if (isOwnProfile) {
+      document.getElementById('own-banner-container').innerHTML = `
+        <div class="own-banner">
+          <div style="display:flex;align-items:center;gap:12px">
+            <i data-feather="user"></i>
+            <div><strong>This is your public profile.</strong> This is how other traders see you.</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="logout()">Log out</button>
+        </div>`;
+      document.getElementById('p-actions').innerHTML = `<a href="create-listing.html" class="btn btn-primary btn-sm"><i data-feather="plus"></i> List Item</a>`;
+    } else {
+      document.getElementById('p-actions').innerHTML = `<a href="messages.html?userId=${profileUser.id}" class="btn btn-primary btn-sm"><i data-feather="message-circle"></i> Message</a>`;
+    }
 
-  // FIX: condition class mapping using exact conditionLabel values
-  const COND_CLASS = {
-    'Like New':'cond-like-new', 'Good':'cond-good',
-    'Fair':'cond-fair', 'Worn':'cond-worn'
-  };
+    // Stats
+    const activeItems = profileListings.filter(i => i.isAvailable);
+    const totalVal = activeItems.reduce((sum, i) => sum + (parseFloat(i.estimatedValue)||0), 0);
+    const rAvg = (parseFloat(profileUser.rating)||0).toFixed(1);
+    
+    document.getElementById('s-trades').textContent = profileUser.tradeCount || 0;
+    document.getElementById('s-active').textContent = activeItems.length;
+    document.getElementById('s-rating').textContent = rAvg;
+    document.getElementById('s-val').textContent = '₱' + (totalVal >= 1000 ? (totalVal/1000).toFixed(1)+'k' : totalVal);
 
-  const STATUS_CLASS = {
-    pending:'pill-pending', accepted:'pill-accepted',
-    completed:'pill-completed', declined:'pill-declined'
-  };
-  const STATUS_LABEL = {
-    pending:'⏳ Pending', accepted:'✓ Accepted',
-    completed:'✅ Completed', declined:'✗ Declined'
-  };
+    // Ratings
+    document.getElementById('r-avg').textContent = rAvg;
+    document.getElementById('r-cnt').textContent = `${profileReviews.length} reviews`;
+    let starsHtml = '';
+    for(let i=1; i<=5; i++) {
+      starsHtml += `<i data-feather="star" style="${i <= Math.round(rAvg) ? 'fill:currentColor' : 'fill:transparent;color:var(--border)'}"></i>`;
+    }
+    document.getElementById('r-stars').innerHTML = starsHtml;
 
-  function showTab(name, btn) {
-    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-    document.getElementById('tab-'+name).classList.add('active');
-    btn.classList.add('active');
-  }
-  function logout() {
-    ['userId','userName','userEmail','userLocation','token'].forEach(k=>localStorage.removeItem(k));
-    window.location.href='index.html';
-  }
+    // Subratings
+    const c = profileUser.ratingCommunication || 0;
+    const itemAs = profileUser.ratingItemAsDescribed || 0;
+    const p = profileUser.ratingPunctuality || 0;
+    document.getElementById('val-com').textContent = c.toFixed(1);
+    document.getElementById('bar-com').style.width = (c/5)*100 + '%';
+    document.getElementById('val-item').textContent = itemAs.toFixed(1);
+    document.getElementById('bar-item').style.width = (itemAs/5)*100 + '%';
+    document.getElementById('val-pun').textContent = p.toFixed(1);
+    document.getElementById('bar-pun').style.width = (p/5)*100 + '%';
 
-  // ── Fetch profile ──────────────────────────────────────────────────────────
-  if (!profileId) { /* wait for redirect */ }
-  else fetch(`${API}/api/users/${profileId}/profile`)
-    .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-    .then(data => {
-      if (!data.success) { setProfileFeedback('err', 'Profile not found.'); return; }
-      const { user, items=[], trades=[], reviews=[], subRatings={} } = data;
-      _items = items;
-      const isOwn = profileId === loggedInUserId;
+    // Badges
+    let badgesHtml = `<div class="ach-badge"><i data-feather="check-circle"></i> Email Verified</div>`;
+    if (profileUser.tradeCount >= 5) badgesHtml += `<div class="ach-badge gold"><i data-feather="award"></i> Trusted Trader</div>`;
+    if (activeItems.length >= 3) badgesHtml += `<div class="ach-badge brand"><i data-feather="camera"></i> Gear Head</div>`;
+    document.getElementById('p-badges').innerHTML = badgesHtml;
 
-      // Identity
-      const ava = document.getElementById('profile-ava');
-      ava.textContent      = initials(user.name);
-      ava.style.background = avatarColor(user.id);
-      document.getElementById('profile-name').textContent     = user.name;
-      document.getElementById('profile-location').textContent = user.location || 'Philippines';
-      document.getElementById('profile-since').textContent    = formatDate(user.createdAt);
+    // Tabs
+    document.getElementById('tab-active').textContent = `Active Listings (${activeItems.length})`;
+    document.getElementById('tab-reviews').textContent = `Reviews (${profileReviews.length})`;
 
-      if (!isOwn) {
-        document.getElementById('identity-actions').innerHTML =
-          `<a href="browse.html" class="btn btn-secondary btn-md">🔄 Browse their items</a>`;
-      }
+    // Feed
+    if (activeItems.length === 0) {
+      document.getElementById('grid-active').innerHTML = `
+        <div class="p-empty" style="grid-column:1/-1">
+          <i data-feather="inbox"></i>
+          <div>No active listings.</div>
+        </div>`;
+    } else {
+      document.getElementById('grid-active').innerHTML = activeItems.map(item => {
+        const icon = CAT_ICON[item.category] || 'box';
+        const imgSrc = window.HobbieAPI
+          ? window.HobbieAPI.resolveImageUrl(item.photoUrl, item.id)
+          : (item.photoUrl ? `${API}${item.photoUrl}` : (item.id ? `${API}/api/items/${item.id}/photo` : null));
 
-      // Stats
-      document.getElementById('stat-rating').textContent   = (user.rating||0).toFixed(1);
-      document.getElementById('stat-trades').textContent   = user.tradeCount||0;
-      document.getElementById('stat-listings').textContent = items.length;
-      document.getElementById('stat-reviews').textContent  = reviews.length;
-
-      if (isOwn) document.getElementById('own-banner').style.display = 'flex';
-
-      // Rating panel
-      if (reviews.length > 0) {
-        document.getElementById('rating-panel').style.display    = 'block';
-        document.getElementById('no-rating-panel').style.display = 'none';
-        document.getElementById('rating-score').textContent = (user.rating||0).toFixed(1);
-        document.getElementById('rating-stars').textContent = starsHtml(user.rating||0);
-        document.getElementById('rating-count').textContent = reviews.length+' review'+(reviews.length!==1?'s':'');
-
-        const setBar = (key, barId, valId) => {
-          const v = subRatings[key] || 0;
-          document.getElementById(barId).style.width = ((v/5)*100)+'%';
-          document.getElementById(valId).textContent = v > 0 ? Number(v).toFixed(1) : '—';
-        };
-        setBar('itemAsDescribed',   'bar-described',     'val-described');
-        setBar('communication',     'bar-communication', 'val-communication');
-        setBar('meetupReliability', 'bar-meetup',        'val-meetup');
-      }
-
-      // ── Listings ───────────────────────────────────────────────────────────
-      const grid = document.getElementById('listings-grid');
-      if (!items.length) {
-        grid.innerHTML = `
-          <div class="empty-state" style="grid-column:1/-1">
-            <div class="empty-icon">📭</div>
-            <h4>No active listings</h4>
-            <p>${isOwn
-              ? '<a href="create-listing.html" style="color:#534AB7">List your first item →</a>'
-              : 'Nothing listed yet.'}</p>
-          </div>`;
-      } else {
-        grid.innerHTML = '';
-        items.forEach((item, idx) => {
-          const card = document.createElement('div');
-          card.className = 'listing-card';
-
-          // Image area
-          const imgDiv = document.createElement('div');
-          imgDiv.className    = 'listing-img';
-          imgDiv.style.background = CAT_BG[item.category] || '#F5F5F5';
-
-          // FIX: photo URL — use API base directly, same pattern as all other pages
-          if (item.photoUrl || item.id) {
-            const img = document.createElement('img');
-            img.src   = window.HobbieAPI
-              ? window.HobbieAPI.resolveImageUrl(item.photoUrl, item.id)
-              : `${API}${item.photoUrl || '/api/items/' + item.id + '/photo'}`;
-            img.alt   = item.title;
-            img.onerror = () => { img.style.display = 'none'; };
-            imgDiv.appendChild(img);
-          }
-
-          // Emoji fallback
-          const emojiSpan = document.createElement('span');
-          emojiSpan.textContent = CAT_EMOJI[item.category] || '📦';
-          if (item.photoUrl || item.id) emojiSpan.style.display = 'none';
-          imgDiv.appendChild(emojiSpan);
-
-          // Condition badge — FIX: use exact conditionLabel string as key
-          if (item.conditionLabel) {
-            const badge = document.createElement('span');
-            badge.className   = 'cond-badge ' + (COND_CLASS[item.conditionLabel] || '');
-            badge.textContent = item.conditionLabel;
-            imgDiv.appendChild(badge);
-          }
-
-          // Body
-          const body = document.createElement('div');
-          body.className = 'listing-body';
-          body.innerHTML = `
-            <div class="listing-title">${item.title}</div>
-            <div class="listing-val">~₱${parseFloat(item.estimatedValue||0).toLocaleString('en-PH')}</div>
-            <div class="listing-sub">${item.category||''}${item.conditionLabel?' · '+item.conditionLabel:''}</div>`;
-
-          const link = document.createElement('a');
-          link.href       = 'item-detail.html?id='+item.id;
-          link.style.cssText = 'text-decoration:none;color:inherit;display:block';
-          link.appendChild(imgDiv);
-          link.appendChild(body);
-          card.appendChild(link);
-
-          // Edit / delete (own profile only)
-          if (isOwn) {
-            const actions = document.createElement('div');
-            actions.className = 'listing-actions';
-
-            const editBtn = document.createElement('button');
-            editBtn.className   = 'btn btn-secondary btn-sm';
-            editBtn.style.flex  = '1';
-            editBtn.textContent = '✏️ Edit';
-            editBtn.onclick     = () => openEditModal(idx);
-
-            const delBtn = document.createElement('button');
-            delBtn.className   = 'btn btn-danger btn-sm';
-            delBtn.style.flex  = '1';
-            delBtn.textContent = '🗑️ Delete';
-            delBtn.onclick     = () => deleteItem(item.id, idx);
-
-            actions.appendChild(editBtn);
-            actions.appendChild(delBtn);
-            card.appendChild(actions);
-          }
-
-          grid.appendChild(card);
-        });
-      }
-
-      // ── Trades ─────────────────────────────────────────────────────────────
-      const tList = document.getElementById('trades-list');
-      if (!trades.length) {
-        tList.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-icon">🔄</div>
-            <h4>No trades yet</h4>
-            <p>Propose a trade from any item listing.</p>
-          </div>`;
-      } else {
-        tList.innerHTML = '';
-        trades.forEach(trade => {
-          const isProp = trade.proposer && trade.proposer.id === profileId;
-          const other  = isProp ? trade.receiver     : trade.proposer;
-          const myItem = isProp ? trade.offeredItem  : trade.requestedItem;
-          const thItem = isProp ? trade.requestedItem : trade.offeredItem;
-
-          const row = document.createElement('div');
-          row.className    = 'trade-row';
-          row.style.cursor = 'pointer';
-          row.onclick      = () => window.location.href = 'messages.html?tradeId='+trade.id;
-          row.innerHTML    = `
-            <div class="trade-emoji">${CAT_EMOJI[myItem?.category] || '📦'}</div>
-            <div class="trade-info">
-              <div class="trade-title">
-                ${myItem?.title||'Item'} ⇄
-                ${CAT_EMOJI[thItem?.category]||'📦'} ${thItem?.title||'Item'}
-              </div>
-              <div class="trade-meta">
-                With ${other?.name||'Unknown'} · ${formatRel(trade.createdAt)}
+        return `
+          <a href="item-detail.html?id=${item.id}" class="list-card">
+            <div class="lc-img">
+              ${imgSrc 
+                ? `<img src="${imgSrc}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+                   <div class="lc-placeholder" style="display:none"><i data-feather="${icon}"></i></div>` 
+                : `<div class="lc-placeholder"><i data-feather="${icon}"></i></div>`}
+              <div class="lc-status">TRADE</div>
+            </div>
+            <div class="lc-body">
+              <div class="lc-title">${escapeHtml(item.title)}</div>
+              <div class="lc-meta">
+                <span>${item.conditionLabel || 'Unknown'}</span>
+                <span style="font-weight:600;color:var(--text)">${formatPeso(item.estimatedValue)}</span>
               </div>
             </div>
-            <span class="pill ${STATUS_CLASS[trade.status]||'pill-pending'}">
-              ${STATUS_LABEL[trade.status]||trade.status}
-            </span>`;
-          tList.appendChild(row);
-        });
-      }
+          </a>`;
+      }).join('');
+    }
 
-      // ── Reviews ────────────────────────────────────────────────────────────
-      const rList = document.getElementById('reviews-list');
-      if (!reviews.length) {
-        rList.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-icon">⭐</div>
-            <h4>No reviews yet</h4>
-            <p>Reviews appear after completed trades.</p>
-          </div>`;
-      } else {
-        rList.innerHTML = '';
-        reviews.forEach(review => {
-          const reviewer = review.reviewer;
-          const rName    = reviewer?.name || 'Anonymous';
-          const tags     = review.tags
-            ? review.tags.split(',').map(t=>t.trim()).filter(Boolean)
-            : [];
-          const card = document.createElement('div');
-          card.className = 'review-card';
-          card.innerHTML = `
-            <div class="review-header">
-              <div class="review-ava" style="background:${avatarColor(reviewer?.id||0)}">${initials(rName)}</div>
+    if (profileReviews.length === 0) {
+      document.getElementById('list-reviews').innerHTML = `
+        <div class="p-empty">
+          <i data-feather="message-square"></i>
+          <div>No reviews yet.</div>
+        </div>`;
+    } else {
+      document.getElementById('list-reviews').innerHTML = profileReviews.map(r => {
+        const author = r.reviewer ? r.reviewer.name : 'Unknown';
+        const date = r.createdAt ? new Date(r.createdAt).toLocaleDateString() : 'Recently';
+        let st = '';
+        for(let i=1; i<=5; i++) {
+           st += `<i data-feather="star" style="${i <= r.rating ? 'fill:currentColor' : 'fill:transparent;color:var(--border)'}"></i>`;
+        }
+        return `
+          <div class="rev-card">
+            <div class="rev-head">
               <div>
-                <div class="review-author">${rName}</div>
-                <div class="review-date">${formatRel(review.createdAt)}</div>
+                <div class="rev-author">${escapeHtml(author)}</div>
+                <div class="rev-stars">${st}</div>
               </div>
-              <div class="review-stars">${starsHtml(review.overallRating)} ${review.overallRating}/5</div>
+              <div class="rev-date">${date}</div>
             </div>
-            ${review.reviewText?`<div class="review-text">"${review.reviewText}"</div>`:''}
-            ${tags.length?`<div class="review-tags">${tags.map(t=>`<span class="review-tag">${t}</span>`).join('')}</div>`:''}`;
-          rList.appendChild(card);
-        });
-      }
-    })
-    .catch(() => setProfileFeedback('err', 'Could not load profile. Check your connection and that the HobbieTrades API is running.'));
+            <div class="rev-text">${escapeHtml(r.comment)}</div>
+          </div>`;
+      }).join('');
+    }
 
-  // ── Edit modal ─────────────────────────────────────────────────────────────
-  function openEditModal(idx) {
-    const item = _items[idx];
-    document.getElementById('edit-item-id').value   = item.id;
-    document.getElementById('edit-title').value     = item.title || '';
-    document.getElementById('edit-desc').value      = item.description || '';
-    document.getElementById('edit-category').value  = item.category || 'Other';
-    document.getElementById('edit-condition').value = item.conditionLabel || 'Good';
-    document.getElementById('edit-value').value     = item.estimatedValue || '';
-    document.getElementById('edit-looking').value   = item.lookingFor || '';
-    document.getElementById('edit-location').value  = item.location || '';
-    document.getElementById('edit-modal').classList.add('open');
-  }
-  function closeEditModal() {
-    document.getElementById('edit-modal').classList.remove('open');
+    feather.replace();
   }
 
-  function saveEdit() {
-    const itemId = document.getElementById('edit-item-id').value;
-    const title  = document.getElementById('edit-title').value.trim();
-    const desc   = document.getElementById('edit-desc').value.trim();
-    const val    = document.getElementById('edit-value').value;
-    if (!title || !desc || !val) { setProfileFeedback('err', 'Please fill in title, description, and estimated value.'); return; }
-
-    fetch(`${API}/api/items/${itemId}`, {
-      method: 'PUT',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        userId:         loggedInUserId,
-        title,
-        description:    desc,
-        category:       document.getElementById('edit-category').value,
-        conditionLabel: document.getElementById('edit-condition').value,
-        estimatedValue: val,
-        lookingFor:     document.getElementById('edit-looking').value.trim(),
-        location:       document.getElementById('edit-location').value.trim()
-      })
-    })
-    .then(r => r.json())
-    .then(d => {
-      if (d.success || d.id) { closeEditModal(); window.location.reload(); }
-      else setProfileFeedback('err', d.message || 'Could not update listing.');
-    })
-    .catch(() => setProfileFeedback('err', 'Could not reach the server.'));
+  function switchTab(view) {
+    document.getElementById('tab-active').classList.remove('active');
+    document.getElementById('tab-reviews').classList.remove('active');
+    document.getElementById('view-active').style.display = 'none';
+    document.getElementById('view-reviews').style.display = 'none';
+    
+    document.getElementById('tab-' + view).classList.add('active');
+    document.getElementById('view-' + view).style.display = 'block';
   }
 
-  function deleteItem(itemId, idx) {
-    const fb = document.getElementById('profile-feedback');
-    fb.style.display = 'block';
-    fb.style.background = '#F3F1FA';
-    fb.style.border = '1px solid #E2DCFF';
-    fb.style.color = '#1A1040';
-    fb.innerHTML =
-      '<strong>Delete this listing?</strong> ' +
-      (_items[idx]?.title || 'This item') +
-      ' cannot be recovered. ' +
-      '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">' +
-      '<button type="button" class="btn btn-danger btn-sm" onclick="confirmDeleteItem(' + itemId + ')">Delete listing</button>' +
-      '<button type="button" class="btn btn-ghost btn-sm" onclick="cancelDeleteItem()">Cancel</button></div>';
+  function logout() {
+    localStorage.clear();
+    window.location.href = 'index.html';
   }
 
-  function cancelDeleteItem() {
-    const fb = document.getElementById('profile-feedback');
-    fb.style.display = 'none';
-    fb.textContent = '';
-  }
-
-  function confirmDeleteItem(itemId) {
-    cancelDeleteItem();
-    fetch(`${API}/api/items/${itemId}`, {
-      method: 'DELETE',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ userId: loggedInUserId })
-    })
-    .then(r => r.json())
-    .then(d => {
-      if (d.success) window.location.reload();
-      else setProfileFeedback('err', d.message || 'Could not delete listing.');
-    })
-    .catch(() => setProfileFeedback('err', 'Could not reach the server.'));
-  }
-
-  document.getElementById('edit-modal').addEventListener('click', e => {
-    if (e.target === document.getElementById('edit-modal')) closeEditModal();
-  });
+  loadProfile();
 </script>
 </body>
 </html>

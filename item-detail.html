@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>HobbieTrades — Item Detail</title>
   <link rel="stylesheet" href="style.css"/>
+  <script src="https://unpkg.com/feather-icons"></script>
   <style>
     /* ── HERO ── */
     .detail-hero {
-      background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand) 60%, var(--brand-mid) 100%);
-      padding: 1.5rem 2rem;
+      background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand) 100%);
+      padding: 32px 40px;
       color: white;
       position: relative;
       overflow: hidden;
@@ -19,7 +20,7 @@
       position: absolute;
       top: -40px; right: -40px;
       width: 180px; height: 180px;
-      background: rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.06);
       border-radius: 50%;
     }
     .detail-hero::after {
@@ -27,37 +28,37 @@
       position: absolute;
       bottom: -50px; left: 25%;
       width: 260px; height: 260px;
-      background: rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.04);
       border-radius: 50%;
     }
     .hero-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
       position: relative;
       z-index: 1;
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 16px;
     }
     .back-link {
       color: rgba(255,255,255,0.85);
       text-decoration: none;
-      font-size: 0.85rem;
+      font-size: 14px;
       font-weight: 500;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      transition: color 0.15s;
+      gap: 8px;
+      transition: color 0.2s;
     }
     .back-link:hover { color: white; }
+    .back-link i { width: 16px; height: 16px; }
     .hero-crumb {
-      color: rgba(255,255,255,0.5);
-      font-size: 0.85rem;
-      margin: 0 0.4rem;
+      color: rgba(255,255,255,0.4);
+      font-size: 14px;
     }
     .hero-crumb-current {
-      color: rgba(255,255,255,0.9);
-      font-size: 0.85rem;
+      color: white;
+      font-size: 14px;
       font-weight: 600;
       white-space: nowrap;
       overflow: hidden;
@@ -67,84 +68,93 @@
 
     /* ── DETAIL LAYOUT ── */
     .detail-wrap {
-      max-width: 1100px;
-      margin: 2rem auto;
-      padding: 0 2rem 3rem;
+      max-width: 1200px;
+      margin: 40px auto 60px;
+      padding: 0 40px;
       display: grid;
-      grid-template-columns: 400px 1fr;
-      gap: 2rem;
+      grid-template-columns: 440px 1fr;
+      gap: 40px;
       align-items: start;
     }
 
     /* ── LEFT: IMAGE COLUMN ── */
-    .img-col { display: flex; flex-direction: column; gap: 1rem; }
+    .img-col { display: flex; flex-direction: column; gap: 16px; }
 
     .detail-img-box {
       border-radius: var(--radius-lg);
-      height: 360px;
+      height: 440px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 5rem;
       border: 1px solid var(--border);
       position: relative;
       overflow: hidden;
-      background: var(--bg);
+      background: var(--white);
+      box-shadow: var(--shadow-sm);
     }
     .detail-img-box img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
+    .img-placeholder-icon {
+      color: var(--text-tertiary);
+    }
+    .img-placeholder-icon i {
+      width: 64px;
+      height: 64px;
+      stroke-width: 1.5;
+    }
+
     .detail-trade-badge {
       position: absolute;
-      top: 12px; left: 12px;
-      background: var(--brand);
-      color: white;
-      font-size: 0.68rem;
+      top: 16px; left: 16px;
+      background: var(--white);
+      color: var(--text);
+      font-size: 12px;
       font-weight: 700;
-      padding: 3px 10px;
+      padding: 6px 12px;
       border-radius: 6px;
       letter-spacing: 0.05em;
       z-index: 2;
+      box-shadow: var(--shadow-sm);
     }
     .detail-cond-badge {
       position: absolute;
-      top: 12px; right: 12px;
-      font-size: 0.68rem;
-      font-weight: 700;
-      padding: 3px 10px;
+      top: 16px; right: 16px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
       border-radius: 6px;
       z-index: 2;
+      background: var(--white);
+      color: var(--text-secondary);
+      box-shadow: var(--shadow-sm);
     }
-    .cond-like-new { background: #EAF3DE; color: #3B6D11; }
-    .cond-good     { background: #EEF2FF; color: #4F46E5; }
-    .cond-fair     { background: #FEF3E2; color: #633806; }
-    .cond-worn     { background: #FEE2E2; color: #7F1D1D; }
 
     /* Quick stats row below image */
     .img-stats {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 0.75rem;
+      gap: 12px;
     }
     .img-stat {
       background: var(--white);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
-      padding: 0.75rem 0.9rem;
+      padding: 16px;
       text-align: center;
+      box-shadow: var(--shadow-sm);
     }
     .img-stat-val {
-      font-family: 'Syne', sans-serif;
-      font-size: 1rem;
+      font-size: 16px;
       font-weight: 700;
       color: var(--text);
     }
     .img-stat-lbl {
-      font-size: 0.68rem;
+      font-size: 12px;
       color: var(--text-tertiary);
-      margin-top: 2px;
+      margin-top: 4px;
       font-weight: 500;
     }
 
@@ -152,384 +162,228 @@
     .info-col {
       display: flex;
       flex-direction: column;
-      gap: 0;
     }
 
     .detail-category {
-      font-size: 0.72rem;
-      font-weight: 700;
+      font-size: 13px;
+      font-weight: 600;
       color: var(--brand);
       text-transform: uppercase;
-      letter-spacing: 0.07em;
-      margin-bottom: 0.4rem;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
     }
     .detail-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.6rem;
+      font-size: 28px;
       font-weight: 800;
       color: var(--text);
       line-height: 1.2;
-      margin-bottom: 0.5rem;
-      letter-spacing: -0.3px;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
     }
     .detail-meta {
-      font-size: 0.82rem;
+      font-size: 14px;
       color: var(--text-secondary);
-      margin-bottom: 1rem;
+      margin-bottom: 24px;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 12px;
       flex-wrap: wrap;
     }
-    .detail-meta strong { color: var(--text); }
+    .detail-meta strong { color: var(--text); font-weight: 500; }
     .meta-dot { color: var(--border); }
 
     /* Value bar */
     .value-bar {
       background: var(--brand-light);
-      border: 1.5px solid var(--brand-mid);
+      border: 1px solid var(--border);
       border-radius: var(--radius-md);
-      padding: 0.9rem 1.1rem;
-      margin-bottom: 1.25rem;
+      padding: 20px;
+      margin-bottom: 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-    .value-bar-left { font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; }
+    .value-bar-left { font-size: 14px; color: var(--brand-dark); font-weight: 500; }
     .value-bar-amount {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: var(--brand);
-    }
-    .value-bar-amount span {
-      font-size: 0.8rem;
-      font-weight: 400;
-      font-family: 'DM Sans', sans-serif;
-      color: var(--text-secondary);
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--brand-dark);
     }
 
-    /* Section labels */
-    .section-head {
-      font-size: 0.7rem;
-      font-weight: 700;
+    /* Match reason / AI highlight */
+    .detail-match-banner {
+      background: var(--green-light);
+      border: 1px solid #A7F3D0;
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      color: #065F46;
+      line-height: 1.5;
+    }
+    .detail-match-banner strong { font-weight: 600; }
+
+    /* Description */
+    .desc-label {
+      font-size: 13px;
+      font-weight: 600;
       color: var(--text-tertiary);
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 0.5rem;
-      margin-top: 1.25rem;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
     }
-
     .desc-text {
-      font-size: 0.88rem;
-      color: var(--text);
-      line-height: 1.75;
-    }
-
-    /* Looking for chip */
-    .looking-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      background: var(--brand-light);
-      border: 1.5px solid var(--brand-mid);
-      color: var(--brand);
-      font-size: 0.85rem;
-      font-weight: 600;
-      padding: 0.5rem 1rem;
-      border-radius: var(--radius-sm);
-    }
-
-    /* Location row */
-    .location-row {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      font-size: 0.85rem;
+      font-size: 15px;
       color: var(--text-secondary);
-      margin-top: 0.5rem;
+      line-height: 1.6;
+      margin-bottom: 24px;
+      white-space: pre-wrap;
     }
 
-    /* Seller card */
-    .seller-card {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-top: 1.5rem;
-      padding: 1rem 1.25rem;
-      background: var(--white);
+    /* Looking For */
+    .looking-box {
+      background: var(--bg);
       border-radius: var(--radius-md);
       border: 1px solid var(--border);
-    }
-    .seller-ava {
-      width: 48px; height: 48px;
-      border-radius: 50%;
-      color: white;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1rem; font-weight: 700;
-      flex-shrink: 0;
-    }
-    .seller-name {
-      font-family: 'Syne', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .seller-stats {
-      font-size: 0.78rem;
-      color: var(--text-secondary);
-      margin-top: 3px;
+      padding: 16px;
+      margin-bottom: 32px;
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 12px;
     }
-    .seller-rating-star { color: #EF9F27; font-size: 0.85rem; }
-    .seller-badge {
-      margin-left: auto;
-      background: #EAF3DE;
-      color: #3B6D11;
-      font-size: 0.68rem;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 20px;
-    }
-
-    /* Action buttons */
-    .action-buttons {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      margin-top: 1.5rem;
-    }
-    .btn-lg {
-      padding: 0.85rem 1.5rem;
-      font-size: 0.95rem;
-      border-radius: var(--radius-md);
-      font-weight: 700;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-decoration: none;
+    .looking-icon {
+      color: var(--brand);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
-      font-family: 'DM Sans', sans-serif;
-      border: none;
     }
-    .btn-propose {
+    .looking-icon i { width: 20px; height: 20px; }
+    .looking-text { font-size: 14px; color: var(--text); font-weight: 500; flex: 1; }
+
+    .location-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+    }
+    .location-row i { width: 16px; height: 16px; }
+
+    /* Seller card */
+    .seller-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow-sm);
+    }
+    .seller-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
       background: var(--brand);
       color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 600;
+      flex-shrink: 0;
     }
-    .btn-propose:hover { background: var(--brand-dark); transform: translateY(-1px); }
-
-    .btn-message {
-      background: var(--white);
-      color: var(--brand);
-      border: 2px solid var(--brand-mid);
+    .seller-info { flex: 1; }
+    .seller-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
     }
-    .btn-message:hover { background: var(--brand-light); }
-
-    /* Own item state */
-    .own-item-note {
-      background: var(--bg);
-      border: 1.5px dashed var(--border);
-      border-radius: var(--radius-md);
-      padding: 1rem 1.25rem;
-      text-align: center;
-      font-size: 0.85rem;
+    .seller-stats {
+      font-size: 13px;
       color: var(--text-secondary);
-      margin-top: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .own-item-note strong { color: var(--text); display: block; margin-bottom: 0.25rem; font-size: 0.9rem; }
+    .seller-stats i { width: 12px; height: 12px; color: var(--orange); fill: var(--orange); }
 
-    /* Loading skeleton */
-    .skel {
-      background: linear-gradient(90deg, var(--bg) 25%, var(--border-light) 50%, var(--bg) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.3s infinite;
-      border-radius: 6px;
+    /* Action buttons */
+    .action-row {
+      display: flex;
+      gap: 16px;
     }
-    @keyframes shimmer {
-      0%   { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
+    .btn-propose { flex: 2; font-size: 16px; padding: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-propose i { width: 18px; height: 18px; }
+    .btn-message { flex: 1; background: var(--bg); color: var(--text); border: 1px solid var(--border); font-size: 16px; padding: 14px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px;}
+    .btn-message i { width: 18px; height: 18px; }
+    .btn-message:hover { background: var(--border-light); }
 
-    .match-hint-banner {
-      display: none;
-      margin-bottom: 1rem;
-      padding: 0.75rem 1rem;
-      border-radius: var(--radius-md);
-      font-size: 0.82rem;
-      line-height: 1.45;
-      background: linear-gradient(90deg, #F0EEFF, #E8F4FF);
-      border: 1px solid #C8BFFF;
-      color: #2D2480;
-    }
-    .match-hint-banner strong { font-weight: 700; }
-
+    /* Hobby proofs */
     .hobby-gallery {
-      margin-top: 1.25rem;
-    }
-    .hobby-gallery-head {
-      font-size: 0.72rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--text-tertiary);
-      margin-bottom: 0.65rem;
-    }
-    .hobby-gallery-grid {
+      margin-top: 24px;
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 0.5rem;
+      gap: 8px;
     }
-    .hobby-gallery-grid img {
-      width: 100%;
+    .hobby-img-box {
       aspect-ratio: 1;
-      object-fit: cover;
-      border-radius: var(--radius-sm);
+      background: var(--bg);
       border: 1px solid var(--border);
-      background: #f5f5f5;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
     }
-    @media (max-width: 768px) {
-      .hobby-gallery-grid { grid-template-columns: repeat(3, 1fr); }
-    }
+    .hobby-img-box img { width: 100%; height: 100%; object-fit: cover; }
 
-    @media (max-width: 768px) {
-      .detail-hero { padding: 1rem 1rem; }
-      .hero-inner { flex-wrap: wrap; gap: 0.5rem; }
-      .hero-crumb-current { max-width: 100%; flex: 1; min-width: 0; }
-      .detail-wrap {
-        grid-template-columns: 1fr;
-        padding: 0 1rem 2rem;
-        margin: 1rem auto;
-        gap: 1.25rem;
-      }
-      .detail-img-box { height: min(52vw, 280px); min-height: 200px; }
-      .detail-title { font-size: 1.35rem; }
-      .value-bar { flex-wrap: wrap; gap: 0.5rem; }
-      .value-bar-amount { font-size: 1.25rem; }
-      .seller-card { flex-wrap: wrap; }
-      .seller-badge { margin-left: 0; }
+    @media (max-width: 960px) {
+      .detail-wrap { grid-template-columns: 1fr; padding: 0 24px 40px; margin-top: 24px; gap: 32px; }
+      .detail-img-box { height: auto; aspect-ratio: 1; }
+      .action-row { flex-direction: column; }
     }
-    @media (max-width: 360px) {
-      .detail-title { font-size: 1.15rem; word-break: break-word; }
-      .detail-img-box { height: min(48vw, 220px); min-height: 160px; }
-      .value-bar { padding: 0.65rem 0.75rem; }
-      .btn-row .btn { width: 100%; }
+    @media (max-width: 480px) {
+      .detail-hero { padding: 24px 20px; }
+      .detail-wrap { padding: 0 20px 40px; margin-top: 20px; }
+      .img-stats { grid-template-columns: 1fr; }
+      .detail-title { font-size: 24px; }
     }
   </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav class="navbar">
-  <a href="browse.html" class="logo"><span>Hobbie</span>Trades</a>
+  <a href="browse.html" class="logo">HobbieTrades</a>
   <div class="nav-search">
-    <span class="search-icon">🔍</span>
-    <input type="text" placeholder="Search items to trade..."/>
+    <i data-feather="search" class="search-icon"></i>
+    <input type="text" id="nav-search-input" placeholder="Search items to trade..." onkeydown="if(event.key==='Enter') window.location.href='browse.html?q='+this.value"/>
   </div>
   <div class="nav-links">
-    <a href="browse.html"         class="nav-link">Browse</a>
-    <a href="for-you.html"        class="nav-link">✨ For You</a>
-    <a href="messages.html"       class="nav-link">Messages</a>
+    <a href="browse.html"        class="nav-link active">Browse</a>
+    <a href="for-you.html"       class="nav-link">For You</a>
+    <a href="messages.html"      class="nav-link">Messages</a>
     <a href="create-listing.html" class="nav-link">+ List Item</a>
-    <a href="profile.html"        class="nav-avatar" id="nav-avatar">?</a>
+    <a href="profile.html"       class="nav-avatar" id="nav-avatar">?</a>
   </div>
 </nav>
 
-<!-- HERO BREADCRUMB -->
 <div class="detail-hero">
   <div class="hero-inner">
-    <a href="browse.html" class="back-link">← Browse</a>
+    <a href="browse.html" class="back-link"><i data-feather="arrow-left"></i> Browse</a>
     <span class="hero-crumb">/</span>
     <span class="hero-crumb-current" id="hero-title">Loading…</span>
   </div>
 </div>
 
-<!-- DETAIL LAYOUT -->
-<div class="detail-wrap">
-
-  <!-- LEFT: IMAGE -->
-  <div class="img-col">
-    <div class="detail-img-box" id="item-img-box">
-      <div class="detail-trade-badge">TRADE</div>
-      <div class="detail-cond-badge" id="cond-badge"></div>
-      <span id="item-emoji" style="font-size:5rem">📦</span>
-    </div>
-
-    <!-- Quick stats -->
-    <div class="img-stats">
-      <div class="img-stat">
-        <div class="img-stat-val" id="stat-cond">—</div>
-        <div class="img-stat-lbl">Condition</div>
-      </div>
-      <div class="img-stat">
-        <div class="img-stat-val" id="stat-cat">—</div>
-        <div class="img-stat-lbl">Category</div>
-      </div>
-      <div class="img-stat">
-        <div class="img-stat-val" id="stat-trades">—</div>
-        <div class="img-stat-lbl">Seller Trades</div>
-      </div>
-    </div>
-
-    <div class="hobby-gallery" id="hobby-gallery" style="display:none">
-      <div class="hobby-gallery-head">Hobby photos</div>
-      <div class="hobby-gallery-grid" id="hobby-gallery-grid"></div>
-    </div>
-  </div>
-
-  <!-- RIGHT: INFO -->
-  <div class="info-col">
-    <div class="detail-category" id="item-category">—</div>
-    <div class="detail-title"    id="item-title">Loading…</div>
-    <div class="detail-meta"     id="item-meta"></div>
-    <div id="match-hint-banner" class="match-hint-banner" role="status"></div>
-
-    <!-- Value -->
-    <div class="value-bar">
-      <div class="value-bar-left">Estimated Value</div>
-      <div class="value-bar-amount" id="item-value">—</div>
-    </div>
-
-    <!-- Description -->
-    <div class="section-head">Description</div>
-    <div class="desc-text" id="item-desc">—</div>
-
-    <!-- Looking for -->
-    <div class="section-head">Looking to trade for</div>
-    <div class="looking-chip" id="item-looking">🎯 Open to offers</div>
-
-    <!-- Location -->
-    <div class="location-row">
-      <span>📍</span>
-      <span id="item-location">Philippines</span>
-    </div>
-
-    <!-- Seller -->
-    <div class="seller-card">
-      <div class="seller-ava" id="seller-ava" style="background:var(--brand)">?</div>
-      <div>
-        <div class="seller-name"  id="seller-name">Loading…</div>
-        <div class="seller-stats">
-          <span class="seller-rating-star">★</span>
-          <span id="seller-rating">0.0</span>
-          <span>·</span>
-          <span id="seller-trades">0 trades</span>
-        </div>
-      </div>
-      <div class="seller-badge" id="seller-badge" style="display:none">Verified</div>
-    </div>
-
-    <!-- Action buttons injected by JS -->
-    <div class="action-buttons" id="action-buttons"></div>
-  </div>
+<div class="detail-wrap page-enter" id="main-content">
+  <!-- Skeletons... -->
 </div>
 
 <script src="js/api.js"></script>
 <script>
+  feather.replace();
+
   const API = window.HobbieAPI ? window.HobbieAPI.baseUrl : (
     window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1'
       ? 'http://localhost:8080'
@@ -537,241 +391,187 @@
   );
   if (window.HobbieAPI) window.HobbieAPI.wakeBackend();
 
-  const CAT_BG = {
-    Cameras:'#F0F4FF', Instruments:'#EAF3DE', Gaming:'#FAEEDA',
-    Sports:'#E6F1FB', Art:'#FAECE7', Craft:'#FBEAF0', Other:'#F5F5F5'
-  };
-  const COND_CLASS = {
-    'Like New':'cond-like-new', 'Good':'cond-good',
-    'Fair':'cond-fair', 'Worn':'cond-worn'
-  };
-  const AVATAR_COLORS = ['#AFA9EC','#9FE1CB','#F5C4B3','#85B7EB','#F7D08A','#B5EAD7','#C7CEEA'];
-
-  // ── State ──────────────────────────────────────────────────────────────────
-  const params           = new URLSearchParams(window.location.search);
-  const itemId           = parseInt(params.get('id')) || 1;
-  const loggedInUserId   = parseInt(localStorage.getItem('userId')) || null;
+  const urlParams = new URLSearchParams(window.location.search);
+  const itemId = urlParams.get('id');
+  const loggedInUserId = parseInt(localStorage.getItem('userId') || '0', 10);
   const loggedInUserName = localStorage.getItem('userName') || '?';
+  
+  document.getElementById('nav-avatar').textContent = loggedInUserName.charAt(0).toUpperCase();
 
-  document.getElementById('nav-avatar').textContent =
-    loggedInUserName.charAt(0).toUpperCase();
+  const CAT_ICON = { Cameras:'camera', Instruments:'music', Other:'box' };
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
+  function formatPeso(v) { return '₱' + Number(v || 0).toLocaleString('en-PH'); }
+
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+  }
+
   function getInitials(name) {
     if (!name) return '?';
     return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
   }
-  function avatarColor(id) {
-    return AVATAR_COLORS[(id || 0) % AVATAR_COLORS.length];
-  }
-  function formatPeso(v) {
-    return '₱' + Number(v || 0).toLocaleString('en-PH');
-  }
-  function formatDate(dateStr) {
-    if (!dateStr) return 'recently';
-    const diff = Math.floor((new Date() - new Date(dateStr)) / 86400000);
-    if (diff === 0) return 'today';
-    if (diff === 1) return '1 day ago';
-    return `${diff} days ago`;
-  }
 
-  function getItemDisplayEmoji(title, category) {
-    const t = (title || '').toLowerCase();
-    if ((/\bpiano\b|grand piano|upright piano|digital piano/.test(t)) && !/nintendo/.test(t)) return '🎹';
-    if (/\bcello\b|\bviolin\b|\bviola\b/.test(t)) return '🎻';
-    if (/electric\s*guitar|acoustic\s*guitar|bass\s*guitar|\bguitar\b|\bbass\b(?!ball)/.test(t)) return '🎸';
-    if (/\bdrum\b|cymbal/.test(t)) return '🥁';
-    if (/\bsax|\btrumpet|\btrombone|\bclarinet|\bflute|\boboe|\bbassoon\b/.test(t)) return '🎷';
-    if (/\bmicrophone\b|\bmic\b/.test(t)) return '🎤';
-    if (/\bukulele\b|\bbanjo\b|\bharp\b|\bmandolin\b/.test(t)) return '🪕';
-    if (/canon|nikon|sony\s*alpha|\bcamera\b|\bdslr\b|\blens\b|gopro|mirrorless/.test(t)) return '📷';
-    if (/nintendo|playstation|\bps5\b|\bxbox\b|steam\s*deck|game\s*console/.test(t)) return '🎮';
-    if (/\bbike\b|\bbicycle\b|skate|badminton|tennis|racket/.test(t)) return '🛹';
-    if (/paint|canvas|brush|easel|sketch/.test(t)) return '🎨';
-    if (/sewing|yarn|crochet|knit|craft/.test(t)) return '🧵';
-    const fallback = { Cameras:'📷', Instruments:'🎼', Sports:'⚽', Gaming:'🎮', Art:'🎨', Craft:'🧵', Other:'📦' };
-    return fallback[category] || '📦';
-  }
+  const AVATAR_COLORS = ['#AFA9EC','#9FE1CB','#F5C4B3','#85B7EB','#F7D08A','#B5EAD7','#C7CEEA'];
+  function avatarColor(id) { return AVATAR_COLORS[(id||0) % AVATAR_COLORS.length]; }
 
-  // ── Load item ──────────────────────────────────────────────────────────────
-  fetch(`${API}/api/items/${itemId}`)
-    .then(res => { if (!res.ok) throw new Error(); return res.json(); })
-    .then(item => renderItem(item))
-    .catch(() => {
-      document.getElementById('item-title').textContent = 'Could not load item.';
-      document.getElementById('item-desc').textContent  =
-        'Make sure your Spring Boot server is running on port 8080.';
-    });
+  async function loadItem() {
+    if (!itemId) {
+      document.getElementById('main-content').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text-secondary)">Item not found.</div>';
+      return;
+    }
 
-  function renderItem(item) {
-    const emoji    = getItemDisplayEmoji(item.title, item.category);
-    const bg       = CAT_BG[item.category]     || '#F5F5F5';
-    const cond     = item.conditionLabel        || '';
-    const val      = parseFloat(item.estimatedValue) || 0;
-    const seller   = item.user || {};
-    const initials = getInitials(seller.name);
-    const color    = avatarColor(seller.id);
-    const isOwnItem = loggedInUserId && seller.id === loggedInUserId;
+    try {
+      const res = await fetch(`${API}/api/items/${itemId}`);
+      if (!res.ok) throw new Error('Not found');
+      const item = await res.json();
+      
+      let matchHtml = '';
+      if (loggedInUserId && item.user && item.user.id !== loggedInUserId) {
+        try {
+          const mRes = await fetch(`${API}/api/trades/matches?userId=${loggedInUserId}&limit=60`);
+          if (mRes.ok) {
+            const matches = await mRes.json();
+            const mh = matches.find(m => m.item && m.item.id == itemId);
+            if (mh && mh.matchPercent >= 22) {
+              matchHtml = `
+                <div class="detail-match-banner">
+                  <i data-feather="target" style="width:16px;height:16px;vertical-align:text-bottom;margin-right:6px"></i>
+                  <strong>${mh.matchPercent}% Match:</strong> ${escapeHtml(mh.matchReason || 'Great potential trade.')}
+                </div>`;
+            }
+          }
+        } catch (_) {}
+      }
 
-    // ── Hero breadcrumb ──
-    document.getElementById('hero-title').textContent = item.title || 'Item Detail';
-
-    // ── Image box ──
-    const imgBox = document.getElementById('item-img-box');
-    imgBox.style.background = (item.photoUrl || item.id) ? '#fff' : bg;
-
-    if (item.photoUrl || item.id) {
-      document.getElementById('item-emoji').style.display = 'none';
-      const img = document.createElement('img');
-      img.src = window.HobbieAPI
+      const seller = item.user || {};
+      const sId    = seller.id || 0;
+      const sName  = seller.name || 'Unknown User';
+      const sInit  = getInitials(sName);
+      const sColor = avatarColor(sId);
+      const sLoc   = item.location || seller.location || 'Philippines';
+      const cond   = item.conditionLabel || '';
+      const icon   = CAT_ICON[item.category] || 'box';
+      
+      const imgSrc = window.HobbieAPI
         ? window.HobbieAPI.resolveImageUrl(item.photoUrl, item.id)
-        : `${API}${item.photoUrl || '/api/items/' + item.id + '/photo'}`;
-      img.alt = item.title;
-      img.onerror = () => {
-        img.remove();
-        document.getElementById('item-emoji').style.display = '';
-        imgBox.style.background = bg;
-      };
-      imgBox.appendChild(img);
-    } else {
-      document.getElementById('item-emoji').textContent = emoji;
-    }
+        : (item.photoUrl ? `${API}${item.photoUrl}` : `${API}/api/items/${item.id}/photo`);
 
-    // ── Hobby gallery ──
-    const galleryUrls = window.HobbieAPI
-      ? window.HobbieAPI.resolveGalleryUrls(item)
-      : (item.galleryUrls
-          ? item.galleryUrls.split('|').filter(Boolean).map(u => `${API}${u}`)
-          : [1, 2, 3, 4, 5].map(s => `${API}/api/items/${item.id}/gallery/${s}`));
-    const galleryWrap = document.getElementById('hobby-gallery');
-    const galleryGrid = document.getElementById('hobby-gallery-grid');
-    galleryGrid.innerHTML = '';
-    galleryWrap.style.display = 'none';
-    if (galleryUrls.length) {
-      if (item.galleryUrls) galleryWrap.style.display = '';
-      galleryUrls.forEach((src, idx) => {
-        const img = document.createElement('img');
-        img.src = src;
-        img.alt = `Hobby photo ${idx + 1}`;
-        img.loading = 'lazy';
-        img.onerror = () => img.remove();
-        img.onload = () => { galleryWrap.style.display = ''; };
-        galleryGrid.appendChild(img);
-      });
-    }
+      let hPhotos = '';
+      if (item.hobbyPhotoUrls && item.hobbyPhotoUrls.length > 0) {
+        const boxes = item.hobbyPhotoUrls.map((url, idx) => {
+           const u = window.HobbieAPI ? window.HobbieAPI.resolveImageUrl(url, item.id, idx+1) : `${API}${url}`;
+           return `<div class="hobby-img-box"><img src="${u}" loading="lazy" /></div>`;
+        });
+        hPhotos = `<div class="hobby-gallery">${boxes.join('')}</div>`;
+      }
 
-    // ── Condition badge ──
-    const condBadge = document.getElementById('cond-badge');
-    if (cond) {
-      condBadge.textContent = cond;
-      condBadge.className   = `detail-cond-badge ${COND_CLASS[cond] || ''}`;
-    } else {
-      condBadge.style.display = 'none';
-    }
+      const dateStr = item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'Recently';
 
-    // ── Quick stats ──
-    document.getElementById('stat-cond').textContent   = cond   || '—';
-    document.getElementById('stat-cat').textContent    = item.category || '—';
-    document.getElementById('stat-trades').textContent = seller.tradeCount != null ? seller.tradeCount : '—';
+      let actionRow = '';
+      if (!loggedInUserId) {
+        actionRow = `<a href="index.html" class="btn btn-primary btn-full btn-lg" style="margin-top:16px">Log in to propose a trade</a>`;
+      } else if (sId === loggedInUserId) {
+        actionRow = `<a href="profile.html" class="btn btn-outline btn-full btn-lg" style="margin-top:16px">View your profile</a>`;
+      } else {
+        actionRow = `
+          <div class="action-row" style="margin-top:16px">
+            <a href="propose-trade.html?targetItemId=${item.id}" class="btn btn-primary btn-propose"><i data-feather="refresh-cw"></i> Propose a trade</a>
+            <a href="messages.html?userId=${sId}" class="btn btn-message"><i data-feather="message-circle"></i> Message</a>
+          </div>`;
+      }
 
-    // ── Info column ──
-    document.getElementById('item-category').textContent = item.category || 'General';
-    document.getElementById('item-title').textContent    = item.title    || 'Untitled';
-    document.getElementById('item-meta').innerHTML =
-      `Posted by <strong>${seller.name || 'Unknown'}</strong>
-       <span class="meta-dot">·</span>
-       ${item.location || 'Philippines'}
-       <span class="meta-dot">·</span>
-       ${formatDate(item.createdAt)}`;
+      document.getElementById('hero-title').textContent = item.title;
 
-    document.getElementById('item-value').innerHTML =
-      `${formatPeso(val)} <span>est.</span>`;
-
-    document.getElementById('item-desc').textContent =
-      item.description || 'No description provided.';
-
-    document.getElementById('item-looking').textContent =
-      item.lookingFor ? `🎯 ${item.lookingFor}` : '🎯 Open to offers';
-
-    document.getElementById('item-location').textContent =
-      item.location || 'Philippines';
-
-    // ── Seller card ──
-    document.getElementById('seller-ava').textContent   = initials;
-    document.getElementById('seller-ava').style.background = color;
-    document.getElementById('seller-name').textContent  = seller.name || 'Unknown';
-    document.getElementById('seller-rating').textContent =
-      `${parseFloat(seller.rating || 0).toFixed(1)}`;
-    document.getElementById('seller-trades').textContent =
-      `${seller.tradeCount || 0} trades`;
-
-    if (seller.tradeCount >= 5) {
-      document.getElementById('seller-badge').style.display = '';
-    }
-
-    const matchBanner = document.getElementById('match-hint-banner');
-    matchBanner.style.display = 'none';
-    matchBanner.textContent = '';
-    if (loggedInUserId && !isOwnItem) {
-      fetch(`${API}/api/trades/matches?userId=${loggedInUserId}&limit=50`)
-        .then(r => r.json())
-        .then(matches => {
-          const row = matches.find(x => x.item && x.item.id === item.id);
-          if (!row) return;
-          const pct = row.matchPercent != null ? row.matchPercent : (row.matchScore || 0);
-          if (pct < 22) return;
-          const why = row.matchReason || 'Rule-based match from your listings and preferences.';
-          matchBanner.innerHTML =
-            '<strong>Recommended for you</strong> · ' + pct + '% match — ' +
-            String(why).replace(/</g, '&lt;');
-          matchBanner.style.display = 'block';
-        })
-        .catch(() => {});
-    }
-
-    // ── Action buttons ──
-    const actionsEl = document.getElementById('action-buttons');
-
-    if (isOwnItem) {
-      // User is viewing their own item
-      actionsEl.innerHTML = `
-        <div class="own-item-note">
-          <strong>This is your listing</strong>
-          You can manage it from your profile page.
+      document.getElementById('main-content').innerHTML = `
+        <div class="img-col">
+          <div class="detail-img-box">
+            ${imgSrc 
+              ? `<img src="${imgSrc}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+                 <div class="img-placeholder-icon" style="display:none"><i data-feather="${icon}"></i></div>`
+              : `<div class="img-placeholder-icon"><i data-feather="${icon}"></i></div>`
+            }
+            <div class="detail-trade-badge">TRADE</div>
+            ${cond ? `<div class="detail-cond-badge">${cond}</div>` : ''}
+          </div>
+          <div class="img-stats">
+            <div class="img-stat">
+              <div class="img-stat-val">${cond || '—'}</div>
+              <div class="img-stat-lbl">Condition</div>
+            </div>
+            <div class="img-stat">
+              <div class="img-stat-val">${item.category || '—'}</div>
+              <div class="img-stat-lbl">Category</div>
+            </div>
+            <div class="img-stat">
+              <div class="img-stat-val">${seller.tradeCount != null ? seller.tradeCount : '—'}</div>
+              <div class="img-stat-lbl">Past Trades</div>
+            </div>
+          </div>
+          ${hPhotos}
         </div>
-        <a href="profile.html" class="btn-lg btn-message">👤 Go to my profile</a>`;
-    } else if (!loggedInUserId) {
-      // Not logged in
-      actionsEl.innerHTML = `
-        <a href="index.html" class="btn-lg btn-propose">🔄 Log in to propose a trade</a>`;
-    } else {
-      // Normal flow — propose or message
-      const proposeUrl =
-        `propose-trade.html?itemId=${item.id}` +
-        `&itemTitle=${encodeURIComponent(item.title || '')}` +
-        `&itemValue=${item.estimatedValue || 0}` +
-        `&itemEmoji=${encodeURIComponent(emoji)}` +
-        `&sellerName=${encodeURIComponent(seller.name || '')}` +
-        `&sellerInitials=${encodeURIComponent(initials)}` +
-        `&sellerRating=${seller.rating || 0}` +
-        `&sellerTrades=${seller.tradeCount || 0}` +
-        `&sellerId=${seller.id || ''}`;
 
-      const messageUrl =
-        `messages.html?itemId=${item.id}` +
-        `&itemTitle=${encodeURIComponent(item.title || '')}` +
-        `&itemValue=${item.estimatedValue || 0}` +
-        `&itemEmoji=${encodeURIComponent(emoji)}` +
-        `&sellerName=${encodeURIComponent(seller.name || '')}` +
-        `&sellerInitials=${encodeURIComponent(initials)}` +
-        `&sellerRating=${seller.rating || 0}` +
-        `&sellerTrades=${seller.tradeCount || 0}`;
+        <div class="info-col fade-in">
+          <div class="detail-category">${item.category || 'General'}</div>
+          <div class="detail-title">${escapeHtml(item.title)}</div>
+          
+          <div class="detail-meta">
+            <span>Listed ${dateStr}</span>
+            <span class="meta-dot">•</span>
+            <span>ID: ${item.id}</span>
+          </div>
 
-      actionsEl.innerHTML = `
-        <a href="${proposeUrl}" class="btn-lg btn-propose">🔄 Propose a trade</a>
-        <a href="${messageUrl}" class="btn-lg btn-message">💬 Send a message</a>`;
+          ${matchHtml}
+
+          <div class="value-bar">
+            <div class="value-bar-left">Estimated Value</div>
+            <div class="value-bar-amount">${formatPeso(item.estimatedValue)}</div>
+          </div>
+
+          <div class="desc-label">About this item</div>
+          <div class="desc-text">${escapeHtml(item.description) || 'No description provided.'}</div>
+
+          ${item.lookingFor ? `
+          <div class="looking-box">
+            <div class="looking-icon"><i data-feather="refresh-cw"></i></div>
+            <div class="looking-text"><strong>Looking for:</strong> ${escapeHtml(item.lookingFor)}</div>
+          </div>` : `
+          <div class="looking-box">
+            <div class="looking-icon"><i data-feather="check-circle"></i></div>
+            <div class="looking-text"><strong>Open to offers</strong></div>
+          </div>`}
+
+          <div class="location-row">
+            <i data-feather="map-pin"></i> ${escapeHtml(sLoc)}
+          </div>
+
+          <div class="seller-card">
+            <div class="seller-avatar" style="background:${sColor}">${sInit}</div>
+            <div class="seller-info">
+              <div class="seller-name">${escapeHtml(sName)}</div>
+              <div class="seller-stats">
+                <i data-feather="star"></i> ${(parseFloat(seller.rating)||0).toFixed(1)} Rating
+              </div>
+            </div>
+          </div>
+
+          ${actionRow}
+        </div>
+      `;
+
+      feather.replace();
+
+    } catch(e) {
+      document.getElementById('main-content').innerHTML = `
+        <div style="grid-column:1/-1;text-align:center;padding:60px;background:var(--white);border-radius:var(--radius-md);border:1px solid var(--border)">
+          <i data-feather="alert-circle" style="color:var(--text-tertiary);width:48px;height:48px;margin-bottom:16px"></i>
+          <h3 style="margin-bottom:8px">Error loading item</h3>
+          <p style="color:var(--text-secondary)">Please check your connection and ensure the server is running.</p>
+        </div>`;
+      feather.replace();
     }
   }
+
+  loadItem();
 </script>
 </body>
 </html>
