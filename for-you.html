@@ -33,7 +33,7 @@
       border-radius: 50%;
     }
     .hero-inner {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
       position: relative;
       z-index: 1;
@@ -55,7 +55,7 @@
 
     /* ── PREF FILTER BAR ── */
     .pref-wrap {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 24px auto 0;
       padding: 0 40px;
     }
@@ -95,7 +95,7 @@
 
     /* ── SIGNALS ── */
     .fy-signals-wrap {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 16px auto 8px;
       padding: 0 40px;
     }
@@ -134,9 +134,9 @@
 
     /* ── MAIN LAYOUT ── */
     .fy-layout {
-      max-width: 1200px;
-      margin: 24px auto 48px;
-      padding: 0 40px;
+      width: 100%;
+      margin: 0;
+      padding: 0 0 24px;
     }
 
     /* ── SECTION HEADERS ── */
@@ -356,10 +356,16 @@
     }
     .card-value span { font-size: 12px; font-weight: 500; color: var(--text-secondary); }
     .trade-btn-sm {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      line-height: 1;
+      white-space: nowrap;
       background: var(--brand);
       color: white;
       border: none;
-      padding: 6px 14px;
+      padding: 8px 14px;
       border-radius: var(--radius-sm);
       font-family: inherit;
       font-size: 13px;
@@ -367,6 +373,7 @@
       cursor: pointer;
       transition: all 0.2s;
     }
+    .trade-btn-sm i { width: 14px; height: 14px; flex-shrink: 0; }
     .trade-btn-sm:hover { background: var(--brand-dark); transform: translateY(-1px); }
 
     /* ── SKELETON ── */
@@ -433,7 +440,7 @@
     }
   </style>
 </head>
-<body>
+<body class="page-bg">
 
 <!-- NAV -->
 <nav class="navbar">
@@ -478,7 +485,30 @@
 </div>
 
 <!-- MAIN LAYOUT -->
-<div class="fy-layout page-enter">
+<div class="page-shell page-enter">
+  <aside class="page-rail">
+    <div class="rail-panel rail-panel-accent">
+      <div class="rail-kicker">Personalized</div>
+      <div class="rail-title">Why these picks?</div>
+      <div class="rail-steps">
+        <div class="rail-step">
+          <div class="rail-step-num">1</div>
+          <div class="rail-step-body"><strong>Your listings</strong>We match value and category against what others offer.</div>
+        </div>
+        <div class="rail-step">
+          <div class="rail-step-num">2</div>
+          <div class="rail-step-body"><strong>Wish text</strong>"Looking for" lines on listings boost relevant results.</div>
+        </div>
+        <div class="rail-step">
+          <div class="rail-step-num">3</div>
+          <div class="rail-step-body"><strong>Trade history</strong>Past trades help surface similar gear you might want.</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="page-main">
+<div class="fy-layout">
 
   <!-- TOP MATCHES -->
   <div class="section-header">
@@ -501,6 +531,22 @@
   </div>
   <div class="item-grid" id="new-grid"></div>
 
+</div>
+  </div>
+
+  <aside class="page-rail">
+    <div class="rail-panel">
+      <div class="rail-kicker">Match score</div>
+      <div class="rail-title">Percent badges</div>
+      <p class="rail-text">Higher scores mean closer category, value, and wish-list alignment with your active listings.</p>
+    </div>
+    <div class="rail-panel">
+      <div class="rail-kicker">Explore more</div>
+      <div class="rail-title">Browse everything</div>
+      <p class="rail-text">Use filters on Browse to search all open trades when you want something specific.</p>
+      <a href="browse.html" class="btn btn-outline btn-sm" style="margin-top:12px;width:100%">Open Browse</a>
+    </div>
+  </aside>
 </div>
 
 <script src="js/api.js"></script>

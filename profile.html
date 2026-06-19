@@ -23,7 +23,7 @@
     }
 
     /* ── Page wrap ── */
-    .profile-page { max-width: 1100px; margin: 0 auto; padding: 0 40px 80px; }
+    .profile-page { width: 100%; padding: 0 0 48px; }
 
     /* ── Identity block ── */
     .identity-block {
@@ -161,8 +161,10 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
+      line-height: 1;
       transition: all 0.2s;
     }
+    .lc-delete-btn i { width: 14px; height: 14px; flex-shrink: 0; }
     .lc-delete-btn:hover { background: var(--red); color: white; border-color: var(--red); }
 
     /* Reviews */
@@ -186,7 +188,7 @@
     }
   </style>
 </head>
-<body>
+<body class="page-bg">
 
 <nav class="navbar">
   <a href="browse.html" class="logo">HobbieTrades</a>
@@ -201,7 +203,21 @@
 
 <div class="cover"></div>
 
-<div class="profile-page page-enter">
+<div class="page-shell page-enter">
+  <aside class="page-rail">
+    <div class="rail-panel rail-panel-accent">
+      <div class="rail-kicker">Your profile</div>
+      <div class="rail-title">How others see you</div>
+      <p class="rail-text">Ratings, completed trades, and active listings build trust before someone proposes a swap.</p>
+    </div>
+    <div class="rail-panel">
+      <div class="rail-kicker">Listings</div>
+      <div class="rail-title">Manage your gear</div>
+      <p class="rail-text">Remove a listing anytime with the button under each card — it disappears from browse immediately.</p>
+    </div>
+  </aside>
+
+  <div class="page-main profile-page">
   <div class="identity-block">
     <div class="big-ava" id="p-ava">?</div>
     <div class="identity-text">
@@ -277,6 +293,20 @@
       </div>
     </main>
   </div>
+  </div>
+
+  <aside class="page-rail">
+    <div class="rail-panel">
+      <div class="rail-kicker">Trust</div>
+      <div class="rail-title">Trade reputation</div>
+      <p class="rail-text">Reviews after completed trades cover communication, item accuracy, and meetup reliability.</p>
+    </div>
+    <div class="rail-panel">
+      <div class="rail-kicker">Tips</div>
+      <div class="rail-title">Keep listings fresh</div>
+      <p class="rail-text">Remove gear you've already traded or no longer want to swap — it keeps matches accurate for everyone.</p>
+    </div>
+  </aside>
 </div>
 
 <script src="js/api.js"></script>

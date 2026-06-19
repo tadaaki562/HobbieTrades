@@ -9,9 +9,10 @@
   <script src="https://unpkg.com/feather-icons"></script>
   <style>
     .create-wrap {
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 0 40px;
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 0;
     }
 
     /* ── PAGE HEADER ── */
@@ -302,7 +303,6 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     @media (max-width: 768px) {
-      .create-wrap { padding: 24px; margin: 16px auto; }
       .form-grid { grid-template-columns: 1fr; }
       .upload-actions { flex-direction: column; }
       .form-actions { flex-direction: column; }
@@ -310,7 +310,7 @@
     }
   </style>
 </head>
-<body>
+<body class="page-bg">
 
 <nav class="navbar">
   <a href="browse.html" class="logo">HobbieTrades</a>
@@ -327,12 +327,37 @@
   </div>
 </nav>
 
-<div class="create-wrap page-enter">
-  <div class="page-header">
-    <h1 class="page-title">List an Item</h1>
-    <div class="page-sub">Upload a photo to automatically fill in details. Make sure you show the item clearly.</div>
+<div class="page-hero-mini">
+  <div class="page-hero-mini-inner">
+    <h1>List an Item</h1>
+    <p>Upload a photo — AI verifies your gear, locks the details, and sets a fair market value for trading.</p>
   </div>
+</div>
 
+<div class="page-shell page-enter">
+  <aside class="page-rail">
+    <div class="rail-panel rail-panel-accent">
+      <div class="rail-kicker">Before you start</div>
+      <div class="rail-title">What you'll need</div>
+      <div class="rail-steps">
+        <div class="rail-step">
+          <div class="rail-step-num">1</div>
+          <div class="rail-step-body"><strong>Item photo</strong>One clear shot of the camera or instrument you're trading.</div>
+        </div>
+        <div class="rail-step">
+          <div class="rail-step-num">2</div>
+          <div class="rail-step-body"><strong>5 hobby photos</strong>Proof you're a real hobbyist — any camera or instrument in frame.</div>
+        </div>
+        <div class="rail-step">
+          <div class="rail-step-num">3</div>
+          <div class="rail-step-body"><strong>AI review</strong>Title, category, condition, and value are set automatically.</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="page-main">
+<div class="create-wrap">
   <div id="form-alert" class="alert" style="display:none"></div>
 
   <form id="create-form" onsubmit="event.preventDefault(); submitListing();">
@@ -446,6 +471,26 @@
       <button type="submit" class="btn btn-primary" id="btn-submit">List Item</button>
     </div>
   </form>
+</div>
+  </div>
+
+  <aside class="page-rail">
+    <div class="rail-panel">
+      <div class="rail-kicker">Locked fields</div>
+      <div class="rail-title">AI sets the value</div>
+      <p class="rail-text">Title, category, condition, and estimated value are locked after analysis — this keeps trades fair.</p>
+    </div>
+    <div class="rail-panel">
+      <div class="rail-kicker">Categories</div>
+      <div class="rail-title">Cameras & instruments</div>
+      <p class="rail-text">Only verified hobby gear is accepted. Other categories are not supported on HobbieTrades.</p>
+    </div>
+    <div class="rail-panel">
+      <div class="rail-kicker">Market data</div>
+      <div class="rail-title">Refresh if needed</div>
+      <p class="rail-text">If the value estimate doesn't load, use Refresh market data before submitting.</p>
+    </div>
+  </aside>
 </div>
 
 <!-- ── ESP32 MODAL ── -->

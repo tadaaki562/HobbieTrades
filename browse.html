@@ -478,10 +478,12 @@
     }
     .card-match-reason i { width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; }
 
-    /* Condition badge on card */
+    /* Condition badge on card — bottom-right so it never overlaps YOURS */
     .card-cond-badge {
       position: absolute;
-      top: 12px; right: 12px;
+      bottom: 12px;
+      right: 12px;
+      top: auto;
       font-size: 11px;
       font-weight: 600;
       padding: 4px 10px;
@@ -489,6 +491,7 @@
       box-shadow: var(--shadow-sm);
       background: var(--white);
       color: var(--text-secondary);
+      border: 1px solid var(--border);
     }
 
     .card-body {
@@ -550,10 +553,16 @@
     .card-value span { font-size: 12px; font-weight: 500; color: var(--text-secondary); }
 
     .trade-btn-sm {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      line-height: 1;
+      white-space: nowrap;
       background: var(--brand);
       color: white;
       border: none;
-      padding: 6px 14px;
+      padding: 8px 14px;
       border-radius: var(--radius-sm);
       font-family: inherit;
       font-size: 13px;
@@ -561,6 +570,7 @@
       cursor: pointer;
       transition: all 0.2s;
     }
+    .trade-btn-sm i { width: 14px; height: 14px; flex-shrink: 0; }
     .trade-btn-sm:hover { background: var(--brand-dark); transform: translateY(-1px); }
 
     /* ── SKELETON ── */
@@ -611,7 +621,6 @@
       display: flex; align-items: center; justify-content: center;
     }
     .page-btn:hover { border-color: var(--text-tertiary); color: var(--text); background: var(--bg); }
-    .trade-btn-sm:hover { background: var(--brand-dark); }
 
     .card-delete-btn {
       background: var(--red-light) !important;
@@ -626,8 +635,9 @@
       position: absolute;
       top: 12px;
       right: 12px;
-      background: var(--orange-light);
-      color: var(--orange);
+      background: var(--brand-light);
+      color: var(--brand-dark);
+      border: 1px solid var(--brand-mid);
       font-size: 10px;
       font-weight: 700;
       padding: 4px 8px;
