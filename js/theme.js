@@ -45,11 +45,17 @@
   }
 
   function mountToggle() {
-    if (document.getElementById('theme-toggle')) {
+    const existing = document.getElementById('theme-toggle');
+    if (existing) {
+      if (!existing.dataset.wired) {
+        existing.addEventListener('click', toggle);
+        existing.dataset.wired = '1';
+      }
       updateToggleIcon();
       return;
     }
-    const anchor = document.querySelector('.navbar .logo') || document.querySelector('.auth-logo');
+
+    const anchor = document.querySelector('.navbar .logo');
     if (!anchor) return;
 
     const wrap = document.createElement('div');
