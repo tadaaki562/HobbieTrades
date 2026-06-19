@@ -184,6 +184,40 @@
     }
     .msg-row.me .msg-time { text-align: right; }
 
+    /* Inline system / trade status updates */
+    .msg-sys-event {
+      align-self: center;
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+      margin: 4px 0;
+    }
+    .msg-sys-event-inner {
+      display: inline-flex;
+      align-items: flex-start;
+      gap: 8px;
+      background: var(--bg);
+      border: 1px dashed var(--border);
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--text-secondary);
+      text-align: left;
+    }
+    .msg-sys-event-inner i {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      margin-top: 2px;
+      color: var(--brand);
+    }
+    .msg-sys-event-time {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-top: 6px;
+    }
+
     /* Trade System Message */
     .msg-sys {
       align-self: center;
@@ -388,6 +422,26 @@
     return d.toLocaleDateString() === new Date().toLocaleDateString()
       ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       : d.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  /** Trade lifecycle updates — not user-typed chat. */
+  function isSystemMessage(m) {
+    if (m.system || m.isSystem) return true;
+    const c = m.content || '';
+    return /^Trade accepted by /.test(c)
+      || / confirmed meetup completion\. Waiting for /.test(c)
+      || c === 'Trade completed. Both traders confirmed the meetup.';
+  }
+
+  function renderSystemMessage(m) {
+    return `
+      <div class="msg-sys-event">
+        <div class="msg-sys-event-inner">
+          <i data-feather="bell"></i>
+          <span>${escapeHtml(m.content)}</span>
+        </div>
+        <div class="msg-sys-event-time">${formatMsgTime(m.sentAt)}</div>
+      </div>`;
   }
 
   function statusClass(status) {
@@ -632,6 +686,7 @@
         html += `<div style="text-align:center;padding:24px;color:var(--text-tertiary);font-size:14px">Say hello and coordinate your meetup.</div>`;
       } else {
         html += msgs.map(m => {
+          if (isSystemMessage(m)) return renderSystemMessage(m);
           const isMe = m.sender && m.sender.id === loggedInUserId;
           return `
             <div class="msg-row ${isMe ? 'me' : ''}">
