@@ -26,19 +26,17 @@
 
     /* ── Identity block ── */
     .identity-block {
-      display: flex; align-items: flex-end; gap: 24px;
-      margin-top: -48px; padding-bottom: 32px; flex-wrap: wrap;
-      position: relative; z-index: 2;
+      display: flex; align-items: flex-start; gap: 24px;
+      padding: 32px 0; flex-wrap: wrap;
     }
     .big-ava {
       width: 104px; height: 104px; border-radius: 50%;
-      border: 4px solid var(--white);
-      box-shadow: var(--shadow-md);
+      box-shadow: var(--shadow-sm);
       display: flex; align-items: center; justify-content: center;
       font-size: 32px; font-weight: 700; color: white;
       flex-shrink: 0; background: var(--brand);
     }
-    .identity-text { flex: 1; min-width: 200px; padding-bottom: 8px; }
+    .identity-text { flex: 1; min-width: 200px; padding-top: 12px; }
     .identity-name {
       font-size: 28px; font-weight: 800;
       letter-spacing: -0.02em; margin-bottom: 8px;
@@ -48,7 +46,7 @@
     .identity-meta div { display: flex; align-items: center; gap: 6px; }
     .identity-meta i { width: 14px; height: 14px; }
     
-    .identity-actions { display: flex; gap: 12px; flex-wrap: wrap; padding-bottom: 8px; }
+    .identity-actions { display: flex; gap: 12px; flex-wrap: wrap; padding-top: 12px; }
 
     /* ── Own banner ── */
     .own-banner {
@@ -236,12 +234,19 @@
     <main>
       <div class="feed-tabs">
         <div class="feed-tab active" onclick="switchTab('active')" id="tab-active">Active Listings (0)</div>
+        <div class="feed-tab" onclick="switchTab('trades')" id="tab-trades">Past Trades (0)</div>
         <div class="feed-tab" onclick="switchTab('reviews')" id="tab-reviews">Reviews (0)</div>
       </div>
 
       <div id="view-active">
         <div class="list-grid" id="grid-active">
           <div class="p-empty"><i data-feather="package"></i><div>Loading listings...</div></div>
+        </div>
+      </div>
+
+      <div id="view-trades" style="display:none">
+        <div class="list-grid" id="grid-trades">
+          <div class="p-empty"><i data-feather="refresh-cw"></i><div>Loading past trades...</div></div>
         </div>
       </div>
 
@@ -281,6 +286,7 @@
 
   let profileUser = null;
   let profileListings = [];
+  let profileTrades = [];
   let profileReviews = [];
   let subRatings = { communication: 0, itemAsDescribed: 0, meetupReliability: 0 };
 
@@ -309,6 +315,7 @@
 
       profileUser = data.user;
       profileListings = data.items || [];
+      profileTrades = data.trades || [];
       profileReviews = data.reviews || [];
       subRatings = data.subRatings || subRatings;
 
@@ -428,6 +435,57 @@
       }).join('');
     }
 
+    if (profileTrades.length === 0) {
+      document.getElementById('grid-trades').innerHTML = `
+        <div class="p-empty" style="grid-column:1/-1">
+          <i data-feather="refresh-cw"></i>
+          <div>No past trades.</div>
+        </div>`;
+    } else {
+      // Show completed trades
+      const completedTrades = profileTrades.filter(t => t.status === 'COMPLETED');
+      if (completedTrades.length === 0) {
+        document.getElementById('grid-trades').innerHTML = `
+          <div class="p-empty" style="grid-column:1/-1">
+            <i data-feather="refresh-cw"></i>
+            <div>No completed trades yet.</div>
+          </div>`;
+      } else {
+        document.getElementById('grid-trades').innerHTML = completedTrades.map((t, idx) => {
+          // Identify the item that belongs to the other person, to show what was received/traded
+          const isProposer = t.proposingUser && t.proposingUser.id === profileId;
+          const tradedItem = isProposer ? t.targetItem : t.proposerItem;
+          
+          if (!tradedItem) return '';
+          
+          const icon = CAT_ICON[tradedItem.category] || 'box';
+          const imgSrc = window.HobbieAPI
+            ? window.HobbieAPI.resolveImageUrl(tradedItem.photoUrl, tradedItem.id)
+            : (tradedItem.photoUrl ? `${API}${tradedItem.photoUrl}` : (tradedItem.id ? `${API}/api/items/${tradedItem.id}/photo` : null));
+
+          const staggerClass = idx < 10 ? `animate-slide-up stagger-${(idx % 5) + 1}` : 'animate-slide-up';
+          const date = t.updatedAt ? new Date(t.updatedAt).toLocaleDateString() : 'Recently';
+
+          return `
+            <a href="item-detail.html?id=${tradedItem.id}" class="list-card ${staggerClass}">
+              <div class="lc-img">
+                ${imgSrc 
+                  ? `<img src="${imgSrc}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+                     <div class="lc-placeholder" style="display:none"><i data-feather="${icon}"></i></div>` 
+                  : `<div class="lc-placeholder"><i data-feather="${icon}"></i></div>`}
+                <div class="lc-status" style="background:var(--brand-light);color:var(--brand-dark)">COMPLETED</div>
+              </div>
+              <div class="lc-body">
+                <div class="lc-title">Traded for: ${escapeHtml(tradedItem.title)}</div>
+                <div class="lc-meta">
+                  <span>${date}</span>
+                </div>
+              </div>
+            </a>`;
+        }).join('');
+      }
+    }
+
     if (profileReviews.length === 0) {
       document.getElementById('list-reviews').innerHTML = `
         <div class="p-empty">
@@ -466,8 +524,11 @@
 
   function switchTab(view) {
     document.getElementById('tab-active').classList.remove('active');
+    document.getElementById('tab-trades').classList.remove('active');
     document.getElementById('tab-reviews').classList.remove('active');
+    
     document.getElementById('view-active').style.display = 'none';
+    document.getElementById('view-trades').style.display = 'none';
     document.getElementById('view-reviews').style.display = 'none';
     
     document.getElementById('tab-' + view).classList.add('active');
