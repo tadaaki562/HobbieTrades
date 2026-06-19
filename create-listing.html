@@ -408,8 +408,8 @@
 
     <!-- ── ESTIMATED VALUE ── -->
     <div class="form-group">
-      <label class="form-label">Your estimated value (₱) * <span id="val-lock-hint" style="display:none;font-weight:400;color:var(--text-tertiary);text-transform:none">(from estimate)</span></label>
-      <input type="number" class="form-control" id="f-value" placeholder="e.g. 5000" min="0" required/>
+      <label class="form-label">Your estimated value (₱) * <span id="val-lock-hint" style="display:none;font-weight:400;color:var(--text-tertiary);text-transform:none">(from market estimate — locked)</span></label>
+      <input type="number" class="form-control field-locked" id="f-value" placeholder="Set automatically from market estimate" min="0" required readonly tabindex="-1"/>
     </div>
 
     <!-- ── LOCATION ── -->
@@ -493,6 +493,7 @@
   let mainPhotoFile = null;
   let detectedCondition = null;
   let aiFieldsLocked = false;
+  let estimatedValueLocked = false;
   
   const HOBBY_PHOTOS_REQUIRED = 5;
   let hobbyPhotoFiles = new Array(HOBBY_PHOTOS_REQUIRED).fill(null);
@@ -703,6 +704,25 @@
     document.querySelectorAll('.cond-pill').forEach(p => p.classList.toggle('active', p.dataset.val === val));
   }
 
+  function lockValueField() {
+    const valInput = document.getElementById('f-value');
+    valInput.readOnly = true;
+    valInput.classList.add('field-locked');
+    valInput.tabIndex = -1;
+    estimatedValueLocked = true;
+    document.getElementById('val-lock-hint').style.display = 'inline';
+  }
+
+  function unlockValueField() {
+    const valInput = document.getElementById('f-value');
+    valInput.readOnly = true;
+    valInput.classList.add('field-locked');
+    valInput.value = '';
+    valInput.tabIndex = -1;
+    estimatedValueLocked = false;
+    document.getElementById('val-lock-hint').style.display = 'none';
+  }
+
   function lockAiFields() {
     aiFieldsLocked = true;
     const title = document.getElementById('f-title');
@@ -736,9 +756,7 @@
     document.getElementById('category-lock-hint').style.display = 'none';
     document.getElementById('condition-lock-hint').style.display = 'none';
     document.getElementById('est-box').style.display = 'none';
-    document.getElementById('f-value').value = '';
-    document.getElementById('f-value').dataset.autoSet = 'false';
-    document.getElementById('val-lock-hint').style.display = 'none';
+    unlockValueField();
   }
 
   // ─── Estimator Box (Value) ────────────────────────────────────────────────────
@@ -789,22 +807,16 @@
         document.getElementById('est-source').textContent = sourceText;
 
         const valInput = document.getElementById('f-value');
-        if (!valInput.value || valInput.dataset.autoSet === 'true') {
-          valInput.value = data.estimatedValue;
-          valInput.dataset.autoSet = 'true';
-          document.getElementById('val-lock-hint').style.display = 'inline';
-        }
+        valInput.value = data.estimatedValue;
+        lockValueField();
       })
       .catch(() => {
         document.getElementById('est-value').textContent = '—';
         document.getElementById('est-range').textContent = 'Could not load estimate';
-        document.getElementById('est-source').textContent = 'Try “Refresh market data” or enter your value manually.';
+        document.getElementById('est-source').textContent = 'Try “Refresh market data” — value is set automatically and cannot be edited.';
+        unlockValueField();
       });
   }
-  document.getElementById('f-value').addEventListener('input', function() {
-    this.dataset.autoSet = "false";
-    document.getElementById('val-lock-hint').style.display = 'none';
-  });
 
   // ─── AI box helper ────────────────────────────────────────────────────────────
   function showAiBox(idPrefix, status, title, html) {
@@ -1004,6 +1016,10 @@
     }
     if (hobbyPhotoValid.filter(Boolean).length < HOBBY_PHOTOS_REQUIRED) {
       setFormFeedback('err', `Please provide all ${HOBBY_PHOTOS_REQUIRED} verified hobby photos.`);
+      return;
+    }
+    if (!estVal || !estimatedValueLocked) {
+      setFormFeedback('err', 'Wait for the market value estimate before listing. Use “Refresh market data” if it did not load.');
       return;
     }
     if (!loggedInUserId) {
