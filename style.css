@@ -623,10 +623,11 @@ select.form-control { cursor: pointer; }
 
 .page-hero-mini {
   background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand) 100%);
-  padding: 40px 24px 48px;
+  padding: 48px 24px 64px;
   color: white;
   position: relative;
   overflow: hidden;
+  margin-bottom: 0;
 }
 .page-hero-mini::before {
   content: '';
@@ -654,6 +655,20 @@ select.form-control { cursor: pointer; }
   color: rgba(255,255,255,0.88);
   max-width: 560px;
   line-height: 1.5;
+}
+
+/* Breathing room between hero strip and form shell (List Item page) */
+.page-hero-mini + .page-shell {
+  margin-top: 40px;
+}
+
+.page-hero-mini + .page-shell .page-rail {
+  padding-top: 0;
+}
+
+.page-hero-mini + .page-shell .page-main {
+  padding-top: 4px;
+  padding-bottom: 48px;
 }
 
 @media (max-width: 1280px) {
