@@ -189,7 +189,7 @@
   function startEsp32FramePolling() {
     stopEsp32FramePolling();
     pollEsp32PreviewFrame();
-    esp32State.pollTimer = setInterval(pollEsp32PreviewFrame, 450);
+    esp32State.pollTimer = setInterval(pollEsp32PreviewFrame, 280);
     esp32State.healthTimer = setInterval(async () => {
       if (typeof esp32State.onHealth !== 'function') return;
       try {

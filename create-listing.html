@@ -144,6 +144,9 @@
       height: 100%;
       object-fit: contain;
       display: block;
+      /* AI Thinker modules are often mounted sideways — set to 0 if yours is upright */
+      transform: rotate(90deg);
+      transform-origin: center center;
     }
     .esp32-live-placeholder {
       position: absolute;
