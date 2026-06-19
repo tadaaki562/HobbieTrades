@@ -793,13 +793,15 @@
     const fd = new FormData();
     fd.append('photo', file);
 
-    fetch(`${API}/api/upload/analyze`, { method: 'POST', body: fd })
-      .then(res => res.json())
+    fetch(`${API}/api/items/analyze`, { method: 'POST', body: fd })
+      .then(async res => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.success) throw new Error(data.message || `Server error (${res.status})`);
+        return data;
+      })
       .then(data => {
-        if (!data.success) throw new Error(data.message || 'Analysis failed');
-
-        if (data.multipleDetections && data.multipleDetections.length > 1) {
-          showDetectionPicker(data.multipleDetections);
+        if (data.hasMultipleDetections && data.detectionOptions && data.detectionOptions.length > 1) {
+          showDetectionPicker(data.detectionOptions);
           showAiBox('ai-main', 'success', 'Multiple items detected', 'Please select which one you are trading below.');
         } else {
           applyDetectionData(data);
@@ -826,18 +828,22 @@
 
     const fd = new FormData();
     fd.append('photo', file);
+    fd.append('slot', slot);
 
-    fetch(`${API}/api/upload/analyze`, { method: 'POST', body: fd })
-      .then(res => res.json())
+    fetch(`${API}/api/items/validate-photo`, { method: 'POST', body: fd })
+      .then(async res => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.success) throw new Error(data.message || 'Validation failed');
+        return data;
+      })
       .then(data => {
-        if (!data.success) throw new Error(data.message);
-        if (data.category === 'Cameras' || data.category === 'Instruments') {
+        if (data.detectedCategory === 'Cameras' || data.detectedCategory === 'Instruments') {
           hobbyPhotoValid[slot] = true;
           box.style.borderColor = 'var(--green)';
           box.style.background = 'var(--green-light)';
           icon.innerHTML = '<i data-feather="check" style="color:var(--green)"></i>';
           icon.style.color = 'var(--green)';
-          text.textContent = data.brand ? data.brand : 'Verified';
+          text.textContent = data.detectedBrand ? data.detectedBrand : 'Verified';
         } else {
           throw new Error('No camera/instrument detected');
         }
@@ -863,9 +869,9 @@
         <div class="detection-options">`;
     
     detections.forEach((d, i) => {
-      const title = d.suggestedTitle || d.type || 'Unknown Item';
-      const type = d.type || d.class_name || '';
-      const conf = d.confidence ? (d.confidence * 100).toFixed(0) + '%' : '';
+      const title = d.suggestedTitle || d.detectedModel || 'Unknown Item';
+      const type = d.detectedModel || d.className || d.caption || '';
+      const conf = d.confidence ? (String(d.confidence).includes('%') ? d.confidence : (d.confidence * 100).toFixed(0) + '%') : '';
       
       html += `
         <div class="detection-option" onclick='applySelectedDetection(${JSON.stringify(d).replace(/'/g, "&apos;")})'>
@@ -885,7 +891,11 @@
   }
 
   function applyDetectionData(data) {
-    const { suggestedTitle, brand, model, category, condition } = data;
+    const suggestedTitle = data.suggestedTitle || '';
+    const brand = data.detectedBrand || data.brand || '';
+    const model = data.detectedModel || data.model || '';
+    const category = data.detectedCategory || data.category || '';
+    const condition = data.detectedCondition || data.condition || '';
     const applied = [];
 
     if (suggestedTitle) applied.push(`Title → ${suggestedTitle}`);
