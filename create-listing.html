@@ -902,8 +902,9 @@
       })
       .then(data => {
         if (data.hasMultipleDetections && data.detectionOptions && data.detectionOptions.length > 1) {
+          applyDetectionData(data);
           showDetectionPicker(data.detectionOptions);
-          showAiBox('ai-main', 'success', 'Multiple items detected', 'Please select which one you are trading below.');
+          showAiBox('ai-main', 'success', 'Item detected', 'We pre-selected the best match. Switch below if needed.');
         } else {
           applyDetectionData(data);
         }
@@ -971,13 +972,14 @@
     
     detections.forEach((d, i) => {
       const title = d.suggestedTitle || d.detectedModel || 'Unknown Item';
+      const cat = d.detectedCategory || d.category || '';
       const type = d.detectedModel || d.className || d.caption || '';
       const conf = d.confidence ? (String(d.confidence).includes('%') ? d.confidence : (d.confidence * 100).toFixed(0) + '%') : '';
       
       html += `
         <div class="detection-option" onclick='applySelectedDetection(${JSON.stringify(d).replace(/'/g, "&apos;")})'>
           <div class="detection-option-title">${escapeHtml(title)}</div>
-          <div class="detection-option-meta">${escapeHtml(type)}${conf ? ` • ${escapeHtml(conf)}` : ''}</div>
+          <div class="detection-option-meta">${cat ? escapeHtml(cat) + ' • ' : ''}${escapeHtml(type)}${conf ? ` • ${escapeHtml(conf)}` : ''}</div>
         </div>`;
     });
     
